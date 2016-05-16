@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2013, Willow Garage, Inc.
+ *  Copyright (c) 2011, Willow Garage, Inc.
  *  Copyright (c) 2016, Orbbec Ltd.
  *     Tim Liu <liuhua@orbbec.com>
  *

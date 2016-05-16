@@ -1,7 +1,7 @@
 /* usbreset -- send a USB port reset to a USB device */
 
 /*
- * Copyright (c) 2013, Willow Garage, Inc.
+ * Copyright (c) 2014, JSK Robotics Lab, Inc.
  * Copyright (c) 2016, Orbbec Ltd.
  * All rights reserved.
  *

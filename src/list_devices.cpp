@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Willow Garage, Inc.
+ * Copyright (c) 2014, Savioke, Inc.
  * Copyright (c) 2016, Orbbec Ltd.
  * All rights reserved.
  *
