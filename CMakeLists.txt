@@ -11,13 +11,13 @@ ExternalProject_Add(astra_openni2
   PREFIX astra_openni2
   # SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/astra_openni2/OpenNI2
   GIT_REPOSITORY https://github.com/tfoote/OpenNI2.git
-  GIT_TAG orbbec_arm64
+  GIT_TAG orbbec_ros
   CONFIGURE_COMMAND echo "no need to configure"
   #${CMAKE_CURRENT_SOURCE_DIR}/libantlr/configure --prefix=<INSTALL_DIR>
   BUILD_IN_SOURCE 1
   BUILD_COMMAND make release
   INSTALL_DIR openni2
-  INSTALL_COMMAND tar -xjf <SOURCE_DIR>/Packaging/Final/OpenNI-Linux-x64-2.3.tar.bz2 -C <INSTALL_DIR> --strip 1 && mkdir -p <INSTALL_DIR>/include && ln -fs <INSTALL_DIR>/Include <INSTALL_DIR>/include/openni2
+  INSTALL_COMMAND tar -xjf <SOURCE_DIR>/Packaging/Final/OpenNI-Linux-2.3.tar.bz2 -C <INSTALL_DIR> --strip 1 && mkdir -p <INSTALL_DIR>/include && ln -fs <INSTALL_DIR>/Include <INSTALL_DIR>/include/openni2
 )
 
 generate_dynamic_reconfigure_options(cfg/Astra.cfg)
@@ -52,7 +52,7 @@ add_library(astra_wrapper
    src/astra_exception.cpp
    src/astra_video_mode.cpp
 )
-target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2
+target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2Orbbec
   ${Boost_LIBRARIES} )
 add_dependencies(astra_wrapper astra_openni2)
 
@@ -92,7 +92,7 @@ install(TARGETS astra_wrapper astra_camera_nodelet astra_camera_node astra_list_
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 
-install(FILES ${CMAKE_BINARY_DIR}/openni2/Redist/libOpenNI2.so
+install(FILES ${CMAKE_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
 )
 
