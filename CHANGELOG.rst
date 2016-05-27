@@ -2,8 +2,8 @@
 Changelog for package astra_camera
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.5 (2016-05-27)
+------------------
 * add dependency on generated messages to avoid race condition at build time
 * switching to libusb-1.0
 * Contributors: Tully Foote
