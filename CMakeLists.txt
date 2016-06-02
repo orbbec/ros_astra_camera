@@ -5,33 +5,20 @@ find_package(catkin REQUIRED camera_info_manager dynamic_reconfigure image_trans
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 
+include(ExternalProject)
 
-#MACHINE = $(shell uname -m)
-execute_process(COMMAND uname -m  OUTPUT_VARIABLE  MACHINES )
-execute_process(COMMAND getconf LONG_BIT  OUTPUT_VARIABLE  MACHINES_BIT )
-MESSAGE(STATUS "ORRBEC Machine : ${MACHINES}")
-MESSAGE(STATUS "ORRBEC Machine Bits : ${MACHINES_BIT}")
-IF ( (${MACHINES} MATCHES "x86_64") AND (${MACHINES_BIT} MATCHES "64")  )
-      set(HOST_PLATFORM  "x64")
-# for schroot enviroment
-ELSEIF ( (${MACHINES} MATCHES "x86_64") AND (${MACHINES_BIT} MATCHES "32")  )
-      set(HOST_PLATFORM  "x86")
-ELSEIF ( ${MACHINES} MATCHES "x86" )
-ELSEIF ( ${MACHINES} MATCHES "x86" )
-      set(HOST_PLATFORM  "x86")
-ELSEIF ( ${MACHINES} MATCHES "i686" )
-      set(HOST_PLATFORM  "x86")
-ELSEIF ( ${MACHINES} MATCHES "i386" )
-      set(HOST_PLATFORM  "x86")
-ELSEIF ( ${MACHINES} MATCHES "arm" )
-      set(HOST_PLATFORM  "arm")
-ELSEIF ( (${MACHINES} MATCHES "aarch64") AND (${MACHINES_BIT} MATCHES "64")  )
-      set(HOST_PLATFORM  "arm64")
-ELSEIF ( (${MACHINES} MATCHES "aarch64") AND (${MACHINES_BIT} MATCHES "32")  )
-      set(HOST_PLATFORM  "arm")
-ENDIF ()
-
-MESSAGE(STATUS "ORRBEC : ${HOST_PLATFORM}")
+ExternalProject_Add(astra_openni2
+  PREFIX astra_openni2
+  # SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/astra_openni2/OpenNI2
+  GIT_REPOSITORY https://github.com/tfoote/OpenNI2.git
+  GIT_TAG orbbec_ros
+  CONFIGURE_COMMAND echo "no need to configure"
+  #${CMAKE_CURRENT_SOURCE_DIR}/libantlr/configure --prefix=<INSTALL_DIR>
+  BUILD_IN_SOURCE 1
+  BUILD_COMMAND make release
+  INSTALL_DIR openni2
+  INSTALL_COMMAND tar -xjf <SOURCE_DIR>/Packaging/Final/OpenNI-Linux-2.3.tar.bz2 -C <INSTALL_DIR> --strip 1 && mkdir -p <INSTALL_DIR>/include && ln -fs <INSTALL_DIR>/Include <INSTALL_DIR>/include/openni2
+)
 
 generate_dynamic_reconfigure_options(cfg/Astra.cfg)
 add_service_files(FILES
@@ -45,15 +32,13 @@ catkin_package(
   DEPENDS libastra
 )
 
-set(ORRBEC_OPENNI2_REDIST  "${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/${HOST_PLATFORM}")
-link_directories(${ORRBEC_OPENNI2_REDIST})
-
-#MESSAGE(STATUS "ORRBEC : ${ORRBEC_OPENNI2_REDIST}")
+link_directories(${CMAKE_BINARY_DIR}/openni2/Redist)
 
 include_directories(include
                     ${catkin_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2
+                    ${CMAKE_BINARY_DIR}/openni2/include
                     )
 
 
@@ -67,26 +52,27 @@ add_library(astra_wrapper
    src/astra_exception.cpp
    src/astra_video_mode.cpp
 )
-target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2  -L${ORRBEC_OPENNI2_REDIST}
+target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2Orbbec
   ${Boost_LIBRARIES} )
+add_dependencies(astra_wrapper astra_openni2 ${PROJECT_NAME}_generate_messages_cpp)
 
 add_library(astra_driver_lib
                 src/astra_driver.cpp
 )
 target_link_libraries(astra_driver_lib astra_wrapper ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
-add_dependencies(astra_driver_lib ${PROJECT_NAME}_gencfg)
+add_dependencies(astra_driver_lib astra_openni2 ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
 
 add_library(astra_camera_nodelet
    ros/astra_camera_nodelet.cpp
 )
 target_link_libraries(astra_camera_nodelet astra_driver_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
-add_dependencies(astra_camera_nodelet ${PROJECT_NAME}_gencfg)
+add_dependencies(astra_camera_nodelet astra_openni2 ${PROJECT_NAME}_gencfg)
 
 add_executable(astra_camera_node
    ros/astra_camera_node.cpp
 )
 target_link_libraries(astra_camera_node astra_driver_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
-add_dependencies(astra_camera_node ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
+add_dependencies(astra_camera_node astra_openni2 ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
 
 add_executable(astra_list_devices
    src/list_devices.cpp
@@ -106,6 +92,14 @@ install(TARGETS astra_wrapper astra_camera_nodelet astra_camera_node astra_list_
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 
+install(FILES ${CMAKE_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
+  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
+)
+
+install(DIRECTORY ${CMAKE_BINARY_DIR}/openni2/Redist/OpenNI2
+  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
+)
+
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
@@ -114,14 +108,3 @@ install(DIRECTORY include/${PROJECT_NAME}/
 install(FILES astra_nodelets.xml
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
-
-#copy runtime file to bin, not support wildcard *.*
-#execute_process(COMMAND  cp -R ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/OpenNI2   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/
-#									COMMAND  cp -R ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/libOpenNI2.jni.so   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/
-#									COMMAND  cp -R ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/libOpenNI2.so   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/
-#									COMMAND  cp -R ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/OpenNI.ini  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/
-#									COMMAND  cp -R ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/org.openni.jar  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/
-#)
-
-
-
