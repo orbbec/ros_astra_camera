@@ -32,13 +32,12 @@ catkin_package(
   DEPENDS libastra
 )
 
-link_directories(${CMAKE_BINARY_DIR}/openni2/Redist)
+link_directories(${CMAKE_CURRENT_BINARY_DIR}/openni2/Redist)
 
 include_directories(include
                     ${catkin_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2
-                    ${CMAKE_BINARY_DIR}/openni2/include
+                    ${CMAKE_CURRENT_BINARY_DIR}/openni2/include
                     )
 
 
