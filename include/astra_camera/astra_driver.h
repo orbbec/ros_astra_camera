@@ -93,11 +93,9 @@ private:
 
   void advertiseROSTopics();
 
-/*
-  void colorConnectCb();
+  //void colorConnectCb();
   void depthConnectCb();
-  void irConnectCb();
-*/
+  //void irConnectCb();
 
   //bool getSerialCb(astra_camera::GetSerialRequest& req, astra_camera::GetSerialResponse& res);
 
@@ -134,7 +132,7 @@ private:
   // published topics
   //image_transport::CameraPublisher pub_color_;
   //image_transport::CameraPublisher pub_depth_;
-  rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_;
+  rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_raw_;
   //image_transport::CameraPublisher pub_depth_raw_;
   //image_transport::CameraPublisher pub_ir_;
   //ros::Publisher pub_projector_info_;

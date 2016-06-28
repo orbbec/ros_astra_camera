@@ -142,6 +142,7 @@ AstraDriver::AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::S
   }
   ROS_DEBUG("Dynamic reconfigure configuration received.");
 */
+  z_scaling_ = 1.0;
 
   advertiseROSTopics();
 
@@ -194,7 +195,8 @@ void AstraDriver::advertiseROSTopics()
     //ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::depthConnectCb, this);
     //pub_depth_raw_ = depth_it.advertiseCamera("image_raw", 1, itssc, itssc, rssc, rssc);
     //pub_depth_ = depth_raw_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
-    pub_depth_ = nh_->create_publisher<sensor_msgs::msg::Image>("image", rmw_qos_profile_default);
+    pub_depth_raw_ = nh_->create_publisher<sensor_msgs::msg::Image>("image", rmw_qos_profile_default);
+    this->depthConnectCb();
   }
 
   ////////// CAMERA INFO MANAGER
@@ -430,30 +432,34 @@ void AstraDriver::colorConnectCb()
     }
   }
 }
+*/
 
 void AstraDriver::depthConnectCb()
 {
-  boost::lock_guard<boost::mutex> lock(connect_mutex_);
+  //boost::lock_guard<boost::mutex> lock(connect_mutex_);
 
-  depth_subscribers_ = pub_depth_.getNumSubscribers() > 0;
-  depth_raw_subscribers_ = pub_depth_raw_.getNumSubscribers() > 0;
+  //depth_subscribers_ = pub_depth_.getNumSubscribers() > 0;
+  //depth_raw_subscribers_ = pub_depth_raw_.getNumSubscribers() > 0;
 
-  bool need_depth = depth_subscribers_ || depth_raw_subscribers_;
+  //bool need_depth = depth_subscribers_ || depth_raw_subscribers_;
 
-  if (need_depth && !device_->isDepthStreamStarted())
+  //if (need_depth && !device_->isDepthStreamStarted())
+  if (!device_->isDepthStreamStarted())
   {
     device_->setDepthFrameCallback(boost::bind(&AstraDriver::newDepthFrameCallback, this, _1));
 
     ROS_INFO("Starting depth stream.");
     device_->startDepthStream();
   }
-  else if (!need_depth && device_->isDepthStreamStarted())
+  //else if (!need_depth && device_->isDepthStreamStarted())
+  else if (device_->isDepthStreamStarted())
   {
     ROS_INFO("Stopping depth stream.");
     device_->stopDepthStream();
   }
 }
 
+/*
 void AstraDriver::irConnectCb()
 {
   boost::lock_guard<boost::mutex> lock(connect_mutex_);
@@ -519,12 +525,12 @@ void AstraDriver::newColorFrameCallback(sensor_msgs::ImagePtr image)
 
 void AstraDriver::newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image)
 {
-  if ((++data_skip_depth_counter_)%data_skip_==0)
+  //if ((++data_skip_depth_counter_)%data_skip_==0)
   {
 
     data_skip_depth_counter_ = 0;
 
-    if (depth_raw_subscribers_||depth_subscribers_)
+    //if (depth_raw_subscribers_||depth_subscribers_)
     {
       // TODO
       //image->header.stamp = image->header.stamp + depth_time_offset_;
@@ -557,19 +563,20 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image
         cam_info = getDepthCameraInfo(image->width,image->height, image->header.stamp);
       }
 
-      if (depth_raw_subscribers_)
+      //if (depth_raw_subscribers_)
       {
         // TODO
         //pub_depth_raw_.publish(image, cam_info);
+        pub_depth_raw_->publish(image);
       }
 
-      //if (depth_subscribers_ )
+/*
+      if (depth_subscribers_ )
       {
         sensor_msgs::msg::Image::SharedPtr floating_point_image = rawToFloatingPointConversion(image);
-        // TODO
-        //pub_depth_.publish(floating_point_image, cam_info);
-        pub_depth_->publish(floating_point_image);
+        pub_depth_.publish(floating_point_image, cam_info);
       }
+*/
     }
   }
 }

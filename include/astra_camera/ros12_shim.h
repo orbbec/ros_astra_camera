@@ -8,7 +8,7 @@
   #define ROS_INFO(str, ...) printf(str "\n", ## __VA_ARGS__)
 #endif
 #ifndef ROS_DEBUG
-  #define ROS_DEBUG(str, ...) printf(str "\n", ## __VA_ARGS__)
+  #define ROS_DEBUG(str, ...)
 #endif
 #ifndef ROS_WARN
   #define ROS_WARN(str, ...) printf(str "\n", ## __VA_ARGS__)
@@ -24,7 +24,7 @@
   #define ROS_INFO_STREAM(str) std::cout << str << std::endl
 #endif
 #ifndef ROS_DEBUG_STREAM
-  #define ROS_DEBUG_STREAM(str) std::cout << str << std::endl
+  #define ROS_DEBUG_STREAM(str)
 #endif
 #ifndef ROS_WARN_STREAM
   #define ROS_WARN_STREAM(str) std::cout << str << std::endl
