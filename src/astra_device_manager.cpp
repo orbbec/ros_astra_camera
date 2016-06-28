@@ -37,7 +37,8 @@
 
 #include <boost/make_shared.hpp>
 
-#include <ros/ros.h>
+//#include <ros/ros.h>
+#include "astra_camera/ros12_shim.h"
 
 #include <set>
 #include <string>
