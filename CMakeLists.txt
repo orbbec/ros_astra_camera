@@ -64,6 +64,12 @@ add_library(astra_driver_lib
 target_link_libraries(astra_driver_lib astra_wrapper ${builtin_interfaces_LIBRARIES} ${sensor_msgs_LIBRARIES} ${rcl_LIBRARIES} ${rclcpp_LIBRARIES} ${Boost_LIBRARIES})
 add_dependencies(astra_driver_lib astra_openni2)
 
+add_executable(astra_camera_node
+   ros/astra_camera_node.cpp
+)
+target_link_libraries(astra_camera_node astra_driver_lib)
+add_dependencies(astra_camera_node astra_openni2)
+
 install(FILES ${CMAKE_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
   DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
 )

@@ -194,6 +194,7 @@ void AstraDriver::advertiseROSTopics()
     //ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::depthConnectCb, this);
     //pub_depth_raw_ = depth_it.advertiseCamera("image_raw", 1, itssc, itssc, rssc, rssc);
     //pub_depth_ = depth_raw_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
+    pub_depth_ = nh_->create_publisher<sensor_msgs::msg::Image>("image", rmw_qos_profile_default);
   }
 
   ////////// CAMERA INFO MANAGER
@@ -562,11 +563,12 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image
         //pub_depth_raw_.publish(image, cam_info);
       }
 
-      if (depth_subscribers_ )
+      //if (depth_subscribers_ )
       {
         sensor_msgs::msg::Image::SharedPtr floating_point_image = rawToFloatingPointConversion(image);
         // TODO
         //pub_depth_.publish(floating_point_image, cam_info);
+        pub_depth_->publish(floating_point_image);
       }
     }
   }

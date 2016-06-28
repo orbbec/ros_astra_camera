@@ -134,6 +134,7 @@ private:
   // published topics
   //image_transport::CameraPublisher pub_color_;
   //image_transport::CameraPublisher pub_depth_;
+  rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_;
   //image_transport::CameraPublisher pub_depth_raw_;
   //image_transport::CameraPublisher pub_ir_;
   //ros::Publisher pub_projector_info_;

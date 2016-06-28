@@ -34,13 +34,13 @@
 
 int main(int argc, char **argv){
 
-  ros::init(argc, argv, "astra_camera");
-  ros::NodeHandle n;
-  ros::NodeHandle pnh("~");
+  rclcpp::init(argc, argv);
+  rclcpp::node::Node::SharedPtr n = rclcpp::node::Node::make_shared("astra_camera");
+  rclcpp::node::Node::SharedPtr pnh = rclcpp::node::Node::make_shared("astra_camera_");
 
   astra_wrapper::AstraDriver drv(n, pnh);
 
-  ros::spin();
+  rclcpp::spin(n);
 
   return 0;
 }
