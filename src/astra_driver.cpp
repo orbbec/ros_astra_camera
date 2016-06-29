@@ -143,6 +143,7 @@ AstraDriver::AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::S
   ROS_DEBUG("Dynamic reconfigure configuration received.");
 */
   z_scaling_ = 1.0;
+  z_offset_mm_ = 0;
 
   advertiseROSTopics();
 
@@ -565,18 +566,16 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image
 
       //if (depth_raw_subscribers_)
       {
-        // TODO
         //pub_depth_raw_.publish(image, cam_info);
-        pub_depth_raw_->publish(image);
+        //pub_depth_raw_->publish(image);
       }
 
-/*
-      if (depth_subscribers_ )
+      //if (depth_subscribers_ )
       {
         sensor_msgs::msg::Image::SharedPtr floating_point_image = rawToFloatingPointConversion(image);
-        pub_depth_.publish(floating_point_image, cam_info);
+        //pub_depth_.publish(floating_point_image, cam_info);
+        pub_depth_raw_->publish(floating_point_image);
       }
-*/
     }
   }
 }
