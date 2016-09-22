@@ -91,11 +91,11 @@ install(TARGETS astra_wrapper astra_camera_nodelet astra_camera_node astra_list_
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 
-install(FILES ${CMAKE_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
 )
 
-install(DIRECTORY ${CMAKE_BINARY_DIR}/openni2/Redist/OpenNI2
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/openni2/Redist/OpenNI2
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
 )
 
