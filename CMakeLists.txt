@@ -5,6 +5,14 @@ find_package(catkin REQUIRED camera_info_manager dynamic_reconfigure image_trans
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 
+option(FILTER "OB Filter library" ON)
+
+if( ${FILTER} STREQUAL "ON" )
+set(obfilter "On")
+else()
+set(obfilter "Off")
+endif()
+
 include(ExternalProject)
 
 ExternalProject_Add(astra_openni2
@@ -15,7 +23,7 @@ ExternalProject_Add(astra_openni2
   CONFIGURE_COMMAND echo "no need to configure"
   #${CMAKE_CURRENT_SOURCE_DIR}/libantlr/configure --prefix=<INSTALL_DIR>
   BUILD_IN_SOURCE 1
-  BUILD_COMMAND make release
+  BUILD_COMMAND make release FILTER=${obfilter}
   INSTALL_DIR openni2
   INSTALL_COMMAND tar -xjf <SOURCE_DIR>/Packaging/Final/OpenNI-Linux-2.3.tar.bz2 -C <INSTALL_DIR> --strip 1 && mkdir -p <INSTALL_DIR>/include && ln -fs <INSTALL_DIR>/Include <INSTALL_DIR>/include/openni2
 )
