@@ -239,7 +239,7 @@ std::string AstraDeviceManager::getSerial(const std::string& Uri) const
   }
   else
   {
-    THROW_OPENNI_EXCEPTION("Device open failed: %s", openni::OpenNI::getExtendedError());
+    //THROW_OPENNI_EXCEPTION("Device open failed: %s", openni::OpenNI::getExtendedError());
   }
   return ret;
 }

@@ -35,6 +35,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
+#include "astra_camera/astra_driver.h"
 #include "astra_camera/astra_device.h"
 #include "astra_camera/astra_exception.h"
 #include "astra_camera/astra_convert.h"
@@ -234,7 +235,7 @@ bool AstraDevice::hasIRSensor() const
 
 bool AstraDevice::hasColorSensor() const
 {
-  return openni_device_->hasSensor(openni::SENSOR_COLOR);
+  return (getUsbProductId()!=0x0403)?openni_device_->hasSensor(openni::SENSOR_COLOR):0;
 }
 
 bool AstraDevice::hasDepthSensor() const

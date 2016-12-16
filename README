@@ -13,7 +13,10 @@ $ catkin_make --pkg astra_camera -DFILTER=OFF
 $ roscd astra_camera && ./scripts/create_udev_rules
 
 3,run astra_camera
+use astra 
 $ roslaunch astra_launch astra.launch
+use astra pro (uvc rgb )
+$ roslaunch astra_launch astrapro.launch
 
 4,you can use rviz or image_view to verify driver
 

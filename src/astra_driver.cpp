@@ -33,12 +33,17 @@
 #include "astra_camera/astra_driver.h"
 #include "astra_camera/astra_exception.h"
 
+#include <unistd.h>  
+#include <stdlib.h>  
+#include <stdio.h>  
+#include <sys/shm.h>  
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/distortion_models.h>
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
 
+#define  MULTI_ASTRA 1
 namespace astra_wrapper
 {
 
@@ -60,8 +65,67 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
 
   readConfigFromParameterServer();
 
+#if MULTI_ASTRA
+	int bootOrder, devnums;
+	pnh.getParam("bootorder", bootOrder);
+	pnh.getParam("devnums", devnums);
+	if( devnums>1 )
+	{
+		int shmid;
+		char *shm = NULL;
+		char *tmp;
+		if(  bootOrder==1 )
+		{
+			if( (shmid = shmget((key_t)0401, 1, 0666|IPC_CREAT)) == -1 )   
+			{ 
+				ROS_ERROR("Create Share Memory Error:%s", strerror(errno));
+			}
+			shm = (char *)shmat(shmid, 0, 0);  
+			*shm = 1;
+			initDevice();
+			ROS_WARN("*********** device_id %s already open device************************ ", device_id_.c_str());
+			*shm = 2;
+		}
+		else 	
+		{	
+			if( (shmid = shmget((key_t)0401, 1, 0666|IPC_CREAT)) == -1 )   
+			{ 
+			  	ROS_ERROR("Create Share Memory Error:%s", strerror(errno));
+			}
+			shm = (char *)shmat(shmid, 0, 0);
+			while( *shm!=bootOrder);
+			 initDevice();
+			 ROS_WARN("*********** device_id %s already open device************************ ", device_id_.c_str());
+			*shm = (bootOrder+1);
+		}
+		if(  bootOrder==1 )
+		{
+			while( *shm!=(devnums+1)) ;
+			if(shmdt(shm) == -1)  
+			{  
+				ROS_ERROR("shmdt failed\n");  
+			} 
+			if(shmctl(shmid, IPC_RMID, 0) == -1)  
+			{  
+				ROS_ERROR("shmctl(IPC_RMID) failed\n");  
+			}
+		 }
+		 else
+		 {
+		 	if(shmdt(shm) == -1)  
+			{  
+				ROS_ERROR("shmdt failed\n");  
+			} 
+		 }
+	 }
+	 else
+	 {
+	 	initDevice();
+	 }
+#else
   initDevice();
 
+#endif
   // Initialize dynamic reconfigure
   reconfigure_server_.reset(new ReconfigureServer(pnh_));
   reconfigure_server_->setCallback(boost::bind(&AstraDriver::configCb, this, _1, _2));
@@ -98,6 +162,7 @@ void AstraDriver::advertiseROSTopics()
   boost::lock_guard<boost::mutex> lock(connect_mutex_);
 
   // Asus Xtion PRO does not have an RGB camera
+  //ROS_WARN("-------------has color sensor is %d----------- ", device_->hasColorSensor());
   if (device_->hasColorSensor())
   {
     image_transport::SubscriberStatusCallback itssc = boost::bind(&AstraDriver::colorConnectCb, this);
@@ -255,7 +320,10 @@ void AstraDriver::applyConfigToOpenNIDevice()
   data_skip_depth_counter_ = 0;
 
   setIRVideoMode(ir_video_mode_);
-  setColorVideoMode(color_video_mode_);
+  if (device_->hasColorSensor())
+  {
+  	setColorVideoMode(color_video_mode_);
+  }
   setDepthVideoMode(depth_video_mode_);
 
   if (device_->isImageRegistrationModeSupported())
@@ -618,6 +686,15 @@ std::string AstraDriver::resolveDeviceURI(const std::string& device_id) throw(As
   boost::shared_ptr<std::vector<std::string> > available_device_URIs =
     device_manager_->getConnectedDeviceURIs();
 
+  //for tes
+  #if 0
+   for (size_t i = 0; i < available_device_URIs->size(); ++i)
+   {
+       std::string s = (*available_device_URIs)[i];
+  	ROS_WARN("------------id %d, available_device_uri is %s-----------", i, s.c_str());
+   }
+   #endif
+  //end
   // look for '#<number>' format
   if (device_id.size() > 1 && device_id[0] == '#')
   {
@@ -686,15 +763,33 @@ std::string AstraDriver::resolveDeviceURI(const std::string& device_id) throw(As
     for(std::vector<std::string>::const_iterator it = available_device_URIs->begin();
         it != available_device_URIs->end(); ++it)
     {
-      try {
-        std::string serial = device_manager_->getSerial(*it);
-        if (serial.size() > 0 && device_id == serial)
-          return *it;
-      }
-      catch (const AstraException& exception)
-      {
-        ROS_WARN("Could not query serial number of device \"%s\":", exception.what());
-      }
+	#if 0
+      	try 
+	{
+        	std::string serial = device_manager_->getSerial(*it);
+        	if (serial.size() > 0 && device_id == serial)
+          		return *it;
+	}
+    	#else
+	try 
+	{
+         	std::set<std::string>::iterator iter;
+        	if((iter = alreadyOpen.find(*it)) == alreadyOpen.end())
+        	{
+              		// ROS_WARN("------------seraial num it is  %s, device_id is %s -----------", (*it).c_str(), device_id_.c_str());
+        		std::string serial = device_manager_->getSerial(*it);
+        	 	if (serial.size() > 0 && device_id == serial)
+        		{
+          			alreadyOpen.insert(*it);
+          			return *it;
+         		}
+        	}
+      	}
+	#endif
+      	catch (const AstraException& exception)
+      	{
+        	ROS_WARN("Could not query serial number of device \"%s\":", exception.what());
+      	}
     }
 
     // everything else is treated as part of the device_URI
@@ -730,6 +825,13 @@ void AstraDriver::initDevice()
     try
     {
       std::string device_URI = resolveDeviceURI(device_id_);
+      #if 0
+      if( device_URI == "" ) 
+      {
+      	boost::this_thread::sleep(boost::posix_time::milliseconds(500));
+      	continue;
+      }
+      #endif
       device_ = device_manager_->getDevice(device_URI);
     }
     catch (const AstraException& exception)

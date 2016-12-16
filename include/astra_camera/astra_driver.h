@@ -120,6 +120,7 @@ private:
   boost::shared_ptr<ReconfigureServer> reconfigure_server_;
   bool config_init_;
 
+  std::set<std::string>  alreadyOpen;
   boost::mutex connect_mutex_;
   // published topics
   image_transport::CameraPublisher pub_color_;
