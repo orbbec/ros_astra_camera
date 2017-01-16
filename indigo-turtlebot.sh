@@ -9,7 +9,6 @@ sudo apt-get install -y chrony ros-indigo-astra*
 sudo ntpdate ntp.ubuntu.com
 
 echo "[Setting the ROS evironment]"
-sh -c "echo \"source ~/turtlebot_ws/devel/setup.bash\" >> ~/.bashrc"
 sh -c "echo \"export TURTLEBOT_3D_SENSOR=astra\" >> ~/.bashrc"
 sh -c "echo \"export TURTLEBOT_BATTERY=/sys/class/power_supply/BAT1\" >> ~/.bashrc"
 
