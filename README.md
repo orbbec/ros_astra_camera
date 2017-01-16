@@ -1,6 +1,6 @@
 # astra camera
 
-## 1) goto catkin workshop dir and compiler astra_camera
+## 1) go to catkin workshop dir and compiler astra_camera
 ```
 $ catkin_make --pkg astra_camera
 ```
@@ -10,13 +10,8 @@ data but need high-performance platform , like pc. if you work in the ARM, sugge
 $ catkin_make --pkg astra_camera -DFILTER=OFF
 ```
 
-## 2a) create astra udev rule
-```
-$ roscd astra_camera && ./scripts/create_udev_rules
-```
-alternatively you can find it here: https://github.com/orbbec/ros_astra_camera/blob/master/56-orbbec-usb.rules
-
-## 2b) configure astra with turtlebot
+## 2) configure astra with turtlebot
+execute the following script to (a) create astra udev rule and (b) configure astra camera with turtlebot
 ```
 bash indigo-turtlebot.sh
 ```
