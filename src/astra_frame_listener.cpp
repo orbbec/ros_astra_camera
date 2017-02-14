@@ -43,6 +43,9 @@
 namespace astra_wrapper
 {
 
+bool AstraFrameListener::has_corrected_ir_timestamp_ = false;
+double AstraFrameListener::latest_corrected_ir_timestamp_ = 0.0;
+
 AstraFrameListener::AstraFrameListener() :
     callback_(0),
     user_device_timer_(false),
@@ -92,9 +95,22 @@ void AstraFrameListener::onNewFrame(openni::VideoStream& stream)
 
       double corrected_timestamp = device_time_in_sec+filtered_time_diff;
 
+      // This is a hack to 'manually' synchronize ir and depth images based on timestamp
+      if (m_frame.getSensorType() == openni::SENSOR_IR) {
+        latest_corrected_ir_timestamp_ = corrected_timestamp;
+        has_corrected_ir_timestamp_ = true;
+      }
+      if (has_corrected_ir_timestamp_) {
+          corrected_timestamp = latest_corrected_ir_timestamp_;
+      }
+
       image->header.stamp.fromSec(corrected_timestamp);
 
-      ROS_DEBUG("Time interval between frames: %.4f ms", (float)((corrected_timestamp-prev_time_stamp_)*1000.0));
+      // ROS_INFO("Frame id %d for msg type %s at time %f", m_frame.getFrameIndex(), (m_frame.getSensorType() == openni::SENSOR_IR) ? "IR" : "Depth", corrected_timestamp);
+
+      ROS_DEBUG("devsec %.4f, rossec %.4f, tdiff %.4f, filtered %.4f, tstamp %.4f, header sec %d, header nsec %d, stype %d, Time interval between frames: %.4f ms",
+                device_time_in_sec, ros_time_in_sec, time_diff, filtered_time_diff, corrected_timestamp,
+                image->header.stamp.sec, image->header.stamp.nsec, (int)(m_frame.getSensorType()), (float)((corrected_timestamp-prev_time_stamp_)*1000.0));
 
       prev_time_stamp_ = corrected_timestamp;
     }
