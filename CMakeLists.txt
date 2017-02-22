@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(astra_camera)
 if(NOT WIN32)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -Wextra")
 endif()
 
 find_package(ament_cmake REQUIRED)
@@ -41,10 +41,6 @@ include_directories(include
                     )
 
 macro(targets)
-  if(NOT target_suffix STREQUAL "")
-    get_rclcpp_information("${rmw_implementation}" "rclcpp${target_suffix}")
-  endif()
-
   add_library(astra_wrapper${target_suffix}
      src/astra_convert.cpp
      src/astra_device.cpp
@@ -69,7 +65,7 @@ macro(targets)
     "sensor_msgs")
   target_link_libraries(astra_driver_lib${target_suffix} astra_wrapper${target_suffix} ${Boost_LIBRARIES})
   add_dependencies(astra_driver_lib${target_suffix} astra_openni2)
-  
+
   add_executable(astra_camera_node${target_suffix}
      ros/astra_camera_node.cpp
   )
@@ -81,7 +77,11 @@ macro(targets)
   )
 endmacro()
 
-call_for_each_rmw_implementation(targets GENERATE_DEFAULT)
+# For whatever reason when I enable this along with Connext, it fails to
+# link.  Disable for now.
+#call_for_each_rmw_implementation(targets GENERATE_DEFAULT)
+
+targets()
 
 install(FILES ${CMAKE_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
   DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
