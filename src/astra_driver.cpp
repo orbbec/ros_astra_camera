@@ -543,16 +543,24 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image
       {
         uint16_t* data = reinterpret_cast<uint16_t*>(&image->data[0]);
         for (unsigned int i = 0; i < image->width * image->height; ++i)
+        {
           if (data[i] != 0)
-                data[i] += z_offset_mm_;
+          {
+            data[i] += z_offset_mm_;
+          }
+        }
       }
 
       if (fabs(z_scaling_ - 1.0) > 1e-6)
       {
         uint16_t* data = reinterpret_cast<uint16_t*>(&image->data[0]);
         for (unsigned int i = 0; i < image->width * image->height; ++i)
+        {
           if (data[i] != 0)
-                data[i] = static_cast<uint16_t>(data[i] * z_scaling_);
+          {
+            data[i] = static_cast<uint16_t>(data[i] * z_scaling_);
+          }
+        }
       }
 
       sensor_msgs::msg::CameraInfo::SharedPtr cam_info;
@@ -561,7 +569,8 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image
       {
         image->header.frame_id = color_frame_id_;
         cam_info = getColorCameraInfo(image->width,image->height, image->header.stamp);
-      } else
+      }
+      else
       {
         image->header.frame_id = depth_frame_id_;
         cam_info = getDepthCameraInfo(image->width,image->height, image->header.stamp);
@@ -1016,7 +1025,7 @@ int AstraDriver::lookupVideoModeFromDynConfig(int mode_nr, AstraVideoMode& video
 
   it = video_modes_lookup_.find(mode_nr);
 
-  if (it!=video_modes_lookup_.end())
+  if (it != video_modes_lookup_.end())
   {
     video_mode = it->second;
     ret = 0;
@@ -1049,7 +1058,8 @@ sensor_msgs::msg::Image::SharedPtr AstraDriver::rawToFloatingPointConversion(sen
     if (*in_ptr==0 || *in_ptr==0x7FF)
     {
       *out_ptr = bad_point;
-    } else
+    }
+    else
     {
       *out_ptr = static_cast<float>(*in_ptr)/1000.0f;
     }
