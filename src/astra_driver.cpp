@@ -738,10 +738,9 @@ std::string AstraDriver::resolveDeviceURI(const std::string& device_id) throw(As
   if (device_id.size() > 1 && device_id[0] == '#')
   {
     std::istringstream device_number_str(device_id.substr(1));
-    int device_number;
+    unsigned int device_number;
     device_number_str >> device_number;
-    int device_index = device_number - 1; // #1 refers to first device
-    if (device_index >= available_device_URIs->size() || device_index < 0)
+    if (device_number == 0 || device_number > available_device_URIs->size())
     {
       THROW_OPENNI_EXCEPTION(
           "Invalid device number %i, there are %zu devices connected.",
@@ -749,7 +748,7 @@ std::string AstraDriver::resolveDeviceURI(const std::string& device_id) throw(As
     }
     else
     {
-      return available_device_URIs->at(device_index);
+      return available_device_URIs->at(device_number - 1);  // #1 refers to first device
     }
   }
   // look for '<bus>@<number>' format
