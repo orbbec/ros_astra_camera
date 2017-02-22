@@ -173,21 +173,23 @@ void AstraDriver::advertiseROSTopics()
 
   // Asus Xtion PRO does not have an RGB camera
   //ROS_WARN("-------------has color sensor is %d----------- ", device_->hasColorSensor());
-/*
   if (device_->hasColorSensor())
   {
-    image_transport::SubscriberStatusCallback itssc = boost::bind(&AstraDriver::colorConnectCb, this);
-    ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::colorConnectCb, this);
-    pub_color_ = color_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
+    //image_transport::SubscriberStatusCallback itssc = boost::bind(&AstraDriver::colorConnectCb, this);
+    //ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::colorConnectCb, this);
+    //pub_color_ = color_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
+    pub_color_ = nh_->create_publisher<sensor_msgs::msg::Image>("image", rmw_qos_profile_sensor_data);
+    this->colorConnectCb();
   }
 
   if (device_->hasIRSensor())
   {
-    image_transport::SubscriberStatusCallback itssc = boost::bind(&AstraDriver::irConnectCb, this);
-    ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::irConnectCb, this);
-    pub_ir_ = ir_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
+    //image_transport::SubscriberStatusCallback itssc = boost::bind(&AstraDriver::irConnectCb, this);
+    //ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::irConnectCb, this);
+    //pub_ir_ = ir_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
+    pub_ir_ = nh_->create_publisher<sensor_msgs::msg::Image>("ir_image", rmw_qos_profile_sensor_data);
+    this->irConnectCb();
   }
-*/
 
   if (device_->hasDepthSensor())
   {
@@ -394,14 +396,14 @@ void AstraDriver::applyConfigToOpenNIDevice()
 }
 */
 
-/*
 void AstraDriver::colorConnectCb()
 {
-  boost::lock_guard<boost::mutex> lock(connect_mutex_);
+  //boost::lock_guard<boost::mutex> lock(connect_mutex_);
 
-  color_subscribers_ = pub_color_.getNumSubscribers() > 0;
+  //color_subscribers_ = pub_color_.getNumSubscribers() > 0;
 
-  if (color_subscribers_ && !device_->isColorStreamStarted())
+  //if (color_subscribers_ && !device_->isColorStreamStarted())
+  if (!device_->isIRStreamStarted())
   {
     // Can't stream IR and RGB at the same time. Give RGB preference.
     if (device_->isIRStreamStarted())
@@ -417,14 +419,16 @@ void AstraDriver::colorConnectCb()
     device_->startColorStream();
 
   }
-  else if (!color_subscribers_ && device_->isColorStreamStarted())
+  //else if (!color_subscribers_ && device_->isColorStreamStarted())
+  else if (device_->isColorStreamStarted())
   {
     ROS_INFO("Stopping color stream.");
     device_->stopColorStream();
 
     // Start IR if it's been blocked on RGB subscribers
-    bool need_ir = pub_ir_.getNumSubscribers() > 0;
-    if (need_ir && !device_->isIRStreamStarted())
+    //bool need_ir = pub_ir_.getNumSubscribers() > 0;
+    //if (need_ir && !device_->isIRStreamStarted())
+    if (!device_->isIRStreamStarted())
     {
       device_->setIRFrameCallback(boost::bind(&AstraDriver::newIRFrameCallback, this, _1));
 
@@ -433,7 +437,6 @@ void AstraDriver::colorConnectCb()
     }
   }
 }
-*/
 
 void AstraDriver::depthConnectCb()
 {
@@ -460,14 +463,14 @@ void AstraDriver::depthConnectCb()
   }
 }
 
-/*
 void AstraDriver::irConnectCb()
 {
-  boost::lock_guard<boost::mutex> lock(connect_mutex_);
+  //boost::lock_guard<boost::mutex> lock(connect_mutex_);
 
-  ir_subscribers_ = pub_ir_.getNumSubscribers() > 0;
+  //ir_subscribers_ = pub_ir_.getNumSubscribers() > 0;
 
-  if (ir_subscribers_ && !device_->isIRStreamStarted())
+  //if (ir_subscribers_ && !device_->isIRStreamStarted())
+  if (!device_->isIRStreamStarted())
   {
     // Can't stream IR and RGB at the same time
     if (device_->isColorStreamStarted())
@@ -482,47 +485,47 @@ void AstraDriver::irConnectCb()
       device_->startIRStream();
     }
   }
-  else if (!ir_subscribers_ && device_->isIRStreamStarted())
+  //else if (!ir_subscribers_ && device_->isIRStreamStarted())
+  else if (device_->isIRStreamStarted())
   {
     ROS_INFO("Stopping IR stream.");
     device_->stopIRStream();
   }
 }
-*/
 
-/*
-void AstraDriver::newIRFrameCallback(sensor_msgs::ImagePtr image)
+void AstraDriver::newIRFrameCallback(sensor_msgs::msg::Image::SharedPtr image)
 {
-  if ((++data_skip_ir_counter_)%data_skip_==0)
+  //if ((++data_skip_ir_counter_)%data_skip_==0)
   {
     data_skip_ir_counter_ = 0;
 
-    if (ir_subscribers_)
+    //if (ir_subscribers_)
     {
       image->header.frame_id = ir_frame_id_;
-      image->header.stamp = image->header.stamp + ir_time_offset_;
+      //image->header.stamp = image->header.stamp + ir_time_offset_;
 
-      pub_ir_.publish(image, getIRCameraInfo(image->width, image->height, image->header.stamp));
+      //pub_ir_.publish(image, getIRCameraInfo(image->width, image->height, image->header.stamp));
+      pub_ir_->publish(image);
     }
   }
 }
 
-void AstraDriver::newColorFrameCallback(sensor_msgs::ImagePtr image)
+void AstraDriver::newColorFrameCallback(sensor_msgs::msg::Image::SharedPtr image)
 {
-  if ((++data_skip_color_counter_)%data_skip_==0)
+  //if ((++data_skip_color_counter_)%data_skip_==0)
   {
     data_skip_color_counter_ = 0;
 
-    if (color_subscribers_)
+    //if (color_subscribers_)
     {
       image->header.frame_id = color_frame_id_;
-      image->header.stamp = image->header.stamp + color_time_offset_;
+      //image->header.stamp = image->header.stamp + color_time_offset_;
 
-      pub_color_.publish(image, getColorCameraInfo(image->width, image->height, image->header.stamp));
+      //pub_color_.publish(image, getColorCameraInfo(image->width, image->height, image->header.stamp));
+      pub_color_->publish(image);
     }
   }
 }
-*/
 
 void AstraDriver::newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image)
 {

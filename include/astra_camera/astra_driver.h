@@ -75,8 +75,8 @@ private:
   //typedef astra_camera::AstraConfig Config;
   //typedef dynamic_reconfigure::Server<Config> ReconfigureServer;
 
-  //void newIRFrameCallback(sensor_msgs::msg::Image::SharedPtr image);
-  //void newColorFrameCallback(sensor_msgs::msg::Image::SharedPtr image);
+  void newIRFrameCallback(sensor_msgs::msg::Image::SharedPtr image);
+  void newColorFrameCallback(sensor_msgs::msg::Image::SharedPtr image);
   void newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image);
 
   // Methods to get calibration parameters for the various cameras
@@ -93,9 +93,9 @@ private:
 
   void advertiseROSTopics();
 
-  //void colorConnectCb();
+  void colorConnectCb();
   void depthConnectCb();
-  //void irConnectCb();
+  void irConnectCb();
 
   //bool getSerialCb(astra_camera::GetSerialRequest& req, astra_camera::GetSerialResponse& res);
 
@@ -133,6 +133,8 @@ private:
   //image_transport::CameraPublisher pub_color_;
   //image_transport::CameraPublisher pub_depth_;
   rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_raw_;
+  rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_color_;
+  rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_ir_;
   //image_transport::CameraPublisher pub_depth_raw_;
   //image_transport::CameraPublisher pub_ir_;
   //ros::Publisher pub_projector_info_;
