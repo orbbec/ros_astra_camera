@@ -151,6 +151,11 @@ AstraDriver::AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::S
 
 void AstraDriver::advertiseROSTopics()
 {
+  rmw_qos_profile_t custom_camera_qos_profile = rmw_qos_profile_default;
+
+  custom_camera_qos_profile.depth = 10;
+  custom_camera_qos_profile.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
+  custom_camera_qos_profile.history = RMW_QOS_POLICY_HISTORY_KEEP_ALL;
 
   // Allow remapping namespaces rgb, ir, depth, depth_registered
 /*
@@ -178,7 +183,7 @@ void AstraDriver::advertiseROSTopics()
     //image_transport::SubscriberStatusCallback itssc = boost::bind(&AstraDriver::colorConnectCb, this);
     //ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::colorConnectCb, this);
     //pub_color_ = color_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
-    pub_color_ = nh_->create_publisher<sensor_msgs::msg::Image>("image", rmw_qos_profile_sensor_data);
+    pub_color_ = nh_->create_publisher<sensor_msgs::msg::Image>("image", custom_camera_qos_profile);
     this->colorConnectCb();
   }
 
@@ -187,7 +192,7 @@ void AstraDriver::advertiseROSTopics()
     //image_transport::SubscriberStatusCallback itssc = boost::bind(&AstraDriver::irConnectCb, this);
     //ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::irConnectCb, this);
     //pub_ir_ = ir_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
-    pub_ir_ = nh_->create_publisher<sensor_msgs::msg::Image>("ir_image", rmw_qos_profile_sensor_data);
+    pub_ir_ = nh_->create_publisher<sensor_msgs::msg::Image>("ir_image", custom_camera_qos_profile);
     this->irConnectCb();
   }
 
@@ -198,7 +203,7 @@ void AstraDriver::advertiseROSTopics()
     //ros::SubscriberStatusCallback rssc = boost::bind(&AstraDriver::depthConnectCb, this);
     //pub_depth_raw_ = depth_it.advertiseCamera("image_raw", 1, itssc, itssc, rssc, rssc);
     //pub_depth_ = depth_raw_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
-    pub_depth_raw_ = nh_->create_publisher<sensor_msgs::msg::Image>("depth", rmw_qos_profile_sensor_data);
+    pub_depth_raw_ = nh_->create_publisher<sensor_msgs::msg::Image>("depth", custom_camera_qos_profile);
     this->depthConnectCb();
   }
 
