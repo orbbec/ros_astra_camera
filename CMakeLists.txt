@@ -40,48 +40,40 @@ include_directories(include
                     ${CMAKE_CURRENT_BINARY_DIR}/openni2/include
                     )
 
-macro(targets)
-  add_library(astra_wrapper${target_suffix}
-     src/astra_convert.cpp
-     src/astra_device.cpp
-     src/astra_device_info.cpp
-     src/astra_timer_filter.cpp
-     src/astra_frame_listener.cpp
-     src/astra_device_manager.cpp
-     src/astra_exception.cpp
-     src/astra_video_mode.cpp
-  )
-  ament_target_dependencies(astra_wrapper${target_suffix}
-    "rclcpp${target_suffix}"
-    "builtin_interfaces"
-    "sensor_msgs")
-  target_link_libraries(astra_wrapper${target_suffix} -lOpenNI2Orbbec ${Boost_LIBRARIES})
-  add_dependencies(astra_wrapper${target_suffix} astra_openni2)
+add_library(astra_wrapper
+   src/astra_convert.cpp
+   src/astra_device.cpp
+   src/astra_device_info.cpp
+   src/astra_timer_filter.cpp
+   src/astra_frame_listener.cpp
+   src/astra_device_manager.cpp
+   src/astra_exception.cpp
+   src/astra_video_mode.cpp
+)
+ament_target_dependencies(astra_wrapper
+  "rclcpp"
+  "builtin_interfaces"
+  "sensor_msgs")
+target_link_libraries(astra_wrapper -lOpenNI2Orbbec ${Boost_LIBRARIES})
+add_dependencies(astra_wrapper astra_openni2)
 
-  add_library(astra_driver_lib${target_suffix} src/astra_driver.cpp)
-  ament_target_dependencies(astra_driver_lib${target_suffix}
-    "rclcpp${target_suffix}"
-    "builtin_interfaces"
-    "sensor_msgs")
-  target_link_libraries(astra_driver_lib${target_suffix} astra_wrapper${target_suffix} ${Boost_LIBRARIES})
-  add_dependencies(astra_driver_lib${target_suffix} astra_openni2)
+add_library(astra_driver_lib src/astra_driver.cpp)
+ament_target_dependencies(astra_driver_lib
+  "rclcpp"
+  "builtin_interfaces"
+  "sensor_msgs")
+target_link_libraries(astra_driver_lib astra_wrapper ${Boost_LIBRARIES})
+add_dependencies(astra_driver_lib astra_openni2)
 
-  add_executable(astra_camera_node${target_suffix}
-     ros/astra_camera_node.cpp
-  )
-  target_link_libraries(astra_camera_node${target_suffix} astra_driver_lib${target_suffix})
-  add_dependencies(astra_camera_node${target_suffix} astra_openni2)
+add_executable(astra_camera_node
+   ros/astra_camera_node.cpp
+)
+target_link_libraries(astra_camera_node astra_driver_lib)
+add_dependencies(astra_camera_node astra_openni2)
 
-  install(TARGETS astra_camera_node${target_suffix}
-    DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
-  )
-endmacro()
-
-# For whatever reason when I enable this along with Connext, it fails to
-# link.  Disable for now.
-#call_for_each_rmw_implementation(targets GENERATE_DEFAULT)
-
-targets()
+install(TARGETS astra_camera_node
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
+)
 
 install(FILES ${CMAKE_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
   DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
