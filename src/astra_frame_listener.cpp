@@ -106,11 +106,7 @@ void AstraFrameListener::onNewFrame(openni::VideoStream& stream)
 
       image->header.stamp.fromSec(corrected_timestamp);
 
-      // ROS_INFO("Frame id %d for msg type %s at time %f", m_frame.getFrameIndex(), (m_frame.getSensorType() == openni::SENSOR_IR) ? "IR" : "Depth", corrected_timestamp);
-
-      ROS_DEBUG("devsec %.4f, rossec %.4f, tdiff %.4f, filtered %.4f, tstamp %.4f, header sec %d, header nsec %d, stype %d, Time interval between frames: %.4f ms",
-                device_time_in_sec, ros_time_in_sec, time_diff, filtered_time_diff, corrected_timestamp,
-                image->header.stamp.sec, image->header.stamp.nsec, (int)(m_frame.getSensorType()), (float)((corrected_timestamp-prev_time_stamp_)*1000.0));
+      ROS_DEBUG("Time interval between frames: %.4f ms", (float)((corrected_timestamp-prev_time_stamp_)*1000.0));
 
       prev_time_stamp_ = corrected_timestamp;
     }
