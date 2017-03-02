@@ -20,8 +20,4 @@ $ roslaunch astra_launch astrapro.launch
 
 4,you can use rviz or image_view to verify driver
 
-about firmware upgrade
-1, only for Astra and Astra S. /**********important*********/
-2, run on x86, x64, arm, arm64 platform, and depend on 
-zip/unzip, awk, tail, md5sum
 
