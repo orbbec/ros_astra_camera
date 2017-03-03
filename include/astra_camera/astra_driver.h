@@ -69,7 +69,7 @@ class AstraDriver
 {
 public:
   //AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) ;
-  AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::SharedPtr& pnh) ;
+  AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::SharedPtr& pnh, size_t width, size_t height, double framerate);
 
 private:
   //typedef astra_camera::AstraConfig Config;
