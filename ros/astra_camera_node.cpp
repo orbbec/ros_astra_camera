@@ -41,8 +41,9 @@ static std::string get_command_option(const std::vector<std::string> &args, cons
   return std::string();
 }
 
-static void parse_command_options(int argc, char **argv, size_t *width, size_t *height,
-                                  double *framerate)
+static bool parse_command_options(int argc, char **argv, size_t *width, size_t *height,
+                                  double *framerate, size_t *depth_width, size_t *depth_height,
+                                  double *depth_framerate, astra_wrapper::PixelFormat *dformat)
 {
   std::vector<std::string> args(argv, argv + argc);
 
@@ -60,52 +61,55 @@ static void parse_command_options(int argc, char **argv, size_t *width, size_t *
   if (!framerate_str.empty()) {
     *framerate = std::stod(framerate_str.c_str());
   }
-}
 
-struct AllowedVal {
-  size_t width;
-  size_t height;
-  double framerate;
-};
+  std::string dwidth_str = get_command_option(args, "-dw");
+  if (!dwidth_str.empty()) {
+    *depth_width = std::stoul(dwidth_str.c_str());
+  }
+
+  std::string dheight_str = get_command_option(args, "-dh");
+  if (!dheight_str.empty()) {
+    *depth_height = std::stoul(dheight_str.c_str());
+  }
+
+  std::string dframerate_str = get_command_option(args, "-df");
+  if (!dframerate_str.empty()) {
+    *depth_framerate = std::stod(dframerate_str.c_str());
+  }
+
+  std::string dformat_str = get_command_option(args, "-dformat");
+  if (!dformat_str.empty()) {
+    if (dformat_str == "1MM") {
+      *dformat = astra_wrapper::PixelFormat::PIXEL_FORMAT_DEPTH_1_MM;
+    }
+    else if (dformat_str == "100UM") {
+      *dformat = astra_wrapper::PixelFormat::PIXEL_FORMAT_DEPTH_100_UM;
+    }
+    else {
+      std::cerr << "Invalid depth format; must be \"1MM\" or \"100UM\"" << std::endl;
+      return false;
+    }
+  }
+
+  return true;
+}
 
 int main(int argc, char **argv){
 
-  // This list of allowed values comes from cfg/Astra.cfg
-  std::vector<AllowedVal> allowed{
-    AllowedVal{1280, 1024, 30},
-    AllowedVal{1280, 1024, 15},
-    AllowedVal{1280, 720, 30},
-    AllowedVal{1280, 720, 15},
-    AllowedVal{640, 480, 30},
-    AllowedVal{640, 480, 25},
-    AllowedVal{320, 240, 25},
-    AllowedVal{320, 240, 30},
-    AllowedVal{320, 240, 60},
-    AllowedVal{160, 120, 25},
-    AllowedVal{160, 120, 30},
-    AllowedVal{160, 120, 60},
-  };
+  // RGB
   size_t width = 1280;
   size_t height = 1024;
   double framerate = 30;
 
+  // Depth
+  size_t dwidth = 640;
+  size_t dheight = 480;
+  double dframerate = 30;
+  astra_wrapper::PixelFormat dformat = astra_wrapper::PixelFormat::PIXEL_FORMAT_DEPTH_1_MM;
+
   // TODO(clalancette): parsing the command-line options here is temporary until
   // we get parameters working in ROS2.
-  parse_command_options(argc, argv, &width, &height, &framerate);
-
-  bool good_combo = false;
-  for (std::vector<AllowedVal>::iterator it = allowed.begin() ; it != allowed.end(); ++it) {
-    if (it->width == width && it->height == height && it->framerate == framerate) {
-      good_combo = true;
-      break;
-    }
-  }
-
-  if (!good_combo) {
-    std::cerr << "Invalid width/height/framerate combo; allowed combos are:" << std::endl;
-    for (std::vector<AllowedVal>::iterator it = allowed.begin() ; it != allowed.end(); ++it) {
-      std::cerr << "  " << it->width << "x" << it->height << "@" << it->framerate << "Hz" << std::endl;
-    }
+  if (!parse_command_options(argc, argv, &width, &height, &framerate, &dwidth, &dheight, &dframerate, &dformat)) {
     return 1;
   }
 
@@ -113,7 +117,7 @@ int main(int argc, char **argv){
   rclcpp::node::Node::SharedPtr n = rclcpp::node::Node::make_shared("astra_camera");
   rclcpp::node::Node::SharedPtr pnh = rclcpp::node::Node::make_shared("astra_camera_");
 
-  astra_wrapper::AstraDriver drv(n, pnh, width, height, framerate);
+  astra_wrapper::AstraDriver drv(n, pnh, width, height, framerate, dwidth, dheight, dframerate, dformat);
 
   rclcpp::spin(n);
 

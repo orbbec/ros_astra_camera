@@ -49,7 +49,7 @@
 namespace astra_wrapper
 {
 
-AstraDriver::AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::SharedPtr& pnh, size_t width, size_t height, double framerate) :
+AstraDriver::AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::SharedPtr& pnh, size_t width, size_t height, double framerate, size_t dwidth, size_t dheight, double dframerate, PixelFormat dformat) :
     nh_(n),
     pnh_(pnh),
     device_manager_(AstraDeviceManager::getSingelton()),
@@ -146,11 +146,12 @@ AstraDriver::AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::S
   z_offset_mm_ = 0;
 
   AstraVideoMode color_video_mode{width, height, framerate, PIXEL_FORMAT_RGB888};
-
   setColorVideoMode(color_video_mode);
 
-  advertiseROSTopics();
+  AstraVideoMode depth_video_mode{dwidth, dheight, dframerate, dformat};
+  setDepthVideoMode(depth_video_mode);
 
+  advertiseROSTopics();
 }
 
 void AstraDriver::advertiseROSTopics()
