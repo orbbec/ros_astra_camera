@@ -66,6 +66,9 @@ public:
 private:
   openni::VideoFrameRef m_frame;
 
+  static bool has_corrected_ir_timestamp_;
+  static double latest_corrected_ir_timestamp_;
+
   FrameCallbackFunction callback_;
 
   bool user_device_timer_;

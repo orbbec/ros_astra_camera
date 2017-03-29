@@ -43,6 +43,9 @@
 namespace astra_wrapper
 {
 
+bool AstraFrameListener::has_corrected_ir_timestamp_ = false;
+double AstraFrameListener::latest_corrected_ir_timestamp_ = 0.0;
+
 AstraFrameListener::AstraFrameListener() :
     callback_(0),
     user_device_timer_(false),
@@ -91,6 +94,15 @@ void AstraFrameListener::onNewFrame(openni::VideoStream& stream)
       double filtered_time_diff = timer_filter_->getMedian();
 
       double corrected_timestamp = device_time_in_sec+filtered_time_diff;
+
+      // This is a hack to 'manually' synchronize ir and depth images based on timestamp
+      if (m_frame.getSensorType() == openni::SENSOR_IR) {
+        latest_corrected_ir_timestamp_ = corrected_timestamp;
+        has_corrected_ir_timestamp_ = true;
+      }
+      if (has_corrected_ir_timestamp_) {
+          corrected_timestamp = latest_corrected_ir_timestamp_;
+      }
 
       image->header.stamp.fromSec(corrected_timestamp);
 
