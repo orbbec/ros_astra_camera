@@ -10,9 +10,10 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>sensor_msgs</depend>
+  <depend>boost</depend>
   <depend>builtin_interfaces</depend>
   <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
 
   <export>
     <build_type>ament_cmake</build_type>

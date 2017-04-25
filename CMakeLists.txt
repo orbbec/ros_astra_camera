@@ -51,17 +51,19 @@ add_library(astra_wrapper
    src/astra_video_mode.cpp
 )
 ament_target_dependencies(astra_wrapper
-  "rclcpp"
   "builtin_interfaces"
-  "sensor_msgs")
+  "rclcpp"
+  "sensor_msgs"
+)
 target_link_libraries(astra_wrapper -lOpenNI2Orbbec ${Boost_LIBRARIES})
 add_dependencies(astra_wrapper astra_openni2)
 
 add_library(astra_driver_lib src/astra_driver.cpp)
 ament_target_dependencies(astra_driver_lib
-  "rclcpp"
   "builtin_interfaces"
-  "sensor_msgs")
+  "rclcpp"
+  "sensor_msgs"
+)
 target_link_libraries(astra_driver_lib astra_wrapper ${Boost_LIBRARIES})
 add_dependencies(astra_driver_lib astra_openni2)
 
@@ -86,3 +88,5 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/openni2/Redist/OpenNI2
 install(DIRECTORY include/${PROJECT_NAME}/
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
 )
+
+ament_package()

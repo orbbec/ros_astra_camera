@@ -136,6 +136,7 @@ private:
   rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_depth_raw_;
   rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_color_;
   rclcpp::publisher::Publisher<sensor_msgs::msg::Image>::SharedPtr pub_ir_;
+  rclcpp::publisher::Publisher<sensor_msgs::msg::CameraInfo>::SharedPtr pub_depth_camera_info_;
   //image_transport::CameraPublisher pub_depth_raw_;
   //image_transport::CameraPublisher pub_ir_;
   //ros::Publisher pub_projector_info_;

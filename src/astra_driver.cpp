@@ -38,9 +38,9 @@
 #include <stdio.h>  
 #include <sys/shm.h>  
 //#include <sensor_msgs/image_encodings.h>
-//#include <sensor_msgs/distortion_models.h>
+#include <sensor_msgs/distortion_models.hpp>
+#include <sensor_msgs/msg/camera_info.hpp>
 #include "astra_camera/image_encodings.h"
-#include "astra_camera/distortion_models.h"
 
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
@@ -77,7 +77,6 @@ AstraDriver::AstraDriver(rclcpp::node::Node::SharedPtr& n, rclcpp::node::Node::S
 	{
 		int shmid;
 		char *shm = NULL;
-		char *tmp;
 		if(  bootOrder==1 )
 		{
 			if( (shmid = shmget((key_t)0401, 1, 0666|IPC_CREAT)) == -1 )   
@@ -158,9 +157,9 @@ void AstraDriver::advertiseROSTopics()
 {
   rmw_qos_profile_t custom_camera_qos_profile = rmw_qos_profile_default;
 
-  custom_camera_qos_profile.depth = 10;
-  custom_camera_qos_profile.reliability = RMW_QOS_POLICY_RELIABILITY_RELIABLE;
-  custom_camera_qos_profile.history = RMW_QOS_POLICY_HISTORY_KEEP_ALL;
+  custom_camera_qos_profile.depth = 1;
+  custom_camera_qos_profile.reliability = RMW_QOS_POLICY_RELIABILITY_BEST_EFFORT;
+  custom_camera_qos_profile.history = RMW_QOS_POLICY_HISTORY_KEEP_LAST;
 
   // Allow remapping namespaces rgb, ir, depth, depth_registered
 /*
@@ -209,6 +208,7 @@ void AstraDriver::advertiseROSTopics()
     //pub_depth_raw_ = depth_it.advertiseCamera("image_raw", 1, itssc, itssc, rssc, rssc);
     //pub_depth_ = depth_raw_it.advertiseCamera("image", 1, itssc, itssc, rssc, rssc);
     pub_depth_raw_ = nh_->create_publisher<sensor_msgs::msg::Image>("depth", custom_camera_qos_profile);
+    pub_depth_camera_info_ = nh_->create_publisher<sensor_msgs::msg::CameraInfo>("depth_camera_info", custom_camera_qos_profile);
     this->depthConnectCb();
   }
 
@@ -597,6 +597,7 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::msg::Image::SharedPtr image
         sensor_msgs::msg::Image::SharedPtr floating_point_image = rawToFloatingPointConversion(image);
         //pub_depth_.publish(floating_point_image, cam_info);
         pub_depth_raw_->publish(floating_point_image);
+        pub_depth_camera_info_->publish(getDepthCameraInfo(image->width, image->height, image->header.stamp));
       }
     }
   }
@@ -717,6 +718,7 @@ sensor_msgs::msg::CameraInfo::SharedPtr AstraDriver::getDepthCameraInfo(int widt
 
 void AstraDriver::readConfigFromParameterServer()
 {
+  depth_frame_id_ = std::string("openni_depth_optical_frame");
 // TODO
 /*
   if (!pnh_.getParam("device_id", device_id_))
