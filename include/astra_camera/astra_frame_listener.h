@@ -35,7 +35,7 @@
 
 #include "astra_camera/astra_device.h"
 
-#include <sensor_msgs/Image.h>
+#include <sensor_msgs/msg/image.hpp>
 
 #include <vector>
 

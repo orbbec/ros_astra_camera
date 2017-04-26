@@ -34,9 +34,12 @@
 #include "astra_camera/astra_frame_listener.h"
 #include "astra_camera/astra_timer_filter.h"
 
-#include <sensor_msgs/image_encodings.h>
+//#include <sensor_msgs/image_encodings.h>
+#include "astra_camera/image_encodings.h"
 
-#include <ros/ros.h>
+//#include <ros/ros.h>
+#include "astra_camera/ros12_shim.h"
+#include <rcl/time.h>
 
 #define TIME_FILTER_LENGTH 15
 
@@ -49,7 +52,7 @@ AstraFrameListener::AstraFrameListener() :
     timer_filter_(new AstraTimerFilter(TIME_FILTER_LENGTH)),
     prev_time_stamp_(0.0)
 {
-  ros::Time::init();
+  //ros::Time::init();
 }
 
 void AstraFrameListener::setUseDeviceTimer(bool enable)
@@ -66,23 +69,33 @@ void AstraFrameListener::onNewFrame(openni::VideoStream& stream)
 
   if (m_frame.isValid() && callback_)
   {
-    sensor_msgs::ImagePtr image(new sensor_msgs::Image);
+    sensor_msgs::msg::Image::SharedPtr image(new sensor_msgs::msg::Image);
 
-    ros::Time ros_now = ros::Time::now();
+    //ros::Time ros_now = ros::Time::now();
+    rcl_time_point_value_t ros_now;
+    if (rcl_system_time_now(&ros_now) != RCL_RET_OK)
+    {
+      ROS_ERROR("Failed to get current time");
+    }
 
     if (!user_device_timer_)
     {
-      image->header.stamp = ros_now;
+      //image->header.stamp = ros_now;
+      image->header.stamp.sec = ros_now / 1000000000;
+      image->header.stamp.nanosec = ros_now - image->header.stamp.sec * 1000000000;
 
-      ROS_DEBUG("Time interval between frames: %.4f ms", (float)((ros_now.toSec()-prev_time_stamp_)*1000.0));
+      //ROS_DEBUG("Time interval between frames: %.4f ms", (float)((ros_now.toSec()-prev_time_stamp_)*1000.0));
+      ROS_DEBUG("Time interval between frames: %.4f ms", (float)((ros_now/1000000000-prev_time_stamp_)*1000.0));
 
-      prev_time_stamp_ = ros_now.toSec();
+      //prev_time_stamp_ = ros_now.toSec();
+      prev_time_stamp_ = ros_now/1000000000;
     } else
     {
       uint64_t device_time = m_frame.getTimestamp();
 
       double device_time_in_sec = static_cast<double>(device_time)/1000000.0;
-      double ros_time_in_sec = ros_now.toSec();
+      //double ros_time_in_sec = ros_now.toSec();
+      double ros_time_in_sec = ros_now/1000000000;
 
       double time_diff = ros_time_in_sec-device_time_in_sec;
 
@@ -92,7 +105,9 @@ void AstraFrameListener::onNewFrame(openni::VideoStream& stream)
 
       double corrected_timestamp = device_time_in_sec+filtered_time_diff;
 
-      image->header.stamp.fromSec(corrected_timestamp);
+      //image->header.stamp.fromSec(corrected_timestamp);
+      image->header.stamp.sec = floor(corrected_timestamp);
+      image->header.stamp.nanosec = (corrected_timestamp - floor(corrected_timestamp)) * 1000000000;
 
       ROS_DEBUG("Time interval between frames: %.4f ms", (float)((corrected_timestamp-prev_time_stamp_)*1000.0));
 

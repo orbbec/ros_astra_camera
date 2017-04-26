@@ -42,7 +42,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-#include <sensor_msgs/Image.h>
+#include <sensor_msgs/msg/image.hpp>
 
 #include <string>
 #include <vector>
@@ -58,7 +58,7 @@ class SensorInfo;
 namespace astra_wrapper
 {
 
-typedef boost::function<void(sensor_msgs::ImagePtr image)> FrameCallbackFunction;
+typedef boost::function<void(sensor_msgs::msg::Image::SharedPtr image)> FrameCallbackFunction;
 
 class AstraFrameListener;
 

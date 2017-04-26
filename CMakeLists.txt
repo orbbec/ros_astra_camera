@@ -1,8 +1,14 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(astra_camera)
+if(NOT WIN32)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra")
+endif()
 
-find_package(catkin REQUIRED camera_info_manager dynamic_reconfigure image_transport  nodelet sensor_msgs roscpp message_generation)
-
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(builtin_interfaces REQUIRED)
+find_package(rmw_implementation_cmake REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system thread)
 
 option(FILTER "OB Filter library" ON)
@@ -28,26 +34,11 @@ ExternalProject_Add(astra_openni2
   INSTALL_COMMAND tar -xjf <SOURCE_DIR>/Packaging/Final/OpenNI-Linux-2.3.tar.bz2 -C <INSTALL_DIR> --strip 1 && mkdir -p <INSTALL_DIR>/include && ln -fs <INSTALL_DIR>/Include <INSTALL_DIR>/include/openni2
 )
 
-generate_dynamic_reconfigure_options(cfg/Astra.cfg)
-add_service_files(FILES
-  GetSerial.srv)
-generate_messages()
-
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES astra_wrapper
-  CATKIN_DEPENDS camera_info_manager dynamic_reconfigure image_transport nodelet sensor_msgs roscpp message_runtime
-  DEPENDS libastra
-)
-
 link_directories(${CMAKE_CURRENT_BINARY_DIR}/openni2/Redist)
-
 include_directories(include
-                    ${catkin_INCLUDE_DIRS}
                     ${Boost_INCLUDE_DIRS}
                     ${CMAKE_CURRENT_BINARY_DIR}/openni2/include
                     )
-
 
 add_library(astra_wrapper
    src/astra_convert.cpp
@@ -59,59 +50,43 @@ add_library(astra_wrapper
    src/astra_exception.cpp
    src/astra_video_mode.cpp
 )
-target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2Orbbec
-  ${Boost_LIBRARIES} )
-add_dependencies(astra_wrapper astra_openni2 ${PROJECT_NAME}_generate_messages_cpp)
-
-add_library(astra_driver_lib
-                src/astra_driver.cpp
+ament_target_dependencies(astra_wrapper
+  "builtin_interfaces"
+  "rclcpp"
+  "sensor_msgs"
 )
-target_link_libraries(astra_driver_lib astra_wrapper ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
-add_dependencies(astra_driver_lib astra_openni2 ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(astra_wrapper -lOpenNI2Orbbec ${Boost_LIBRARIES})
+add_dependencies(astra_wrapper astra_openni2)
 
-add_library(astra_camera_nodelet
-   ros/astra_camera_nodelet.cpp
+add_library(astra_driver_lib src/astra_driver.cpp)
+ament_target_dependencies(astra_driver_lib
+  "builtin_interfaces"
+  "rclcpp"
+  "sensor_msgs"
 )
-target_link_libraries(astra_camera_nodelet astra_driver_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
-add_dependencies(astra_camera_nodelet astra_openni2 ${PROJECT_NAME}_gencfg)
+target_link_libraries(astra_driver_lib astra_wrapper ${Boost_LIBRARIES})
+add_dependencies(astra_driver_lib astra_openni2)
 
 add_executable(astra_camera_node
    ros/astra_camera_node.cpp
 )
-target_link_libraries(astra_camera_node astra_driver_lib ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
-add_dependencies(astra_camera_node astra_openni2 ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
+target_link_libraries(astra_camera_node astra_driver_lib)
+add_dependencies(astra_camera_node astra_openni2)
 
-add_executable(astra_list_devices
-   src/list_devices.cpp
-)
-target_link_libraries(astra_list_devices astra_wrapper)
-
-add_executable(astra_test_wrapper test/test_wrapper.cpp )
-target_link_libraries(astra_test_wrapper astra_wrapper ${Boost_LIBRARIES})
-if (UNIX AND NOT APPLE)
-  add_executable(astra_usb_reset src/usb_reset.c)
-  set(ADDITIONAL_EXECUTABLES "astra_usb_reset")
-endif()
-
-install(TARGETS astra_wrapper astra_camera_nodelet astra_camera_node astra_list_devices astra_driver_lib ${ADDITIONAL_EXECUTABLES}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  )
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
-  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
+install(TARGETS astra_camera_node
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/
 )
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/openni2/Redist/OpenNI2
-  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
+install(FILES ${CMAKE_BINARY_DIR}/openni2/Redist/libOpenNI2Orbbec.so
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
+)
+
+install(DIRECTORY ${CMAKE_BINARY_DIR}/openni2/Redist/OpenNI2
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/
 )
 
 install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/include/
 )
 
-# add xml file
-install(FILES astra_nodelets.xml
-        DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+ament_package()
