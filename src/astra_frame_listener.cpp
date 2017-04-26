@@ -73,7 +73,10 @@ void AstraFrameListener::onNewFrame(openni::VideoStream& stream)
 
     //ros::Time ros_now = ros::Time::now();
     rcl_time_point_value_t ros_now;
-    rcl_system_time_now(&ros_now);
+    if (rcl_system_time_now(&ros_now) != RCL_RET_OK)
+    {
+      ROS_ERROR("Failed to get current time");
+    }
 
     if (!user_device_timer_)
     {
