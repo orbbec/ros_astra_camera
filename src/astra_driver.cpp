@@ -98,9 +98,9 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
 			 ROS_WARN("*********** device_id %s already open device************************ ", device_id_.c_str());
 			*shm = (bootOrder+1);
 		}
-		if(  bootOrder==1 )
+		if(  bootOrder==devnums )
 		{
-			while( *shm!=(devnums+1)) ;
+//			while( *shm!=(devnums+1)) ;
 			if(shmdt(shm) == -1)  
 			{  
 				ROS_ERROR("shmdt failed\n");  
