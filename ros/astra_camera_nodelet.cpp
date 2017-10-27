@@ -55,4 +55,4 @@ private:
 }
 
 #include <pluginlib/class_list_macros.h>
-PLUGINLIB_DECLARE_CLASS(astra_camera, AstraDriverNodelet, astra_camera::AstraDriverNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(astra_camera::AstraDriverNodelet, nodelet::Nodelet)
