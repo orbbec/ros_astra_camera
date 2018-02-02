@@ -73,10 +73,10 @@ private:
   void newDepthFrameCallback(sensor_msgs::ImagePtr image);
 
   // Methods to get calibration parameters for the various cameras
-  sensor_msgs::CameraInfoPtr getDefaultCameraInfo(int width, int height, double f) const;
-  sensor_msgs::CameraInfoPtr getColorCameraInfo(int width, int height, ros::Time time) const;
-  sensor_msgs::CameraInfoPtr getIRCameraInfo(int width, int height, ros::Time time) const;
-  sensor_msgs::CameraInfoPtr getDepthCameraInfo(int width, int height, ros::Time time) const;
+  sensor_msgs::CameraInfoPtr getDefaultCameraInfo(unsigned int width, unsigned int height, double f) const;
+  sensor_msgs::CameraInfoPtr getColorCameraInfo(unsigned int width, unsigned int height, ros::Time time) const;
+  sensor_msgs::CameraInfoPtr getIRCameraInfo(unsigned int width, unsigned int height, ros::Time time) const;
+  sensor_msgs::CameraInfoPtr getDepthCameraInfo(unsigned int width, unsigned int height, ros::Time time) const;
 
   void readConfigFromParameterServer();
 

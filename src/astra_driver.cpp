@@ -73,7 +73,6 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
 	{
 		int shmid;
 		char *shm = NULL;
-		char *tmp;
 		if(  bootOrder==1 )
 		{
 			if( (shmid = shmget((key_t)0401, 1, 0666|IPC_CREAT)) == -1 )   
@@ -216,8 +215,6 @@ bool AstraDriver::getSerialCb(astra_camera::GetSerialRequest& req, astra_camera:
 
 void AstraDriver::configCb(Config &config, uint32_t level)
 {
-  bool stream_reset = false;
-
   depth_ir_offset_x_ = config.depth_ir_offset_x;
   depth_ir_offset_y_ = config.depth_ir_offset_y;
   z_offset_mm_ = config.z_offset_mm;
@@ -549,7 +546,7 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::ImagePtr image)
 }
 
 // Methods to get calibration parameters for the various cameras
-sensor_msgs::CameraInfoPtr AstraDriver::getDefaultCameraInfo(int width, int height, double f) const
+sensor_msgs::CameraInfoPtr AstraDriver::getDefaultCameraInfo(unsigned int width, unsigned int height, double f) const
 {
   sensor_msgs::CameraInfoPtr info = boost::make_shared<sensor_msgs::CameraInfo>();
 
@@ -584,7 +581,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getDefaultCameraInfo(int width, int heig
 }
 
 /// @todo Use binning/ROI properly in publishing camera infos
-sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height, ros::Time time) const
+sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(unsigned int width, unsigned int height, ros::Time time) const
 {
   sensor_msgs::CameraInfoPtr info;
 
@@ -612,7 +609,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height
 }
 
 
-sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, ros::Time time) const
+sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(unsigned int width, unsigned int height, ros::Time time) const
 {
   sensor_msgs::CameraInfoPtr info;
 
@@ -639,7 +636,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
   return info;
 }
 
-sensor_msgs::CameraInfoPtr AstraDriver::getDepthCameraInfo(int width, int height, ros::Time time) const
+sensor_msgs::CameraInfoPtr AstraDriver::getDepthCameraInfo(unsigned int width, unsigned int height, ros::Time time) const
 {
   // The depth image has essentially the same intrinsics as the IR image, BUT the
   // principal point is offset by half the size of the hardware correlation window
@@ -702,7 +699,7 @@ std::string AstraDriver::resolveDeviceURI(const std::string& device_id) throw(As
     int device_number;
     device_number_str >> device_number;
     int device_index = device_number - 1; // #1 refers to first device
-    if (device_index >= available_device_URIs->size() || device_index < 0)
+    if (device_index >= static_cast<int>(available_device_URIs->size()) || device_index < 0)
     {
       THROW_OPENNI_EXCEPTION(
           "Invalid device number %i, there are %zu devices connected.",
