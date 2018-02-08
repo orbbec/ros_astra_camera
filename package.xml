@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>astra_camera</name>
-  <version>0.1.5</version>
+  <version>0.2.0</version>
   <description>Drivers for Orbbec Astra Devices. </description>
   <author email="liuhua@orbbec.com">Tim Liu</author>
   <license>BSD</license>
