@@ -86,9 +86,8 @@ private:
 
   void advertiseROSTopics();
 
-  void colorConnectCb();
+  void imageConnectCb();
   void depthConnectCb();
-  void irConnectCb();
 
   bool getSerialCb(astra_camera::GetSerialRequest& req, astra_camera::GetSerialResponse& res);
 
@@ -162,6 +161,8 @@ private:
   int data_skip_ir_counter_;
   int data_skip_color_counter_;
   int data_skip_depth_counter_;
+
+  bool rgb_preferred_;
 
   bool auto_exposure_;
   bool auto_white_balance_;
