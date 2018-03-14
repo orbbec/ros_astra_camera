@@ -67,8 +67,14 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
 
 #if MULTI_ASTRA
 	int bootOrder, devnums;
-	pnh.getParam("bootorder", bootOrder);
-	pnh.getParam("devnums", devnums);
+	if (!pnh.getParam("bootorder", bootOrder))
+       {
+              bootOrder = 0;
+       }
+	if (!pnh.getParam("devnums", devnums))
+       {
+              devnums = 1;
+       }
 	if( devnums>1 )
 	{
 		int shmid;
