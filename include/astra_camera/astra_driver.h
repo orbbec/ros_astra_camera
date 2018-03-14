@@ -163,6 +163,11 @@ private:
   int data_skip_color_counter_;
   int data_skip_depth_counter_;
 
+  int camera_override_mode_;
+  static const int AUTO = 0;
+  static const int IR = 1;
+  static const int RGB = 2;
+
   bool auto_exposure_;
   bool auto_white_balance_;
 
