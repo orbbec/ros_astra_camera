@@ -218,6 +218,18 @@ void AstraDriver::configCb(Config &config, uint32_t level)
 {
   bool stream_reset = false;
 
+  camera_override_mode_ = config.camera_override_mode;
+
+  if (config_init_ && old_config_.camera_override_mode != config.camera_override_mode)
+  {
+    bool need_ir = pub_ir_.getNumSubscribers() > 0;
+    bool need_color = pub_color_.getNumSubscribers() > 0;
+    if (need_color)
+      colorConnectCb();
+    if (need_ir)
+      irConnectCb();
+  }
+
   depth_ir_offset_x_ = config.depth_ir_offset_x;
   depth_ir_offset_y_ = config.depth_ir_offset_y;
   z_offset_mm_ = config.z_offset_mm;
@@ -377,23 +389,34 @@ void AstraDriver::colorConnectCb()
 {
   boost::lock_guard<boost::mutex> lock(connect_mutex_);
 
+  ir_subscribers_ = pub_ir_.getNumSubscribers() > 0;
   color_subscribers_ = pub_color_.getNumSubscribers() > 0;
 
   if (color_subscribers_ && !device_->isColorStreamStarted())
   {
-    // Can't stream IR and RGB at the same time. Give RGB preference.
     if (device_->isIRStreamStarted())
     {
-      ROS_ERROR("Cannot stream RGB and IR at the same time. Streaming RGB only.");
-      ROS_INFO("Stopping IR stream.");
-      device_->stopIRStream();
+      // Can't stream IR and RGB at the same time.
+      if (camera_override_mode_ == IR)
+      {
+        // ROS_ERROR("Cannot stream RGB and IR at the same time. Streaming IR only.");
+        return;
+      }
+      else
+      {
+        ROS_ERROR("Cannot stream RGB and IR at the same time. Streaming RGB only.");
+        ROS_INFO("Stopping IR stream.");
+        device_->stopIRStream();
+      }
     }
 
-    device_->setColorFrameCallback(boost::bind(&AstraDriver::newColorFrameCallback, this, _1));
+    if (camera_override_mode_ != IR || !ir_subscribers_)
+    {
+      device_->setColorFrameCallback(boost::bind(&AstraDriver::newColorFrameCallback, this, _1));
 
-    ROS_INFO("Starting color stream.");
-    device_->startColorStream();
-
+      ROS_INFO("Starting color stream.");
+      device_->startColorStream();
+    }
   }
   else if (!color_subscribers_ && device_->isColorStreamStarted())
   {
@@ -401,8 +424,7 @@ void AstraDriver::colorConnectCb()
     device_->stopColorStream();
 
     // Start IR if it's been blocked on RGB subscribers
-    bool need_ir = pub_ir_.getNumSubscribers() > 0;
-    if (need_ir && !device_->isIRStreamStarted())
+    if (ir_subscribers_ && !device_->isIRStreamStarted())
     {
       device_->setIRFrameCallback(boost::bind(&AstraDriver::newIRFrameCallback, this, _1));
 
@@ -440,15 +462,27 @@ void AstraDriver::irConnectCb()
   boost::lock_guard<boost::mutex> lock(connect_mutex_);
 
   ir_subscribers_ = pub_ir_.getNumSubscribers() > 0;
+  color_subscribers_ = pub_color_.getNumSubscribers() > 0;
 
   if (ir_subscribers_ && !device_->isIRStreamStarted())
   {
-    // Can't stream IR and RGB at the same time
     if (device_->isColorStreamStarted())
     {
-      ROS_ERROR("Cannot stream RGB and IR at the same time. Streaming RGB only.");
+      // Can't stream IR and RGB at the same time.
+      if (camera_override_mode_ != IR)
+      {
+        // ROS_ERROR("Cannot stream RGB and IR at the same time. Streaming RGB only.");
+        return;
+      }
+      else
+      {
+        ROS_ERROR("Cannot stream RGB and IR at the same time. Streaming IR only.");
+        ROS_INFO("Stopping RGB stream.");
+        device_->stopColorStream();
+      }
     }
-    else
+
+    if (camera_override_mode_ == IR || !color_subscribers_)
     {
       device_->setIRFrameCallback(boost::bind(&AstraDriver::newIRFrameCallback, this, _1));
 
@@ -460,6 +494,15 @@ void AstraDriver::irConnectCb()
   {
     ROS_INFO("Stopping IR stream.");
     device_->stopIRStream();
+
+    // Start RGB if it's been blocked on IR subscribers
+    if (color_subscribers_ && !device_->isColorStreamStarted())
+    {
+      device_->setColorFrameCallback(boost::bind(&AstraDriver::newColorFrameCallback, this, _1));
+
+      ROS_INFO("Starting RGB stream.");
+      device_->startColorStream();
+    }
   }
 }
 
