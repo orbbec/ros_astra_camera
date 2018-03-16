@@ -69,11 +69,23 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
 	int bootOrder, devnums;
 	pnh.getParam("bootorder", bootOrder);
 	pnh.getParam("devnums", devnums);
+  
+  if (!pnh.getParam("bootorder", bootOrder))
+  {
+    bootOrder = 0;
+  }
+  
+  if (!pnh.getParam("devnums", devnums))
+  {
+    devnums = 1;
+  }
+
 	if( devnums>1 )
 	{
 		int shmid;
 		char *shm = NULL;
 		char *tmp;
+
 		if(  bootOrder==1 )
 		{
 			if( (shmid = shmget((key_t)0401, 1, 0666|IPC_CREAT)) == -1 )   
@@ -83,7 +95,7 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
 			shm = (char *)shmat(shmid, 0, 0);  
 			*shm = 1;
 			initDevice();
-			ROS_WARN("*********** device_id %s already open device************************ ", device_id_.c_str());
+			ROS_INFO("*********** device_id %s already open device************************ ", device_id_.c_str());
 			*shm = 2;
 		}
 		else 	
@@ -93,14 +105,17 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
 			  	ROS_ERROR("Create Share Memory Error:%s", strerror(errno));
 			}
 			shm = (char *)shmat(shmid, 0, 0);
-			while( *shm!=bootOrder);
+			while( *shm!=bootOrder)
+			{
+				boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+			}
+
 			 initDevice();
-			 ROS_WARN("*********** device_id %s already open device************************ ", device_id_.c_str());
+			 ROS_INFO("*********** device_id %s already open device************************ ", device_id_.c_str());
 			*shm = (bootOrder+1);
 		}
 		if(  bootOrder==devnums )
 		{
-//			while( *shm!=(devnums+1)) ;
 			if(shmdt(shm) == -1)  
 			{  
 				ROS_ERROR("shmdt failed\n");  
