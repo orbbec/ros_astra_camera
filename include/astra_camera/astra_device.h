@@ -127,6 +127,7 @@ public:
 
   void setAutoExposure(bool enable) throw (AstraException);
   void setAutoWhiteBalance(bool enable) throw (AstraException);
+  void setManualExposure(int exposure) throw (AstraException);
 
   bool getAutoExposure() const;
   bool getAutoWhiteBalance() const;

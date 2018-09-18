@@ -275,6 +275,7 @@ void AstraDriver::configCb(Config &config, uint32_t level)
 
   auto_exposure_ = config.auto_exposure;
   auto_white_balance_ = config.auto_white_balance;
+  manual_exposure_ = config.manual_exposure;
 
   use_device_time_ = config.use_device_time;
 
@@ -386,6 +387,16 @@ void AstraDriver::applyConfigToOpenNIDevice()
   catch (const AstraException& exception)
   {
     ROS_ERROR("Could not set auto white balance. Reason: %s", exception.what());
+  }
+
+  try
+  {
+    if ( !auto_exposure_ && (!config_init_ || (old_config_.manual_exposure != manual_exposure_))) // only if auto_exposure is OFF
+      device_->setManualExposure(manual_exposure_);
+  }
+  catch (const AstraException& exception)
+  {
+    ROS_ERROR("Could not set manual exposure=%d. Reason: %s", manual_exposure_, exception.what());
   }
 
   device_->setUseDeviceTimer(use_device_time_);
@@ -896,8 +907,8 @@ void AstraDriver::genVideoModeTableMap()
 {
   /*
    * #  Video modes defined by dynamic reconfigure:
-output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x1024@30Hz"),
-                               gen.const(  "SXGA_15Hz", int_t, 2,  "1280x1024@15Hz"),
+output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x960@30Hz"),
+                               gen.const(  "SXGA_15Hz", int_t, 2,  "1280x960@15Hz"),
                                gen.const(   "XGA_30Hz", int_t, 3,  "1280x720@30Hz"),
                                gen.const(   "XGA_15Hz", int_t, 4,  "1280x720@15Hz"),
                                gen.const(   "VGA_30Hz", int_t, 5,  "640x480@30Hz"),
@@ -917,14 +928,14 @@ output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x1024@30
 
   // SXGA_30Hz
   video_mode.x_resolution_ = 1280;
-  video_mode.y_resolution_ = 1024;
+  video_mode.y_resolution_ = 960;
   video_mode.frame_rate_ = 30;
 
   video_modes_lookup_[1] = video_mode;
 
   // SXGA_15Hz
   video_mode.x_resolution_ = 1280;
-  video_mode.y_resolution_ = 1024;
+  video_mode.y_resolution_ = 960;
   video_mode.frame_rate_ = 15;
 
   video_modes_lookup_[2] = video_mode;
