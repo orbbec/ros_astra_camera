@@ -1,3 +1,10 @@
+1,git clone from  https://github.com/orbbec/ros_astra_camera
+
+2,check out 'filterlibrary' branch
+
+3,install addition ros dependence package
+$./scripts/install_addition_package
+	
 1. Go to catkin workshop dir and compiler astra_camera
 ```
 $ catkin_make --pkg astra_camera

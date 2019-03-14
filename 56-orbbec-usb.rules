@@ -3,3 +3,9 @@ SUBSYSTEM=="usb", ATTR{idProduct}=="0402", ATTR{idVendor}=="2bc5", MODE:="0666",
 SUBSYSTEM=="usb", ATTR{idProduct}=="0403", ATTR{idVendor}=="2bc5", MODE:="0666", OWNER:="root", GROUP:="video", SYMLINK+="astra_pro"
 SUBSYSTEM=="usb", ATTR{idProduct}=="0404", ATTR{idVendor}=="2bc5", MODE:="0666", OWNER:="root", GROUP:="video", SYMLINK+="astra_mini"
 SUBSYSTEM=="usb", ATTR{idProduct}=="0407", ATTR{idVendor}=="2bc5", MODE:="0666", OWNER:="root", GROUP:="video", SYMLINK+="astra_mini_s"
+SUBSYSTEM=="usb", ATTR{idProduct}=="0501", ATTR{idVendor}=="2bc5", MODE:="0666", OWNER:="root", GROUP:="video", SYMLINK+="astrauvc"
+SUBSYSTEM=="usb", ATTR{idProduct}=="6712", ATTR{idVendor}=="0c45", MODE:="0666", OWNER:="root", GROUP:="video", SYMLINK+="astrauvc"
+SUBSYSTEM=="usb", ATTR{idProduct}=="0502", ATTR{idVendor}=="2bc5", MODE:="0666", OWNER:="root", GROUP:="video", SYMLINK+="astrauvc"
+SUBSYSTEM=="usb", ATTR{idProduct}=="0608", ATTR{idVendor}=="2bc5", MODE:="0666", OWNER:="root", GROUP:="video", SYMLINK+="astrauvc"
+SUBSYSTEM=="usb", ATTR{idProduct}=="0508", ATTR{idVendor}=="2bc5", MODE:="0666", OWNER:="root", GROUP:="video", SYMLINK+="astrauvc"
+
