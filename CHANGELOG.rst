@@ -1,6 +1,14 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package astra_camera
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+0.3.0 (2019-03-14)
+------------
+1. Add UVC RGB camera launch in  orbbec_UVCrgb_Launch
+2. Add OPENNI2 include files under include folder 
+3. Add video_modes_lookup_[13] 640X400 in astra_driver.cpp
+4. 56-orbbec-usb.rules now includes uvc support
+5. CMakeLists.txt changes accordingly 
+
 
 0.2.2 (2018-03-22)
 -----------
