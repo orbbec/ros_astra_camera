@@ -39,6 +39,7 @@
 #include <boost/function.hpp>
 
 #include <sensor_msgs/Image.h>
+#include <std_srvs/SetBool.h>
 
 #include <dynamic_reconfigure/server.h>
 #include <astra_camera/AstraConfig.h>
@@ -104,6 +105,8 @@ private:
   void setIRVideoMode(const AstraVideoMode& ir_video_mode);
   void setColorVideoMode(const AstraVideoMode& color_video_mode);
   void setDepthVideoMode(const AstraVideoMode& depth_video_mode);
+
+  bool EnableStreaming(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res);
 
   ros::NodeHandle& nh_;
   ros::NodeHandle& pnh_;
@@ -177,6 +180,12 @@ private:
   bool use_device_time_;
 
   Config old_config_;
+
+  // Service to enable/disable streaming
+  ros::ServiceServer enable_streaming_srv_;
+  std::string enable_streaming_srv_name_;
+  bool enable_streaming_;
+  std::string ns_;
 };
 
 }

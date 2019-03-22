@@ -43,7 +43,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/thread/thread.hpp>
 
-#define  MULTI_ASTRA 1
+#define  MULTI_ASTRA 0 // Have to make sure no multiple cameras launching at the same time outside if it is 0
 namespace astra_wrapper
 {
 
@@ -60,10 +60,15 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
     depth_subscribers_(false),
     depth_raw_subscribers_(false)
 {
-
   genVideoModeTableMap();
 
   readConfigFromParameterServer();
+
+  // Create service for enable/disable streaming
+  ns_= std::string(depth_frame_id_, 0, depth_frame_id_.find("depth") - 1);
+  enable_streaming_srv_name_ = "/" + ns_ + "/pipeline_stream_enable";
+  enable_streaming_srv_ = nh_.advertiseService(enable_streaming_srv_name_, &AstraDriver::EnableStreaming, this);
+  enable_streaming_ = true;
 
 #if MULTI_ASTRA
 	int bootOrder, devnums;
@@ -151,6 +156,29 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
 
   advertiseROSTopics();
 
+}
+
+bool AstraDriver::EnableStreaming(std_srvs::SetBool::Request &req, std_srvs::SetBool::Response &res)
+{
+  ROS_INFO("%s::AstraDriver::EnableStreaming: START, req.data: %u, enable_streaming_: %u", ns_.c_str(), req.data, enable_streaming_);
+  if (!req.data && enable_streaming_) { // Disable streaming
+    enable_streaming_ = false;
+    if (device_ && device_->isDepthStreamStarted()) device_->stopDepthStream();
+    if (device_ && device_->isIRStreamStarted()) device_->stopIRStream();
+    if (device_ && device_->isColorStreamStarted()) device_->stopColorStream();
+  }
+
+  if (req.data && !enable_streaming_) { // Enable streaming
+    if (device_ && !device_->isDepthStreamStarted()) device_->startDepthStream();
+    if (device_ && !device_->isIRStreamStarted()) device_->startIRStream();
+    if (device_ && !device_->isColorStreamStarted()) device_->startColorStream();
+    enable_streaming_ = true;
+  }
+
+  ROS_INFO("%s::AstraDriver::EnableStreaming: FINISHED, req.data: %u, enable_streaming_: %u", ns_.c_str(), req.data, enable_streaming_);
+  res.success = true;
+  res.message = enable_streaming_ ? "Enabled streaming" : "Disabled streaming";
+  return true;
 }
 
 void AstraDriver::advertiseROSTopics()
@@ -417,8 +445,10 @@ void AstraDriver::imageConnectCb()
     {
       device_->setColorFrameCallback(boost::bind(&AstraDriver::newColorFrameCallback, this, _1));
 
-      ROS_INFO("Starting color stream.");
-      device_->startColorStream();
+      if (enable_streaming_) {
+        ROS_INFO("Starting color stream.");
+        device_->startColorStream();
+      }
     }
   }
   else if (ir_subscribers_ && (!color_subscribers_ || !rgb_preferred_))
@@ -437,8 +467,10 @@ void AstraDriver::imageConnectCb()
     {
       device_->setIRFrameCallback(boost::bind(&AstraDriver::newIRFrameCallback, this, _1));
 
-      ROS_INFO("Starting IR stream.");
-      device_->startIRStream();
+      if (enable_streaming_) {
+        ROS_INFO("Starting IR stream.");
+        device_->startIRStream();
+      }
     }
   }
   else
@@ -468,10 +500,13 @@ void AstraDriver::depthConnectCb()
 
   if (need_depth && !device_->isDepthStreamStarted())
   {
+
     device_->setDepthFrameCallback(boost::bind(&AstraDriver::newDepthFrameCallback, this, _1));
 
-    ROS_INFO("Starting depth stream.");
-    device_->startDepthStream();
+    if (enable_streaming_) {
+      ROS_INFO("Starting depth stream.");
+      device_->startDepthStream();
+    }
   }
   else if (!need_depth && device_->isDepthStreamStarted())
   {
