@@ -75,6 +75,7 @@ add_library(astra_driver_lib
 )
 target_link_libraries(astra_driver_lib astra_wrapper ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
 add_dependencies(astra_driver_lib ${PROJECT_NAME}_gencfg)
+add_dependencies(astra_wrapper ${PROJECT_NAME}_gencfg)
 
 add_library(astra_camera_nodelet
    ros/astra_camera_nodelet.cpp
