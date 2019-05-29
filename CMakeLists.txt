@@ -69,6 +69,7 @@ add_library(astra_wrapper
 )
 target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2  -L${ORRBEC_OPENNI2_REDIST}
   ${Boost_LIBRARIES} )
+add_dependencies(astra_wrapper ${catkin_EXPORTED_TARGETS})
 
 add_library(astra_driver_lib
                 src/astra_driver.cpp
