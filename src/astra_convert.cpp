@@ -71,7 +71,6 @@ const AstraVideoMode astra_convert(const openni::VideoMode& input)
 
 const openni::VideoMode astra_convert(const AstraVideoMode& input)
 {
-
   openni::VideoMode output;
 
   output.setResolution(input.x_resolution_, input.y_resolution_);

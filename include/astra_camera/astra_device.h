@@ -37,6 +37,8 @@
 
 #include "astra_camera/astra_exception.h"
 
+#include <openni2/OpenNI.h>
+
 #include <boost/shared_ptr.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/bind.hpp>
@@ -124,6 +126,9 @@ public:
   float getColorFocalLength (int output_y_resolution) const;
   float getDepthFocalLength (int output_y_resolution) const;
   float getBaseline () const;
+  OBCameraParams getIntrParams() const;
+  char* getSerialNumber();
+  char* getDeviceType();
 
   void setAutoExposure(bool enable) throw (AstraException);
   void setAutoWhiteBalance(bool enable) throw (AstraException);
@@ -163,6 +168,9 @@ protected:
 
   bool use_device_time_;
 
+  OBCameraParams m_CamParams;
+  char serial_number[12];
+  char device_type[32];
 };
 
 std::ostream& operator << (std::ostream& stream, const AstraDevice& device);

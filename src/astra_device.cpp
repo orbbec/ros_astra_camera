@@ -78,6 +78,17 @@ AstraDevice::AstraDevice(const std::string& device_URI) throw (AstraException) :
   device_info_ = boost::make_shared<openni::DeviceInfo>();
   *device_info_ = openni_device_->getDeviceInfo();
 
+  int param_size = sizeof(OBCameraParams);
+  openni_device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS, (uint8_t*)&m_CamParams, &param_size);
+
+  int serial_number_size = sizeof(serial_number);
+  memset(serial_number, 0, serial_number_size);
+  openni_device_->getProperty(openni::OBEXTENSION_ID_SERIALNUMBER, (uint8_t*)&serial_number, &serial_number_size);
+
+  int device_type_size = sizeof(device_type);
+  memset(device_type, 0, device_type_size);
+  openni_device_->getProperty(openni::OBEXTENSION_ID_DEVICETYPE, (uint8_t*)&device_type, &device_type_size);
+
   ir_frame_listener = boost::make_shared<AstraFrameListener>();
   color_frame_listener = boost::make_shared<AstraFrameListener>();
   depth_frame_listener = boost::make_shared<AstraFrameListener>();
@@ -132,6 +143,21 @@ const std::string AstraDevice::getStringID() const
 bool AstraDevice::isValid() const
 {
   return (openni_device_.get() != 0) && openni_device_->isValid();
+}
+
+OBCameraParams AstraDevice::getIntrParams() const
+{
+  return m_CamParams;
+}
+
+char* AstraDevice::getSerialNumber()
+{
+  return serial_number;
+}
+
+char* AstraDevice::getDeviceType()
+{
+  return device_type;
 }
 
 float AstraDevice::getIRFocalLength(int output_y_resolution) const

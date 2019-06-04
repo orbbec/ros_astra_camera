@@ -150,7 +150,6 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
   ROS_DEBUG("Dynamic reconfigure configuration received.");
 
   advertiseROSTopics();
-
 }
 
 void AstraDriver::advertiseROSTopics()
@@ -230,6 +229,11 @@ bool AstraDriver::getSerialCb(astra_camera::GetSerialRequest& req, astra_camera:
 
 void AstraDriver::configCb(Config &config, uint32_t level)
 {
+  if (strcmp(device_->getDeviceType(), "Orbbec Canglong") == 0)
+  {
+    config.depth_mode = 13;
+    config.ir_mode = 13;
+  }
   bool stream_reset = false;
 
   rgb_preferred_ = config.rgb_preferred;
@@ -653,6 +657,14 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
   {
     // If uncalibrated, fill in default values
     info = getDefaultCameraInfo(width, height, device_->getDepthFocalLength(height));
+    if (strcmp(device_->getDeviceType(), "Orbbec Canglong") == 0)
+    {
+      OBCameraParams p = device_->getIntrParams();
+      info->P[0] = p.l_intr_p[0];
+      info->P[5] = p.l_intr_p[1];
+      info->K[0] = p.l_intr_p[0];
+      info->K[5] = p.l_intr_p[1];
+    }
   }
 
   // Fill in header
@@ -907,7 +919,8 @@ output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x1024@30
                                gen.const(  "QVGA_60Hz", int_t, 9,  "320x240@60Hz"),
                                gen.const( "QQVGA_25Hz", int_t, 10, "160x120@25Hz"),
                                gen.const( "QQVGA_30Hz", int_t, 11, "160x120@30Hz"),
-                               gen.const( "QQVGA_60Hz", int_t, 12, "160x120@60Hz")],
+                               gen.const( "QQVGA_60Hz", int_t, 12, "160x120@60Hz"),
+                               gen.const("640400_30Hz", int_t, 13, "640x400@30Hz")],
                                "output mode")
   */
 
