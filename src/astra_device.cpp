@@ -194,6 +194,17 @@ void AstraDevice::setIRExposure(int exposure)
   openni_device_->setProperty(openni::OBEXTENSION_ID_IR_EXP, (uint8_t*)&exposure, data_size);
 }
 
+void AstraDevice::setLaser(bool enable)
+{
+  int data_size = 4;
+  int laser_enable = 1;
+  if (enable == false)
+  {
+    laser_enable = 0;
+  }
+  openni_device_->setProperty(openni::OBEXTENSION_ID_LASER_EN, (uint8_t*)&laser_enable, data_size);
+}
+
 float AstraDevice::getIRFocalLength(int output_y_resolution) const
 {
   float focal_length = 0.0f;

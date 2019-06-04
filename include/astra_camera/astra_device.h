@@ -135,6 +135,7 @@ public:
   void setCameraParams(OBCameraParams param);
   void setIRGain(int gain);
   void setIRExposure(int exposure);
+  void setLaser(bool enable);
 
   void setAutoExposure(bool enable) throw (AstraException);
   void setAutoWhiteBalance(bool enable) throw (AstraException);
