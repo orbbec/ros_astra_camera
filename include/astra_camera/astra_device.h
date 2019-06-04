@@ -126,9 +126,15 @@ public:
   float getColorFocalLength (int output_y_resolution) const;
   float getDepthFocalLength (int output_y_resolution) const;
   float getBaseline () const;
-  OBCameraParams getIntrParams() const;
+  OBCameraParams getCameraParams() const;
   char* getSerialNumber();
   char* getDeviceType();
+  int getIRGain() const;
+  int getIRExposure() const;
+
+  void setCameraParams(OBCameraParams param);
+  void setIRGain(int gain);
+  void setIRExposure(int exposure);
 
   void setAutoExposure(bool enable) throw (AstraException);
   void setAutoWhiteBalance(bool enable) throw (AstraException);

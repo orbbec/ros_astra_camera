@@ -659,7 +659,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
     info = getDefaultCameraInfo(width, height, device_->getDepthFocalLength(height));
     if (strcmp(device_->getDeviceType(), "Orbbec Canglong") == 0)
     {
-      OBCameraParams p = device_->getIntrParams();
+      OBCameraParams p = device_->getCameraParams();
       info->P[0] = p.l_intr_p[0];
       info->P[5] = p.l_intr_p[1];
       info->K[0] = p.l_intr_p[0];

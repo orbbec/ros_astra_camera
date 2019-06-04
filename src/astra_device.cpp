@@ -145,7 +145,7 @@ bool AstraDevice::isValid() const
   return (openni_device_.get() != 0) && openni_device_->isValid();
 }
 
-OBCameraParams AstraDevice::getIntrParams() const
+OBCameraParams AstraDevice::getCameraParams() const
 {
   return m_CamParams;
 }
@@ -158,6 +158,40 @@ char* AstraDevice::getSerialNumber()
 char* AstraDevice::getDeviceType()
 {
   return device_type;
+}
+
+int AstraDevice::getIRGain() const
+{
+  int gain = 0;
+  int data_size = 4;
+  openni_device_->getProperty(openni::OBEXTENSION_ID_IR_GAIN, (uint8_t*)&gain, &data_size);
+  return gain;
+}
+
+int AstraDevice::getIRExposure() const
+{
+  int exposure = 0;
+  int data_size = 4;
+  openni_device_->getProperty(openni::OBEXTENSION_ID_IR_EXP, (uint8_t*)&exposure, &data_size);
+  return exposure;
+}
+
+void AstraDevice::setCameraParams(OBCameraParams param)
+{
+  int data_size = sizeof(OBCameraParams);
+  openni_device_->setProperty(openni::OBEXTENSION_ID_CAM_PARAMS, (uint8_t*)&param, data_size);
+}
+
+void AstraDevice::setIRGain(int gain)
+{
+  int data_size = 4;
+  openni_device_->setProperty(openni::OBEXTENSION_ID_IR_GAIN, (uint8_t*)&gain, data_size);
+}
+
+void AstraDevice::setIRExposure(int exposure)
+{
+  int data_size = 4;
+  openni_device_->setProperty(openni::OBEXTENSION_ID_IR_EXP, (uint8_t*)&exposure, data_size);
 }
 
 float AstraDevice::getIRFocalLength(int output_y_resolution) const
