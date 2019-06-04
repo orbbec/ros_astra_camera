@@ -4,7 +4,7 @@
   <version>0.2.2</version>
   <description>Drivers for Orbbec Astra Devices. </description>
   <author email="liuhua@orbbec.com">Tim Liu</author>
-  <license>BSD</license>
+  <license>Apache License 2.0</license>
 
   <maintainer email="cjwu@orbbec3d.com">Sayter99</maintainer>
 
