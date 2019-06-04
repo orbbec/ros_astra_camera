@@ -63,6 +63,7 @@ class AstraDriver
 {
 public:
   AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) ;
+  ~AstraDriver();
 
 private:
   typedef astra_camera::AstraConfig Config;
