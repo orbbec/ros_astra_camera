@@ -167,6 +167,7 @@ private:
 
   bool auto_exposure_;
   bool auto_white_balance_;
+  int manual_exposure_;
 
   bool ir_subscribers_;
   bool color_subscribers_;
