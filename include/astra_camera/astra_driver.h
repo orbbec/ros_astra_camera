@@ -53,6 +53,14 @@
 #include "astra_camera/astra_device.h"
 #include "astra_camera/astra_video_mode.h"
 #include "astra_camera/GetSerial.h"
+#include "astra_camera/GetDeviceType.h"
+#include "astra_camera/GetIRGain.h"
+#include "astra_camera/SetIRGain.h"
+#include "astra_camera/GetIRExposure.h"
+#include "astra_camera/SetIRExposure.h"
+#include "astra_camera/SetLaser.h"
+#include "astra_camera/ResetIRGain.h"
+#include "astra_camera/ResetIRExposure.h"
 
 #include <ros/ros.h>
 
@@ -91,6 +99,14 @@ private:
   void depthConnectCb();
 
   bool getSerialCb(astra_camera::GetSerialRequest& req, astra_camera::GetSerialResponse& res);
+  bool getDeviceTypeCb(astra_camera::GetDeviceTypeRequest& req, astra_camera::GetDeviceTypeResponse& res);
+  bool getIRGainCb(astra_camera::GetIRGainRequest& req, astra_camera::GetIRGainResponse& res);
+  bool setIRGainCb(astra_camera::SetIRGainRequest& req, astra_camera::SetIRGainResponse& res);
+  bool getIRExposureCb(astra_camera::GetIRExposureRequest& req, astra_camera::GetIRExposureResponse& res);
+  bool setIRExposureCb(astra_camera::SetIRExposureRequest& req, astra_camera::SetIRExposureResponse& res);
+  bool setLaserCb(astra_camera::SetLaserRequest& req, astra_camera::SetLaserResponse& res);
+  bool resetIRGainCb(astra_camera::ResetIRGainRequest& req, astra_camera::ResetIRGainResponse& res);
+  bool resetIRExposureCb(astra_camera::ResetIRExposureRequest& req, astra_camera::ResetIRExposureResponse& res);
 
   void configCb(Config &config, uint32_t level);
 
@@ -115,6 +131,14 @@ private:
 
   /** \brief get_serial server*/
   ros::ServiceServer get_serial_server;
+  ros::ServiceServer get_device_type_server;
+  ros::ServiceServer get_ir_gain_server;
+  ros::ServiceServer set_ir_gain_server;
+  ros::ServiceServer get_ir_exposure_server;
+  ros::ServiceServer set_ir_exposure_server;
+  ros::ServiceServer set_laser_server;
+  ros::ServiceServer reset_ir_gain_server;
+  ros::ServiceServer reset_ir_exposure_server;
 
   /** \brief reconfigure server*/
   boost::shared_ptr<ReconfigureServer> reconfigure_server_;

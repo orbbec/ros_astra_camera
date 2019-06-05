@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(astra_camera)
 
-find_package(catkin REQUIRED camera_info_manager dynamic_reconfigure image_transport  nodelet sensor_msgs roscpp message_generation)
+find_package(catkin REQUIRED camera_info_manager dynamic_reconfigure image_transport nodelet sensor_msgs roscpp message_generation)
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 
@@ -34,9 +34,24 @@ ENDIF ()
 MESSAGE(STATUS "ORRBEC : ${HOST_PLATFORM}")
 
 generate_dynamic_reconfigure_options(cfg/Astra.cfg)
-add_service_files(FILES
-  GetSerial.srv)
-generate_messages()
+
+add_service_files(
+  FILES
+  GetSerial.srv
+  GetDeviceType.srv
+  GetIRGain.srv
+  SetIRGain.srv
+  SetLaser.srv
+  GetIRExposure.srv
+  SetIRExposure.srv
+  ResetIRGain.srv
+  ResetIRExposure.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package(
   INCLUDE_DIRS include
