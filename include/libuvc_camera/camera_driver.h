@@ -9,6 +9,8 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <boost/thread/mutex.hpp>
 #include <sensor_msgs/CameraInfo.h>
+#include <astra_camera/GetUVCExposure.h>
+#include <astra_camera/SetUVCExposure.h>
 
 #include <libuvc_camera/UVCCameraConfig.h>
 
@@ -57,6 +59,8 @@ private:
   // Accept a new image frame from the camera
   void ImageCallback(uvc_frame_t *frame);
   static void ImageCallbackAdapter(uvc_frame_t *frame, void *ptr);
+  bool getUVCExposureCb(astra_camera::GetUVCExposureRequest& req, astra_camera::GetUVCExposureResponse& res);
+  bool setUVCExposureCb(astra_camera::SetUVCExposureRequest& req, astra_camera::SetUVCExposureResponse& res);
 
   ros::NodeHandle nh_, priv_nh_;
 
@@ -78,6 +82,9 @@ private:
   camera_info_manager::CameraInfoManager cinfo_manager_;
   bool param_init_;
   std::string ns;
+
+  ros::ServiceServer get_uvc_exposure_server;
+  ros::ServiceServer set_uvc_exposure_server;
 
   ros::ServiceClient device_type_client;
   ros::ServiceClient camera_info_client;

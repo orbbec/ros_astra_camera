@@ -61,6 +61,8 @@ CameraDriver::CameraDriver(ros::NodeHandle nh, ros::NodeHandle priv_nh)
   ns = ros::this_node::getNamespace();
   device_type_client = nh_.serviceClient<astra_camera::GetDeviceType>(ns + "/get_device_type");
   camera_info_client = nh_.serviceClient<astra_camera::GetCameraInfo>(ns + "/get_camera_info");
+  get_uvc_exposure_server = nh_.advertiseService("get_uvc_exposure", &CameraDriver::getUVCExposureCb, this);
+  set_uvc_exposure_server = nh_.advertiseService("set_uvc_exposure", &CameraDriver::setUVCExposureCb, this);
   device_type_init_ = false;
   camera_info_init_ = false;
 }
@@ -71,6 +73,23 @@ CameraDriver::~CameraDriver() {
 
   if (ctx_)
     uvc_exit(ctx_);  // Destroys dev_, devh_, etc.
+}
+
+bool CameraDriver::getUVCExposureCb(astra_camera::GetUVCExposureRequest& req, astra_camera::GetUVCExposureResponse& res)
+{
+  uint32_t expo;
+  uvc_error_t err = uvc_get_exposure_abs(devh_, &expo, UVC_GET_CUR);
+  res.exposure = expo;
+  return (err == UVC_SUCCESS);
+}
+
+bool CameraDriver::setUVCExposureCb(astra_camera::SetUVCExposureRequest& req, astra_camera::SetUVCExposureResponse& res)
+{
+  uvc_set_ae_mode(devh_, 1); // mode 1: manual mode; 2: auto mode; 4: shutter priority mode; 8: aperture priority mode
+  uint32_t expo = req.exposure;
+  uvc_error_t err = uvc_set_exposure_abs(devh_, expo);
+  std::cout << err << std::endl;
+  return (err == UVC_SUCCESS);
 }
 
 bool CameraDriver::Start() {
