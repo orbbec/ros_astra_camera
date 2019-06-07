@@ -41,6 +41,7 @@
 #include <libuvc/libuvc.h>
 #include <astra_camera/GetDeviceType.h>
 #include <astra_camera/GetCameraInfo.h>
+#include <astra_camera/astra_device_type.h>
 
 #define libuvc_VERSION (libuvc_VERSION_MAJOR * 10000 \
                       + libuvc_VERSION_MINOR * 100 \
@@ -314,7 +315,8 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
   }
 
   sensor_msgs::CameraInfo::Ptr cinfo(new sensor_msgs::CameraInfo(cinfo_manager_.getCameraInfo()));
-  if (device_type_init_ == true && device_type_ == "Orbbec Canglong")
+  if (device_type_init_ == true && (strcmp(device_type_.c_str(), OB_STEREO_S) == 0 ||
+      strcmp(device_type_.c_str(), OB_EMBEDDED_S) == 0))
   {
     // update cinfo
     if (camera_info_init_ == true)
@@ -335,6 +337,11 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
       for (int i = 0; i < 12; i++)
       {
         cinfo->P[i] = camera_info_.P[i];
+      }
+      if (strcmp(device_type_.c_str(), OB_EMBEDDED_S) == 0)
+      {
+        cinfo->K[0] = -cinfo->K[0];
+        cinfo->K[2] = image->width - cinfo->K[2];
       }
     }
     image->header.frame_id = "camera_rgb_optical_frame";

@@ -32,6 +32,7 @@
 
 #include "astra_camera/astra_driver.h"
 #include "astra_camera/astra_exception.h"
+#include "astra_camera/astra_device_type.h"
 
 #include <unistd.h>  
 #include <stdlib.h>  
@@ -292,7 +293,8 @@ bool AstraDriver::getCameraInfoCb(astra_camera::GetCameraInfoRequest& req, astra
 
 void AstraDriver::configCb(Config &config, uint32_t level)
 {
-  if (strcmp(device_->getDeviceType(), "Orbbec Canglong") == 0)
+  if (strcmp(device_->getDeviceType(), OB_STEREO_S) == 0 ||
+      strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
   {
     config.depth_mode = 13;
     config.ir_mode = 13;
@@ -732,7 +734,8 @@ sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height
   else
   {
     // If uncalibrated, fill in default values
-    if (strcmp(device_->getDeviceType(), "Orbbec Canglong") == 0)
+    if (strcmp(device_->getDeviceType(), OB_STEREO_S) == 0 ||
+        strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
     {
       sensor_msgs::CameraInfo cinfo = convertAstraCameraInfo(device_->getCameraParams(), time);
       info = boost::make_shared<sensor_msgs::CameraInfo>(ir_info_manager_->getCameraInfo());
@@ -791,7 +794,8 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
   {
     // If uncalibrated, fill in default values
     info = getDefaultCameraInfo(width, height, device_->getDepthFocalLength(height));
-    if (strcmp(device_->getDeviceType(), "Orbbec Canglong") == 0)
+    if (strcmp(device_->getDeviceType(), OB_STEREO_S) == 0 ||
+        strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
     {
       OBCameraParams p = device_->getCameraParams();
       info->D.resize(5, 0.0);
@@ -814,6 +818,11 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
       info->P[5] = info->K[4];
       info->P[6] = info->K[5];
       info->P[10] = 1.0;
+      if (strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
+      {
+        info->K[0] = -info->K[0];
+        info->K[2] = width - info->K[2];
+      }
     }
   }
 
