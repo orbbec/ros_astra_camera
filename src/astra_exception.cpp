@@ -41,7 +41,7 @@
 namespace astra_wrapper
 {
 
-AstraException::AstraException (const std::string& function_name, const std::string& file_name, unsigned line_number, const std::string& message) throw ()
+AstraException::AstraException (const std::string& function_name, const std::string& file_name, unsigned line_number, const std::string& message)
 : function_name_ (function_name)
 , file_name_ (file_name)
 , line_number_ (line_number)
@@ -52,32 +52,32 @@ AstraException::AstraException (const std::string& function_name, const std::str
   message_long_ = sstream.str();
 }
 
-AstraException::~AstraException () throw ()
+AstraException::~AstraException ()
 {
 }
 
-AstraException& AstraException::operator = (const AstraException& exception) throw ()
+AstraException& AstraException::operator = (const AstraException& exception)
 {
   message_ = exception.message_;
   return *this;
 }
 
-const char* AstraException::what () const throw ()
+const char* AstraException::what () const throw()
 {
   return message_long_.c_str();
 }
 
-const std::string& AstraException::getFunctionName () const throw ()
+const std::string& AstraException::getFunctionName () const
 {
   return function_name_;
 }
 
-const std::string& AstraException::getFileName () const throw ()
+const std::string& AstraException::getFileName () const
 {
   return file_name_;
 }
 
-unsigned AstraException::getLineNumber () const throw ()
+unsigned AstraException::getLineNumber () const
 {
   return line_number_;
 }

@@ -40,13 +40,3 @@ You will need to clone the launch files from [astra_launch repository](https://g
 `roslaunch astra_launch stereo_s.launch`
 
 You can use **rviz** or **image_view** to verify the outputs.
-
-# Windows 10 Subsystem
-
-If you encountered `udev` error on Windows 10 Subsystem, try to remove `upstart` and `udev`.
-
-```sh
-apt-get remove upstart
-apt-get remove udev
-apt-get autoremove
-```

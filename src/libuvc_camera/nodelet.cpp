@@ -1,7 +1,7 @@
 /*********************************************************************
 * Software License Agreement (BSD License)
 *
-*  Copyright (C) 2010-2012 Ken Tossell
+*  Copyright (C) 2012 Ken Tossell
 *  All rights reserved.
 *
 *  Redistribution and use in source and binary forms, with or without
@@ -31,28 +31,48 @@
 *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
-#include <string.h>
-#include <stdlib.h>
+#include <ros/ros.h>
+#include <pluginlib/class_list_macros.h>
+#include <nodelet/nodelet.h>
 
-#if __APPLE__
-char *strndup(const char *s, size_t n) {
-  size_t src_n = 0;
-  const char *sp = s;
-  char *d;
+#include "libuvc_camera/camera_driver.h"
 
-  while (*sp++)
-    src_n++;
+namespace libuvc_camera {
 
-  if (src_n < n)
-    n = src_n;
+class CameraNodelet : public nodelet::Nodelet {
+public:
+  CameraNodelet() : running_(false) {}
+  ~CameraNodelet();
 
-  d = malloc(n + 1);
+private:
+  virtual void onInit();
 
-  memcpy(d, s, n);
-  
-  d[n] = '\0';
+  volatile bool running_;
+  boost::shared_ptr<CameraDriver> driver_;
+};
 
-  return d;
+CameraNodelet::~CameraNodelet() {
+  if (running_) {
+    driver_->Stop();
+  }
 }
-#endif
 
+void CameraNodelet::onInit() {
+  ros::NodeHandle nh(getNodeHandle());
+  ros::NodeHandle priv_nh(getPrivateNodeHandle());
+
+  driver_.reset(new CameraDriver(nh, priv_nh));
+  if (driver_->Start()) {
+    running_ = true;
+  } else {
+    NODELET_ERROR("Unable to open camera.");
+    driver_.reset();
+  }
+}
+
+};
+
+// Register this plugin with pluginlib.
+//
+// parameters are: class type, base class type
+PLUGINLIB_EXPORT_CLASS(libuvc_camera::CameraNodelet, nodelet::Nodelet)

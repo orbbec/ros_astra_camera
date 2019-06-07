@@ -227,6 +227,7 @@ void AstraDriver::advertiseROSTopics()
   set_laser_server = nh_.advertiseService("set_laser", &AstraDriver::setLaserCb, this);
   reset_ir_gain_server = nh_.advertiseService("reset_ir_gain", &AstraDriver::resetIRGainCb, this);
   reset_ir_exposure_server = nh_.advertiseService("reset_ir_exposure", &AstraDriver::resetIRExposureCb, this);
+  get_camera_info = nh_.advertiseService("get_camera_info", &AstraDriver::getCameraInfoCb, this);
 }
 
 bool AstraDriver::getSerialCb(astra_camera::GetSerialRequest& req, astra_camera::GetSerialResponse& res)
@@ -280,6 +281,12 @@ bool AstraDriver::resetIRGainCb(astra_camera::ResetIRGainRequest& req, astra_cam
 bool AstraDriver::resetIRExposureCb(astra_camera::ResetIRExposureRequest& req, astra_camera::ResetIRExposureResponse& res)
 {
   device_->setIRExposure(0x419);
+  return true;
+}
+
+bool AstraDriver::getCameraInfoCb(astra_camera::GetCameraInfoRequest& req, astra_camera::GetCameraInfoResponse& res)
+{
+  res.info = convertAstraCameraInfo(device_->getCameraParams(), ros::Time::now());
   return true;
 }
 
@@ -604,11 +611,11 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::ImagePtr image)
       if (depth_registration_)
       {
         image->header.frame_id = color_frame_id_;
-        cam_info = getColorCameraInfo(image->width,image->height, image->header.stamp);
+        cam_info = getColorCameraInfo(image->width, image->height, image->header.stamp);
       } else
       {
         image->header.frame_id = depth_frame_id_;
-        cam_info = getDepthCameraInfo(image->width,image->height, image->header.stamp);
+        cam_info = getDepthCameraInfo(image->width, image->height, image->header.stamp);
       }
 
       if (depth_raw_subscribers_)
@@ -629,6 +636,47 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::ImagePtr image)
       }
     }
   }
+}
+
+sensor_msgs::CameraInfo AstraDriver::convertAstraCameraInfo(OBCameraParams p, ros::Time time) const
+{
+  sensor_msgs::CameraInfo info;
+  // info.width = width;
+  // info.height = height;
+  info.distortion_model = sensor_msgs::distortion_models::PLUMB_BOB;
+  info.D.resize(5, 0.0);
+  info.D[0] = p.r_k[0];
+  info.D[1] = p.r_k[1];
+  info.D[2] = p.r_k[3];
+  info.D[3] = p.r_k[4];
+  info.D[4] = p.r_k[2];
+
+  info.K.assign(0.0);
+  info.K[0] = p.r_intr_p[0];
+  info.K[2] = p.r_intr_p[2];
+  info.K[4] = p.r_intr_p[1];
+  info.K[5] = p.r_intr_p[3];
+  info.K[8] = 1.0;
+
+  info.R.assign(0.0);
+  for (int i = 0; i < 9; i++)
+  {
+    info.R[i] = p.r2l_r[i];
+  }
+
+  info.P.assign(0.0);
+  info.P[0] = info.K[0];
+  info.P[2] = info.K[2];
+  info.P[3] = p.r2l_t[0];
+  info.P[5] = info.K[4];
+  info.P[6] = info.K[5];
+  info.P[7] = p.r2l_t[1];
+  info.P[10] = 1.0;
+  info.P[11] = p.r2l_t[2];
+  // Fill in header
+  info.header.stamp    = time;
+  info.header.frame_id = color_frame_id_;
+  return info;
 }
 
 // Methods to get calibration parameters for the various cameras
@@ -684,7 +732,37 @@ sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height
   else
   {
     // If uncalibrated, fill in default values
-    info = getDefaultCameraInfo(width, height, device_->getColorFocalLength(height));
+    if (strcmp(device_->getDeviceType(), "Orbbec Canglong") == 0)
+    {
+      sensor_msgs::CameraInfo cinfo = convertAstraCameraInfo(device_->getCameraParams(), time);
+      info = boost::make_shared<sensor_msgs::CameraInfo>(ir_info_manager_->getCameraInfo());
+      info->D.resize(5, 0.0);
+      info->K.assign(0.0);
+      info->R.assign(0.0);
+      info->P.assign(0.0);
+      info->distortion_model = sensor_msgs::distortion_models::PLUMB_BOB;
+      info->width = width;
+      info->height = height;
+      for (int i = 0; i < 5; i++)
+      {
+        info->D[i] = cinfo.D[i];
+      }
+
+      for (int i = 0; i < 9; i++)
+      {
+        info->K[i] = cinfo.K[i];
+        info->R[i] = cinfo.R[i];
+      }
+
+      for (int i = 0; i < 12; i++)
+      {
+        info->P[i] = cinfo.P[i];
+      }
+    }
+    else
+    {
+      info = getDefaultCameraInfo(width, height, device_->getColorFocalLength(height));
+    }
   }
 
   // Fill in header
@@ -716,10 +794,26 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
     if (strcmp(device_->getDeviceType(), "Orbbec Canglong") == 0)
     {
       OBCameraParams p = device_->getCameraParams();
-      info->P[0] = p.l_intr_p[0];
-      info->P[5] = p.l_intr_p[1];
+      info->D.resize(5, 0.0);
+      info->D[0] = p.l_k[0];
+      info->D[1] = p.l_k[1];
+      info->D[2] = p.l_k[3];
+      info->D[3] = p.l_k[4];
+      info->D[4] = p.l_k[2];
+
+      info->K.assign(0.0);
       info->K[0] = p.l_intr_p[0];
-      info->K[5] = p.l_intr_p[1];
+      info->K[2] = p.l_intr_p[2];
+      info->K[4] = p.l_intr_p[1];
+      info->K[5] = p.l_intr_p[3];
+      info->K[8] = 1.0;
+
+      info->P.assign(0.0);
+      info->P[0] = info->K[0];
+      info->P[2] = info->K[2];
+      info->P[5] = info->K[4];
+      info->P[6] = info->K[5];
+      info->P[10] = 1.0;
     }
   }
 
@@ -781,7 +875,7 @@ void AstraDriver::readConfigFromParameterServer()
 
 }
 
-std::string AstraDriver::resolveDeviceURI(const std::string& device_id) throw(AstraException)
+std::string AstraDriver::resolveDeviceURI(const std::string& device_id)
 {
   // retrieve available device URIs, they look like this: "1d27/0601@1/5"
   // which is <vendor ID>/<product ID>@<bus number>/<device number>

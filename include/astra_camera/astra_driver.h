@@ -61,6 +61,7 @@
 #include "astra_camera/SetLaser.h"
 #include "astra_camera/ResetIRGain.h"
 #include "astra_camera/ResetIRExposure.h"
+#include "astra_camera/GetCameraInfo.h"
 
 #include <ros/ros.h>
 
@@ -86,11 +87,12 @@ private:
   sensor_msgs::CameraInfoPtr getIRCameraInfo(int width, int height, ros::Time time) const;
   sensor_msgs::CameraInfoPtr getDepthCameraInfo(int width, int height, ros::Time time) const;
   sensor_msgs::CameraInfoPtr getProjectorCameraInfo(int width, int height, ros::Time time) const;
+  sensor_msgs::CameraInfo convertAstraCameraInfo(OBCameraParams p, ros::Time time) const;
 
   void readConfigFromParameterServer();
 
   // resolves non-URI device IDs to URIs, e.g. '#1' is resolved to the URI of the first device
-  std::string resolveDeviceURI(const std::string& device_id) throw(AstraException);
+  std::string resolveDeviceURI(const std::string& device_id);
   void initDevice();
 
   void advertiseROSTopics();
@@ -107,6 +109,7 @@ private:
   bool setLaserCb(astra_camera::SetLaserRequest& req, astra_camera::SetLaserResponse& res);
   bool resetIRGainCb(astra_camera::ResetIRGainRequest& req, astra_camera::ResetIRGainResponse& res);
   bool resetIRExposureCb(astra_camera::ResetIRExposureRequest& req, astra_camera::ResetIRExposureResponse& res);
+  bool getCameraInfoCb(astra_camera::GetCameraInfoRequest& req, astra_camera::GetCameraInfoResponse& res);
 
   void configCb(Config &config, uint32_t level);
 
@@ -130,6 +133,7 @@ private:
   std::string device_id_;
 
   /** \brief get_serial server*/
+  ros::ServiceServer get_camera_info;
   ros::ServiceServer get_serial_server;
   ros::ServiceServer get_device_type_server;
   ros::ServiceServer get_ir_gain_server;

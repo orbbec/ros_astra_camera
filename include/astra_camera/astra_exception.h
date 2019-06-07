@@ -61,15 +61,15 @@ public:
   AstraException(const std::string& function_name,
                    const std::string& file_name,
                    unsigned line_number,
-                   const std::string& message) throw ();
+                   const std::string& message);
 
-  virtual ~AstraException() throw ();
-  AstraException & operator=(const AstraException& exception) throw ();
-  virtual const char* what() const throw ();
+  virtual ~AstraException();
+  AstraException & operator=(const AstraException& exception);
+  virtual const char* what() const throw();
 
-  const std::string& getFunctionName() const throw ();
-  const std::string& getFileName() const throw ();
-  unsigned getLineNumber() const throw ();
+  const std::string& getFunctionName() const;
+  const std::string& getFileName() const;
+  unsigned getLineNumber() const;
 
 protected:
   std::string function_name_;

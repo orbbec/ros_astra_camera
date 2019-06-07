@@ -67,7 +67,7 @@ class AstraFrameListener;
 class AstraDevice
 {
 public:
-  AstraDevice(const std::string& device_URI) throw (AstraException);
+  AstraDevice(const std::string& device_URI);
   virtual ~AstraDevice();
 
   const std::string getUri() const;
@@ -99,12 +99,12 @@ public:
   bool isDepthStreamStarted();
 
   bool isImageRegistrationModeSupported() const;
-  void setImageRegistrationMode(bool enabled) throw (AstraException);
-  void setDepthColorSync(bool enabled) throw (AstraException);
+  void setImageRegistrationMode(bool enabled);
+  void setDepthColorSync(bool enabled);
 
-  const AstraVideoMode getIRVideoMode() throw (AstraException);
-  const AstraVideoMode getColorVideoMode() throw (AstraException);
-  const AstraVideoMode getDepthVideoMode() throw (AstraException);
+  const AstraVideoMode getIRVideoMode();
+  const AstraVideoMode getColorVideoMode();
+  const AstraVideoMode getDepthVideoMode();
 
   const std::vector<AstraVideoMode>& getSupportedIRVideoModes() const;
   const std::vector<AstraVideoMode>& getSupportedColorVideoModes() const;
@@ -114,9 +114,9 @@ public:
   bool isColorVideoModeSupported(const AstraVideoMode& video_mode) const;
   bool isDepthVideoModeSupported(const AstraVideoMode& video_mode) const;
 
-  void setIRVideoMode(const AstraVideoMode& video_mode) throw (AstraException);
-  void setColorVideoMode(const AstraVideoMode& video_mode) throw (AstraException);
-  void setDepthVideoMode(const AstraVideoMode& video_mode) throw (AstraException);
+  void setIRVideoMode(const AstraVideoMode& video_mode);
+  void setColorVideoMode(const AstraVideoMode& video_mode);
+  void setDepthVideoMode(const AstraVideoMode& video_mode);
 
   void setIRFrameCallback(FrameCallbackFunction callback);
   void setColorFrameCallback(FrameCallbackFunction callback);
@@ -137,8 +137,8 @@ public:
   void setIRExposure(int exposure);
   void setLaser(bool enable);
 
-  void setAutoExposure(bool enable) throw (AstraException);
-  void setAutoWhiteBalance(bool enable) throw (AstraException);
+  void setAutoExposure(bool enable);
+  void setAutoWhiteBalance(bool enable);
 
   bool getAutoExposure() const;
   bool getAutoWhiteBalance() const;
@@ -148,9 +148,9 @@ public:
 protected:
   void shutdown();
 
-  boost::shared_ptr<openni::VideoStream> getIRVideoStream() const throw (AstraException);
-  boost::shared_ptr<openni::VideoStream> getColorVideoStream() const throw (AstraException);
-  boost::shared_ptr<openni::VideoStream> getDepthVideoStream() const throw (AstraException);
+  boost::shared_ptr<openni::VideoStream> getIRVideoStream() const;
+  boost::shared_ptr<openni::VideoStream> getColorVideoStream() const;
+  boost::shared_ptr<openni::VideoStream> getDepthVideoStream() const;
 
   boost::shared_ptr<openni::Device> openni_device_;
   boost::shared_ptr<openni::DeviceInfo> device_info_;
