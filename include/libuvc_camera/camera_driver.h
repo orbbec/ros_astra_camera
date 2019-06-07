@@ -11,6 +11,10 @@
 #include <sensor_msgs/CameraInfo.h>
 #include <astra_camera/GetUVCExposure.h>
 #include <astra_camera/SetUVCExposure.h>
+#include <astra_camera/GetUVCGain.h>
+#include <astra_camera/SetUVCGain.h>
+#include <astra_camera/GetUVCWhiteBalance.h>
+#include <astra_camera/SetUVCWhiteBalance.h>
 
 #include <libuvc_camera/UVCCameraConfig.h>
 
@@ -61,6 +65,10 @@ private:
   static void ImageCallbackAdapter(uvc_frame_t *frame, void *ptr);
   bool getUVCExposureCb(astra_camera::GetUVCExposureRequest& req, astra_camera::GetUVCExposureResponse& res);
   bool setUVCExposureCb(astra_camera::SetUVCExposureRequest& req, astra_camera::SetUVCExposureResponse& res);
+  bool getUVCGainCb(astra_camera::GetUVCGainRequest& req, astra_camera::GetUVCGainResponse& res);
+  bool setUVCGainCb(astra_camera::SetUVCGainRequest& req, astra_camera::SetUVCGainResponse& res);
+  bool getUVCWhiteBalanceCb(astra_camera::GetUVCWhiteBalanceRequest& req, astra_camera::GetUVCWhiteBalanceResponse& res);
+  bool setUVCWhiteBalanceCb(astra_camera::SetUVCWhiteBalanceRequest& req, astra_camera::SetUVCWhiteBalanceResponse& res);
 
   ros::NodeHandle nh_, priv_nh_;
 
@@ -85,6 +93,10 @@ private:
 
   ros::ServiceServer get_uvc_exposure_server;
   ros::ServiceServer set_uvc_exposure_server;
+  ros::ServiceServer get_uvc_gain_server;
+  ros::ServiceServer set_uvc_gain_server;
+  ros::ServiceServer get_uvc_white_balance_server;
+  ros::ServiceServer set_uvc_white_balance_server;
 
   ros::ServiceClient device_type_client;
   ros::ServiceClient camera_info_client;

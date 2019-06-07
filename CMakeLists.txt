@@ -42,15 +42,19 @@ add_service_files(
   GetSerial.srv
   GetDeviceType.srv
   GetIRGain.srv
-  SetIRGain.srv
-  SetLaser.srv
-  GetIRExposure.srv
-  SetIRExposure.srv
-  ResetIRGain.srv
-  ResetIRExposure.srv
   GetCameraInfo.srv
   GetUVCExposure.srv
+  GetIRExposure.srv
+  GetUVCGain.srv
+  GetUVCWhiteBalance.srv
+  SetUVCWhiteBalance.srv
+  SetUVCGain.srv
+  SetIRExposure.srv
+  SetIRGain.srv
+  SetLaser.srv
   SetUVCExposure.srv
+  ResetIRGain.srv
+  ResetIRExposure.srv
 )
 
 generate_messages(

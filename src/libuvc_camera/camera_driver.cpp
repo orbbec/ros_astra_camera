@@ -63,6 +63,10 @@ CameraDriver::CameraDriver(ros::NodeHandle nh, ros::NodeHandle priv_nh)
   camera_info_client = nh_.serviceClient<astra_camera::GetCameraInfo>(ns + "/get_camera_info");
   get_uvc_exposure_server = nh_.advertiseService("get_uvc_exposure", &CameraDriver::getUVCExposureCb, this);
   set_uvc_exposure_server = nh_.advertiseService("set_uvc_exposure", &CameraDriver::setUVCExposureCb, this);
+  get_uvc_gain_server = nh_.advertiseService("get_uvc_gain", &CameraDriver::getUVCGainCb, this);
+  set_uvc_gain_server = nh_.advertiseService("set_uvc_gain", &CameraDriver::setUVCGainCb, this);
+  get_uvc_white_balance_server = nh_.advertiseService("get_uvc_white_balance", &CameraDriver::getUVCWhiteBalanceCb, this);
+  set_uvc_white_balance_server = nh_.advertiseService("set_uvc_white_balance", &CameraDriver::setUVCWhiteBalanceCb, this);
   device_type_init_ = false;
   camera_info_init_ = false;
 }
@@ -85,10 +89,52 @@ bool CameraDriver::getUVCExposureCb(astra_camera::GetUVCExposureRequest& req, as
 
 bool CameraDriver::setUVCExposureCb(astra_camera::SetUVCExposureRequest& req, astra_camera::SetUVCExposureResponse& res)
 {
+  if (req.exposure == 0)
+  {
+    uvc_set_ae_mode(devh_, 2);
+    return true;
+  }
   uvc_set_ae_mode(devh_, 1); // mode 1: manual mode; 2: auto mode; 4: shutter priority mode; 8: aperture priority mode
-  uint32_t expo = req.exposure;
-  uvc_error_t err = uvc_set_exposure_abs(devh_, expo);
-  std::cout << err << std::endl;
+  if (req.exposure > 330)
+  {
+    ROS_ERROR("Please set exposure lower than 330");
+    return false;
+  }
+  uvc_error_t err = uvc_set_exposure_abs(devh_, req.exposure);
+  return (err == UVC_SUCCESS);
+}
+
+bool CameraDriver::getUVCGainCb(astra_camera::GetUVCGainRequest& req, astra_camera::GetUVCGainResponse& res)
+{
+  uint16_t gain;
+  uvc_error_t err = uvc_get_gain(devh_, &gain, UVC_GET_CUR);
+  res.gain = gain;
+  return (err == UVC_SUCCESS); 
+}
+
+bool CameraDriver::setUVCGainCb(astra_camera::SetUVCGainRequest& req, astra_camera::SetUVCGainResponse& res)
+{
+  uvc_error_t err = uvc_set_gain(devh_, req.gain);
+  return (err == UVC_SUCCESS);
+}
+
+bool CameraDriver::getUVCWhiteBalanceCb(astra_camera::GetUVCWhiteBalanceRequest& req, astra_camera::GetUVCWhiteBalanceResponse& res)
+{
+  uint16_t white_balance;
+  uvc_error_t err = uvc_get_white_balance_temperature(devh_, &white_balance, UVC_GET_CUR);
+  res.white_balance = white_balance;
+  return (err == UVC_SUCCESS);
+}
+
+bool CameraDriver::setUVCWhiteBalanceCb(astra_camera::SetUVCWhiteBalanceRequest& req, astra_camera::SetUVCWhiteBalanceResponse& res)
+{
+  if (req.white_balance == 0)
+  {
+    uvc_set_white_balance_temperature_auto(devh_, 1);
+    return true;
+  }
+  uvc_set_white_balance_temperature_auto(devh_, 0); // 0: manual, 1: auto
+  uvc_error_t err = uvc_set_white_balance_temperature(devh_, req.white_balance);
   return (err == UVC_SUCCESS);
 }
 
