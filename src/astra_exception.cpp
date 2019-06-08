@@ -52,7 +52,7 @@ AstraException::AstraException (const std::string& function_name, const std::str
   message_long_ = sstream.str();
 }
 
-AstraException::~AstraException ()
+AstraException::~AstraException () throw()
 {
 }
 

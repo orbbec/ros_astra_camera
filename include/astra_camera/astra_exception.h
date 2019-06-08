@@ -63,7 +63,7 @@ public:
                    unsigned line_number,
                    const std::string& message);
 
-  virtual ~AstraException();
+  virtual ~AstraException() throw();
   AstraException & operator=(const AstraException& exception);
   virtual const char* what() const throw();
 
