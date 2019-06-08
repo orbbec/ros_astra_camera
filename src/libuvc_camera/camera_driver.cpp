@@ -70,6 +70,7 @@ CameraDriver::CameraDriver(ros::NodeHandle nh, ros::NodeHandle priv_nh)
   set_uvc_white_balance_server = nh_.advertiseService("set_uvc_white_balance", &CameraDriver::setUVCWhiteBalanceCb, this);
   device_type_init_ = false;
   camera_info_init_ = false;
+  uvc_flip_ = 0;
 }
 
 CameraDriver::~CameraDriver() {
@@ -301,6 +302,10 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
     if (device_type_client.call(device_type_srv))
     {
       device_type_ = device_type_srv.response.device_type;
+      if (strcmp(device_type_.c_str(), OB_EMBEDDED_S) == 0)
+      {
+        uvc_flip_ = 1;
+      }
       device_type_init_ = true;
     }
   }
@@ -334,14 +339,11 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
         cinfo->K[i] = camera_info_.K[i];
         cinfo->R[i] = camera_info_.R[i];
       }
+      cinfo->K[0] = (1 - uvc_flip_)*(camera_info_.K[0]) + (uvc_flip_)*(-camera_info_.K[0]);
+      cinfo->K[2] = (1 - uvc_flip_)*(camera_info_.K[2]) + (uvc_flip_)*(image->width - camera_info_.K[2]);
       for (int i = 0; i < 12; i++)
       {
         cinfo->P[i] = camera_info_.P[i];
-      }
-      if (strcmp(device_type_.c_str(), OB_EMBEDDED_S) == 0)
-      {
-        cinfo->K[0] = -cinfo->K[0];
-        cinfo->K[2] = image->width - cinfo->K[2];
       }
     }
     image->header.frame_id = "camera_rgb_optical_frame";

@@ -205,6 +205,7 @@ private:
   bool use_device_time_;
 
   Config old_config_;
+  int uvc_flip_;
 };
 
 }

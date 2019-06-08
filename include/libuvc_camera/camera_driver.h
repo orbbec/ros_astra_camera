@@ -105,6 +105,7 @@ private:
   bool camera_info_init_;
   std::string device_type_;
   sensor_msgs::CameraInfo camera_info_;
+  int uvc_flip_;
 };
 
 };

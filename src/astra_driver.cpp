@@ -59,7 +59,8 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
     ir_subscribers_(false),
     color_subscribers_(false),
     depth_subscribers_(false),
-    depth_raw_subscribers_(false)
+    depth_raw_subscribers_(false),
+    uvc_flip_(0)
 {
 
   genVideoModeTableMap();
@@ -293,11 +294,16 @@ bool AstraDriver::getCameraInfoCb(astra_camera::GetCameraInfoRequest& req, astra
 
 void AstraDriver::configCb(Config &config, uint32_t level)
 {
-  if (strcmp(device_->getDeviceType(), OB_STEREO_S) == 0 ||
-      strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
+  if (strcmp(device_->getDeviceType(), OB_STEREO_S) == 0)
   {
     config.depth_mode = 13;
     config.ir_mode = 13;
+  }
+  else if (strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
+  {
+    config.depth_mode = 13;
+    config.ir_mode = 13;
+    uvc_flip_ = 1;
   }
   bool stream_reset = false;
 
@@ -806,8 +812,8 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
       info->D[4] = p.l_k[2];
 
       info->K.assign(0.0);
-      info->K[0] = p.l_intr_p[0];
-      info->K[2] = p.l_intr_p[2];
+      info->K[0] = (1 - uvc_flip_)*p.r_intr_p[0] + (uvc_flip_)*(-p.r_intr_p[0]);
+      info->K[2] = (1 - uvc_flip_)*p.r_intr_p[2] + (uvc_flip_)*(width - p.r_intr_p[2]);
       info->K[4] = p.l_intr_p[1];
       info->K[5] = p.l_intr_p[3];
       info->K[8] = 1.0;
@@ -818,11 +824,6 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
       info->P[5] = info->K[4];
       info->P[6] = info->K[5];
       info->P[10] = 1.0;
-      if (strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
-      {
-        info->K[0] = -info->K[0];
-        info->K[2] = width - info->K[2];
-      }
     }
   }
 
