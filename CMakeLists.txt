@@ -66,7 +66,7 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES astra_wrapper
   CATKIN_DEPENDS camera_info_manager dynamic_reconfigure image_transport nodelet sensor_msgs roscpp message_runtime
-  DEPENDS libastra
+  #DEPENDS libastra
 )
 
 add_definitions(-Dlibuvc_VERSION_MAJOR=${libuvc_VERSION_MAJOR})
