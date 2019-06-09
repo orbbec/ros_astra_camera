@@ -41,6 +41,8 @@
 #include "astra_camera/astra_convert.h"
 #include "astra_camera/astra_frame_listener.h"
 
+#include "openni2/PS1080.h"
+
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 
@@ -203,6 +205,17 @@ void AstraDevice::setLaser(bool enable)
     laser_enable = 0;
   }
   openni_device_->setProperty(openni::OBEXTENSION_ID_LASER_EN, (uint8_t*)&laser_enable, data_size);
+}
+
+void AstraDevice::setIRFlood(bool enable)
+{
+  int data_size = 4;
+  int enable_ = 1;
+  if (enable == false)
+  {
+    enable_ = 0;
+  }
+  openni_device_->setProperty(XN_MODULE_PROPERTY_IRFLOOD_STATE, enable_);
 }
 
 float AstraDevice::getIRFocalLength(int output_y_resolution) const

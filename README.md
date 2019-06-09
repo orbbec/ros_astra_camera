@@ -68,10 +68,12 @@ This package provides multiple [ros services](http://wiki.ros.org/Services) for 
 * `/camera/set_uvc_exposure`: set uvc exposure. (set **0** indicating auto mode)
 * `/camera/set_uvc_gain`: set uvc gain
 * `/camera/set_uvc_white_balance`: set uvc white balance (set **0** indicating auto mode)
+* `/camera/set_ir_flood`: turn on (**true**) or turn off (**false**) ir flood
 
 ### Examples
 
 After launching an astra camera, you can get ir exposure by the following command
+1. ir exposure
 ```sh
 rosservice call /camera/get_ir_exposure "{}"
 ```
@@ -79,6 +81,15 @@ Next, you can change this value in this way
 ```sh
 rosservice call /camera/set_ir_exposure "{exposure: 50}"
 ```
+
+2. turn on/off laser
+```sh
+###### turn on
+rosservice call /camera/set_laser "{enable: true}"
+###### turn off
+rosservice call /camera/set_laser "{enable: false}"
+```
+
 
 For the other services, the usage is same as the above example.
 

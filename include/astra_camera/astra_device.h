@@ -136,6 +136,7 @@ public:
   void setIRGain(int gain);
   void setIRExposure(int exposure);
   void setLaser(bool enable);
+  void setIRFlood(bool enable);
 
   void setAutoExposure(bool enable);
   void setAutoWhiteBalance(bool enable);

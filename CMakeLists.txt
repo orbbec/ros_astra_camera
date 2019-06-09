@@ -51,6 +51,7 @@ add_service_files(
   SetUVCGain.srv
   SetIRExposure.srv
   SetIRGain.srv
+  SetIRFlood.srv
   SetLaser.srv
   SetUVCExposure.srv
   ResetIRGain.srv

@@ -62,6 +62,7 @@
 #include "astra_camera/ResetIRGain.h"
 #include "astra_camera/ResetIRExposure.h"
 #include "astra_camera/GetCameraInfo.h"
+#include "astra_camera/SetIRFlood.h"
 
 #include <ros/ros.h>
 
@@ -110,6 +111,7 @@ private:
   bool resetIRGainCb(astra_camera::ResetIRGainRequest& req, astra_camera::ResetIRGainResponse& res);
   bool resetIRExposureCb(astra_camera::ResetIRExposureRequest& req, astra_camera::ResetIRExposureResponse& res);
   bool getCameraInfoCb(astra_camera::GetCameraInfoRequest& req, astra_camera::GetCameraInfoResponse& res);
+  bool setIRFloodCb(astra_camera::SetIRFloodRequest& req, astra_camera::SetIRFloodResponse& res);
 
   void configCb(Config &config, uint32_t level);
 
@@ -140,6 +142,7 @@ private:
   ros::ServiceServer set_ir_gain_server;
   ros::ServiceServer get_ir_exposure_server;
   ros::ServiceServer set_ir_exposure_server;
+  ros::ServiceServer set_ir_flood_server;
   ros::ServiceServer set_laser_server;
   ros::ServiceServer reset_ir_gain_server;
   ros::ServiceServer reset_ir_exposure_server;
