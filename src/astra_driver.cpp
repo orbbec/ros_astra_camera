@@ -1085,7 +1085,8 @@ output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x1024@30
                                gen.const( "QQVGA_25Hz", int_t, 10, "160x120@25Hz"),
                                gen.const( "QQVGA_30Hz", int_t, 11, "160x120@30Hz"),
                                gen.const( "QQVGA_60Hz", int_t, 12, "160x120@60Hz"),
-                               gen.const("640400_30Hz", int_t, 13, "640x400@30Hz")],
+                               gen.const("640400_30Hz", int_t, 13, "640x400@30Hz"),
+                               gen.const("320200_30Hz", int_t, 14, "320x200@30Hz")],
                                "output mode")
   */
 
@@ -1184,6 +1185,12 @@ output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x1024@30
 
   video_modes_lookup_[13] = video_mode;
 
+  // 320*200_30Hz
+  video_mode.x_resolution_ = 320;
+  video_mode.y_resolution_ = 200;
+  video_mode.frame_rate_ = 30;
+
+  video_modes_lookup_[14] = video_mode;
 }
 
 int AstraDriver::lookupVideoModeFromDynConfig(int mode_nr, AstraVideoMode& video_mode)
