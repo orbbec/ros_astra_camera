@@ -12,9 +12,11 @@ A ROS driver for Orbbec 3D cameras.
     ```
 
 3. Go to catkin workspace and compile astra_camera
+
     `catkin_make --pkg astra_camera`
 
 4. Create astra udev rule
+
     `sudo ./scripts/create_udev_rules`
 
 ### Filter Enable
