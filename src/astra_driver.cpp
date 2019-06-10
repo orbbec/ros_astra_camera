@@ -301,12 +301,12 @@ bool AstraDriver::setIRFloodCb(astra_camera::SetIRFloodRequest& req, astra_camer
 
 void AstraDriver::configCb(Config &config, uint32_t level)
 {
-  if (strcmp(device_->getDeviceType(), OB_STEREO_S) == 0)
+  if (device_->getDeviceTypeNo() == OB_STEREO_S_NO)
   {
     config.depth_mode = 13;
     config.ir_mode = 13;
   }
-  else if (strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
+  else if (device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
   {
     config.depth_mode = 13;
     config.ir_mode = 13;
@@ -747,8 +747,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height
   else
   {
     // If uncalibrated, fill in default values
-    if (strcmp(device_->getDeviceType(), OB_STEREO_S) == 0 ||
-        strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
+    if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
     {
       sensor_msgs::CameraInfo cinfo = convertAstraCameraInfo(device_->getCameraParams(), time);
       info = boost::make_shared<sensor_msgs::CameraInfo>(ir_info_manager_->getCameraInfo());
@@ -807,8 +806,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
   {
     // If uncalibrated, fill in default values
     info = getDefaultCameraInfo(width, height, device_->getDepthFocalLength(height));
-    if (strcmp(device_->getDeviceType(), OB_STEREO_S) == 0 ||
-        strcmp(device_->getDeviceType(), OB_EMBEDDED_S) == 0)
+    if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
     {
       OBCameraParams p = device_->getCameraParams();
       info->D.resize(5, 0.0);

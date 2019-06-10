@@ -71,6 +71,7 @@ CameraDriver::CameraDriver(ros::NodeHandle nh, ros::NodeHandle priv_nh)
   device_type_init_ = false;
   camera_info_init_ = false;
   uvc_flip_ = 0;
+  device_type_no_ = OB_ASTRA_NO;
 }
 
 CameraDriver::~CameraDriver() {
@@ -302,9 +303,18 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
     if (device_type_client.call(device_type_srv))
     {
       device_type_ = device_type_srv.response.device_type;
-      if (strcmp(device_type_.c_str(), OB_EMBEDDED_S) == 0)
+      if (strcmp(device_type_.c_str(), OB_STEREO_S) == 0)
       {
+        device_type_no_ = OB_STEREO_S_NO;
+      }
+      else if (strcmp(device_type_.c_str(), OB_EMBEDDED_S) == 0)
+      {
+        device_type_no_ = OB_EMBEDDED_S_NO;
         uvc_flip_ = 1;
+      }
+      else
+      {
+        device_type_no_ = OB_ASTRA_NO;
       }
       device_type_init_ = true;
     }
@@ -320,8 +330,7 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
   }
 
   sensor_msgs::CameraInfo::Ptr cinfo(new sensor_msgs::CameraInfo(cinfo_manager_.getCameraInfo()));
-  if (device_type_init_ == true && (strcmp(device_type_.c_str(), OB_STEREO_S) == 0 ||
-      strcmp(device_type_.c_str(), OB_EMBEDDED_S) == 0))
+  if (device_type_init_ == true && (device_type_no_ == OB_STEREO_S_NO || device_type_no_ == OB_EMBEDDED_S_NO))
   {
     // update cinfo
     if (camera_info_init_ == true)

@@ -40,6 +40,7 @@
 #include "astra_camera/astra_exception.h"
 #include "astra_camera/astra_convert.h"
 #include "astra_camera/astra_frame_listener.h"
+#include "astra_camera/astra_device_type.h"
 
 #include "openni2/PS1080.h"
 
@@ -90,6 +91,18 @@ AstraDevice::AstraDevice(const std::string& device_URI):
   int device_type_size = sizeof(device_type);
   memset(device_type, 0, device_type_size);
   openni_device_->getProperty(openni::OBEXTENSION_ID_DEVICETYPE, (uint8_t*)&device_type, &device_type_size);
+  if (strcmp(device_type, OB_STEREO_S) == 0)
+  {
+    device_type_no = OB_STEREO_S_NO;
+  }
+  else if (strcmp(device_type, OB_EMBEDDED_S) == 0)
+  {
+    device_type_no = OB_EMBEDDED_S_NO;
+  }
+  else
+  {
+    device_type_no = OB_ASTRA_NO;
+  }
 
   ir_frame_listener = boost::make_shared<AstraFrameListener>();
   color_frame_listener = boost::make_shared<AstraFrameListener>();
@@ -160,6 +173,11 @@ char* AstraDevice::getSerialNumber()
 char* AstraDevice::getDeviceType()
 {
   return device_type;
+}
+
+int AstraDevice::getDeviceTypeNo()
+{
+  return device_type_no;
 }
 
 int AstraDevice::getIRGain() const

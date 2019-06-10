@@ -106,6 +106,7 @@ private:
   std::string device_type_;
   sensor_msgs::CameraInfo camera_info_;
   int uvc_flip_;
+  int device_type_no_;
 };
 
 };

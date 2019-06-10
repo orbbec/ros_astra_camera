@@ -129,6 +129,7 @@ public:
   OBCameraParams getCameraParams() const;
   char* getSerialNumber();
   char* getDeviceType();
+  int getDeviceTypeNo();
   int getIRGain() const;
   int getIRExposure() const;
 
@@ -179,6 +180,7 @@ protected:
   OBCameraParams m_CamParams;
   char serial_number[12];
   char device_type[32];
+  int device_type_no;
 };
 
 std::ostream& operator << (std::ostream& stream, const AstraDevice& device);
