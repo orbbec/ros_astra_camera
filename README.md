@@ -7,17 +7,15 @@ A ROS driver for Orbbec 3D cameras.
 1. Pull the repository into your ROS workspace `git clone https://github.com/orbbec/ros_astra_camera`
 
 2. Install dependences
-```sh
-sudo apt install ros-$ROS_DISTRO-rgbd-launch ros-$ROS_DISTRO-libuvc ros-$ROS_DISTRO-libuvc-camera ros-$ROS_DISTRO-libuvc-ros
-```
+  ```sh
+  sudo apt install ros-$ROS_DISTRO-rgbd-launch ros-$ROS_DISTRO-libuvc ros-$ROS_DISTRO-libuvc-camera   ros-$ROS_DISTRO-libuvc-ros
+  ```
 
 3. Go to catkin workspace and compile astra_camera
-
-`catkin_make --pkg astra_camera`
+  `catkin_make --pkg astra_camera`
 
 4. Create astra udev rule
-
-`sudo ./scripts/create_udev_rules`
+  `sudo ./scripts/create_udev_rules`
 
 ### Filter Enable
 
@@ -74,21 +72,21 @@ This package provides multiple [ros services](http://wiki.ros.org/Services) for 
 
 After launching an astra camera, you can get ir exposure by the following command
 1. ir exposure
-```sh
-rosservice call /camera/get_ir_exposure "{}"
-```
-Next, you can change this value in this way
-```sh
-rosservice call /camera/set_ir_exposure "{exposure: 50}"
-```
+  ```sh
+  rosservice call /camera/get_ir_exposure "{}"
+  ```
+  Next, you can change this value in this way
+  ```sh
+  rosservice call /camera/set_ir_exposure "{exposure: 50}"
+  ```
 
 2. turn on/off laser
-```sh
-###### turn on
-rosservice call /camera/set_laser "{enable: true}"
-###### turn off
-rosservice call /camera/set_laser "{enable: false}"
-```
+  ```sh
+  ###### turn on
+  rosservice call /camera/set_laser "{enable: true}"
+  ###### turn off
+  rosservice call /camera/set_laser "{enable: false}"
+  ```
 
 
 For the other services, the usage is same as the above example.
