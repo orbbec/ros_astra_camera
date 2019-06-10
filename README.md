@@ -4,20 +4,26 @@ A ROS driver for Orbbec 3D cameras.
 
 ## Install
 
-1. Pull the repository into your ROS workspace `git clone https://github.com/orbbec/ros_astra_camera`
+This pacakge supports Kinetic and Melodic.
 
-2. Install dependences
+1. Install [ROS](http://wiki.ros.org/ROS/Installation).
+
+2. Pull the repository into your ROS workspace `git clone https://github.com/orbbec/ros_astra_camera`
+
+3. Install dependences
     ```sh
     sudo apt install ros-$ROS_DISTRO-rgbd-launch ros-$ROS_DISTRO-libuvc ros-$ROS_DISTRO-libuvc-camera ros-$ROS_DISTRO-libuvc-ros
     ```
 
-3. Go to catkin workspace and compile astra_camera
+4. Create astra udev rule
+    ```sh
+    cd ros_astra_camera
+    sudo ./scripts/create_udev_rules
+    ```
+
+5. Go to catkin workspace and compile astra_camera
 
     `catkin_make --pkg astra_camera`
-
-4. Create astra udev rule
-
-    `sudo ./scripts/create_udev_rules`
 
 ### Filter Enable
 
