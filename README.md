@@ -18,7 +18,7 @@ This pacakge supports Kinetic and Melodic.
 4. Create astra udev rule
     ```sh
     cd ros_astra_camera
-    sudo ./scripts/create_udev_rules
+    ./scripts/create_udev_rules
     ```
 
 5. Go to catkin workspace and compile astra_camera
