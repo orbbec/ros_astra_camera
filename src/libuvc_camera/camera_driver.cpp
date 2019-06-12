@@ -72,6 +72,11 @@ CameraDriver::CameraDriver(ros::NodeHandle nh, ros::NodeHandle priv_nh)
   camera_info_init_ = false;
   uvc_flip_ = 0;
   device_type_no_ = OB_ASTRA_NO;
+  ros_namespace_ = ros::this_node::getNamespace();
+  if (ros_namespace_.length() > 1)
+  {
+    ros_namespace_ = ros_namespace_.substr(1);
+  }
 }
 
 CameraDriver::~CameraDriver() {
@@ -355,8 +360,8 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
         cinfo->P[i] = camera_info_.P[i];
       }
     }
-    image->header.frame_id = "camera_rgb_optical_frame";
-    cinfo->header.frame_id = "camera_rgb_optical_frame";
+    image->header.frame_id = ros_namespace_ + "_rgb_optical_frame";
+    cinfo->header.frame_id = ros_namespace_ + "_rgb_optical_frame";
   }
   else
   {

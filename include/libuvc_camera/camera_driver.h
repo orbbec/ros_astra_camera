@@ -107,6 +107,7 @@ private:
   sensor_msgs::CameraInfo camera_info_;
   int uvc_flip_;
   int device_type_no_;
+  std::string ros_namespace_;
 };
 
 };
