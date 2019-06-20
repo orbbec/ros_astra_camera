@@ -99,6 +99,10 @@ AstraDevice::AstraDevice(const std::string& device_URI):
   {
     device_type_no = OB_EMBEDDED_S_NO;
   }
+  else if (strcmp(device_type, OB_ASTRA_PRO) == 0)
+  {
+    device_type_no = OB_ASTRA_PRO_NO;
+  }
   else
   {
     device_type_no = OB_ASTRA_NO;

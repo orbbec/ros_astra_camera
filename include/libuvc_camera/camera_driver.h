@@ -90,6 +90,7 @@ private:
   camera_info_manager::CameraInfoManager cinfo_manager_;
   bool param_init_;
   std::string ns;
+  std::string ns_no_slash;
 
   ros::ServiceServer get_uvc_exposure_server;
   ros::ServiceServer set_uvc_exposure_server;
@@ -107,7 +108,6 @@ private:
   sensor_msgs::CameraInfo camera_info_;
   int uvc_flip_;
   int device_type_no_;
-  std::string ros_namespace_;
 };
 
 };

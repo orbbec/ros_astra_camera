@@ -747,7 +747,8 @@ sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height
   else
   {
     // If uncalibrated, fill in default values
-    if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
+    if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO ||
+        device_->getDeviceTypeNo() == OB_ASTRA_PRO_NO)
     {
       sensor_msgs::CameraInfo cinfo = convertAstraCameraInfo(device_->getCameraParams(), time);
       info = boost::make_shared<sensor_msgs::CameraInfo>(ir_info_manager_->getCameraInfo());
@@ -806,7 +807,8 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
   {
     // If uncalibrated, fill in default values
     info = getDefaultCameraInfo(width, height, device_->getDepthFocalLength(height));
-    if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
+    if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO ||
+        device_->getDeviceTypeNo() == OB_ASTRA_PRO_NO)
     {
       OBCameraParams p = device_->getCameraParams();
       info->D.resize(5, 0.0);

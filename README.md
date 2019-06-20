@@ -4,24 +4,30 @@ A ROS driver for Orbbec 3D cameras.
 
 ## Install
 
-This pacakge supports Kinetic and Melodic.
+This pacakge supports ROS Kinetic and Melodic.
 
 1. Install [ROS](http://wiki.ros.org/ROS/Installation).
 
-2. Pull the repository into your ROS workspace `git clone https://github.com/orbbec/ros_astra_camera`
-
-3. Install dependences
+2. Install dependences
     ```sh
     sudo apt install ros-$ROS_DISTRO-rgbd-launch ros-$ROS_DISTRO-libuvc ros-$ROS_DISTRO-libuvc-camera ros-$ROS_DISTRO-libuvc-ros
     ```
+3. If you don't have a ROS workspace, please create a [ROS Workspace](http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment)
+	 ```sh
+    mkdir -p ~/catkin_ws/src
+	cd ~/catkin_ws/
+	catkin_make
+    ```
 
-4. Create astra udev rule
+4. Pull the repository into your ROS workspace `git clone https://github.com/orbbec/ros_astra_camera`
+
+5. Create astra udev rule
     ```sh
     cd ros_astra_camera
     ./scripts/create_udev_rules
     ```
 
-5. Go to catkin workspace and compile astra_camera
+6. Go to catkin workspace and compile astra_camera
 
     `catkin_make --pkg astra_camera`
 
@@ -31,17 +37,13 @@ Astra driver provides normal and filtering methods. With filter driver, we can g
 
 `catkin_make --pkg astra_camera -DFILTER=OFF`
 
-## Important Topics
-
-* `*/image_raw`: depth/rgb/ir raw images
-* `*/image_rect_raw`: images rectified by intrinsic/extrinsic parameters
-* `*/camera_info`: camera intrinsic/extrinsic paramers
-* `/camera/depth/points`: point cloud without color information
-* `/camera/depth_registered/points`: Xyzrgb point cloud
-
 ## Run astra_camera
 
 You will need to clone the launch files from [astra_launch repository](https://github.com/orbbec/ros_astra_launch) into your workspace.
+
+If you didn't add `source $YOUR_WORKSPACE/devel/setup.bash` to your `.bashrc`, remember to source it when open a new terminal :)
+
+`source $YOUR_WORKSPACE/devel/setup.bash`
 
 ### Examples
 
@@ -54,6 +56,14 @@ You will need to clone the launch files from [astra_launch repository](https://g
 `roslaunch astra_launch stereo_s.launch`
 
 You can use **rviz** or **image_view** to verify the outputs.
+
+## Important Topics
+
+* `*/image_raw`: depth/rgb/ir raw images
+* `*/image_rect_raw`: images rectified by intrinsic/extrinsic parameters
+* `*/camera_info`: camera intrinsic/extrinsic paramers
+* `/camera/depth/points`: point cloud without color information
+* `/camera/depth_registered/points`: Xyzrgb point cloud
 
 ## Useful Services
 

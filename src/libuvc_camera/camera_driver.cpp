@@ -72,10 +72,9 @@ CameraDriver::CameraDriver(ros::NodeHandle nh, ros::NodeHandle priv_nh)
   camera_info_init_ = false;
   uvc_flip_ = 0;
   device_type_no_ = OB_ASTRA_NO;
-  ros_namespace_ = ros::this_node::getNamespace();
-  if (ros_namespace_.length() > 1)
+  if (ns.length() > 1)
   {
-    ros_namespace_ = ros_namespace_.substr(1);
+    ns_no_slash = ns.substr(1);
   }
 }
 
@@ -317,6 +316,10 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
         device_type_no_ = OB_EMBEDDED_S_NO;
         uvc_flip_ = 1;
       }
+      else if (strcmp(device_type_.c_str(), OB_ASTRA_PRO) == 0)
+      {
+        device_type_no_ = OB_ASTRA_PRO_NO;
+      }
       else
       {
         device_type_no_ = OB_ASTRA_NO;
@@ -335,7 +338,9 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
   }
 
   sensor_msgs::CameraInfo::Ptr cinfo(new sensor_msgs::CameraInfo(cinfo_manager_.getCameraInfo()));
-  if (device_type_init_ == true && (device_type_no_ == OB_STEREO_S_NO || device_type_no_ == OB_EMBEDDED_S_NO))
+  if (device_type_init_ == true &&
+      (device_type_no_ == OB_STEREO_S_NO || device_type_no_ == OB_EMBEDDED_S_NO ||
+       device_type_no_ == OB_ASTRA_PRO_NO))
   {
     // update cinfo
     if (camera_info_init_ == true)
@@ -360,8 +365,8 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
         cinfo->P[i] = camera_info_.P[i];
       }
     }
-    image->header.frame_id = ros_namespace_ + "_rgb_optical_frame";
-    cinfo->header.frame_id = ros_namespace_ + "_rgb_optical_frame";
+    image->header.frame_id = ns_no_slash + "_rgb_optical_frame";
+    cinfo->header.frame_id = ns_no_slash + "_rgb_optical_frame";
   }
   else
   {
