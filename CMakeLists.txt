@@ -74,12 +74,12 @@ add_definitions(-Dlibuvc_VERSION_MAJOR=${libuvc_VERSION_MAJOR})
 add_definitions(-Dlibuvc_VERSION_MINOR=${libuvc_VERSION_MINOR})
 add_definitions(-Dlibuvc_VERSION_PATCH=${libuvc_VERSION_PATCH})
 
-set(ORRBEC_OPENNI2_REDIST  "${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/${HOST_PLATFORM}")
-link_directories(${ORRBEC_OPENNI2_REDIST}
+set(ORBBEC_OPENNI2_REDIST  "${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/${HOST_PLATFORM}")
+link_directories(${ORBBEC_OPENNI2_REDIST}
                  ${catkin_LINK_DIRS}
                  )
 
-#MESSAGE(STATUS "ORRBEC : ${ORRBEC_OPENNI2_REDIST}")
+#MESSAGE(STATUS "ORRBEC : ${ORBBEC_OPENNI2_REDIST}")
 
 include_directories(include
                     ${catkin_INCLUDE_DIRS}
@@ -99,7 +99,7 @@ add_library(astra_wrapper
    src/astra_exception.cpp
    src/astra_video_mode.cpp
 )
-target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2  -L${ORRBEC_OPENNI2_REDIST}
+target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2  -L${ORBBEC_OPENNI2_REDIST}
   ${Boost_LIBRARIES} )
 add_dependencies(astra_wrapper ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
 
