@@ -95,7 +95,7 @@ After launching an astra camera, you can get ir exposure by the following comman
     ```
     Next, you can change this value in this way
     ```sh
-    rosservice call /camera/set_ir_exposure "{exposure: 50}" # Press Tab key to help set input parameters
+    rosservice call /camera/set_ir_exposure "{exposure: 50}" # Press tab to autocomplete
     ```
 
 2. turn on/off laser
