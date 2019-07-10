@@ -63,6 +63,7 @@
 #include "astra_camera/ResetIRExposure.h"
 #include "astra_camera/GetCameraInfo.h"
 #include "astra_camera/SetIRFlood.h"
+#include <astra_camera/astra_device_type.h>
 
 #include <ros/ros.h>
 

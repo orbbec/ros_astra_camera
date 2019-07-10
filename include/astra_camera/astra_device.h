@@ -36,6 +36,7 @@
 #include "astra_camera/astra_video_mode.h"
 
 #include "astra_camera/astra_exception.h"
+#include "astra_camera/astra_device_type.h"
 
 #include <openni2/OpenNI.h>
 
@@ -129,7 +130,7 @@ public:
   OBCameraParams getCameraParams() const;
   char* getSerialNumber();
   char* getDeviceType();
-  int getDeviceTypeNo();
+  OB_DEVICE_NO getDeviceTypeNo();
   int getIRGain() const;
   int getIRExposure() const;
 
@@ -180,7 +181,7 @@ protected:
   OBCameraParams m_CamParams;
   char serial_number[12];
   char device_type[32];
-  int device_type_no;
+  OB_DEVICE_NO device_type_no;
 };
 
 std::ostream& operator << (std::ostream& stream, const AstraDevice& device);

@@ -40,7 +40,6 @@
 #include "astra_camera/astra_exception.h"
 #include "astra_camera/astra_convert.h"
 #include "astra_camera/astra_frame_listener.h"
-#include "astra_camera/astra_device_type.h"
 
 #include "openni2/PS1080.h"
 
@@ -179,7 +178,7 @@ char* AstraDevice::getDeviceType()
   return device_type;
 }
 
-int AstraDevice::getDeviceTypeNo()
+OB_DEVICE_NO AstraDevice::getDeviceTypeNo()
 {
   return device_type_no;
 }

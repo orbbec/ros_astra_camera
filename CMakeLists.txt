@@ -98,6 +98,7 @@ add_library(astra_wrapper
    src/astra_device_manager.cpp
    src/astra_exception.cpp
    src/astra_video_mode.cpp
+   src/astra_device_type.cpp
 )
 target_link_libraries(astra_wrapper ${catkin_LIBRARIES} -lOpenNI2  -L${ORBBEC_OPENNI2_REDIST}
   ${Boost_LIBRARIES} )
@@ -105,6 +106,7 @@ add_dependencies(astra_wrapper ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_m
 
 add_library(astra_driver_lib
                 src/astra_driver.cpp
+                src/astra_device_type.cpp
 )
 target_link_libraries(astra_driver_lib astra_wrapper ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
 add_dependencies(astra_driver_lib ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
@@ -133,11 +135,15 @@ if (UNIX AND NOT APPLE)
   set(ADDITIONAL_EXECUTABLES "astra_usb_reset")
 endif()
 
-add_executable(camera_node src/libuvc_camera/main.cpp src/libuvc_camera/camera_driver.cpp)
+add_executable(camera_node src/libuvc_camera/main.cpp
+                           src/libuvc_camera/camera_driver.cpp
+                           src/astra_device_type.cpp)
 target_link_libraries(camera_node ${libuvc_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(camera_node ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
 
-add_library(libuvc_camera_nodelet src/libuvc_camera/nodelet.cpp src/libuvc_camera/camera_driver.cpp)
+add_library(libuvc_camera_nodelet src/libuvc_camera/nodelet.cpp
+                                  src/libuvc_camera/camera_driver.cpp
+                                  src/astra_device_type.cpp)
 target_link_libraries(libuvc_camera_nodelet ${libuvc_LIBRARIES} ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(libuvc_camera_nodelet ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
 

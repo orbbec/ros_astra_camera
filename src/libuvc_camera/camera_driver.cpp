@@ -41,7 +41,6 @@
 #include <libuvc/libuvc.h>
 #include <astra_camera/GetDeviceType.h>
 #include <astra_camera/GetCameraInfo.h>
-#include <astra_camera/astra_device_type.h>
 
 #define libuvc_VERSION (libuvc_VERSION_MAJOR * 10000 \
                       + libuvc_VERSION_MINOR * 100 \
@@ -338,9 +337,7 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
   }
 
   sensor_msgs::CameraInfo::Ptr cinfo(new sensor_msgs::CameraInfo(cinfo_manager_.getCameraInfo()));
-  if (device_type_init_ == true &&
-      (device_type_no_ == OB_STEREO_S_NO || device_type_no_ == OB_EMBEDDED_S_NO ||
-       device_type_no_ == OB_ASTRA_PRO_NO))
+  if (device_type_init_ == true && astraWithUVC(device_type_no_))
   {
     // update cinfo
     if (camera_info_init_ == true)

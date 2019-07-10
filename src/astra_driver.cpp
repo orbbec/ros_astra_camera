@@ -303,13 +303,25 @@ void AstraDriver::configCb(Config &config, uint32_t level)
 {
   if (device_->getDeviceTypeNo() == OB_STEREO_S_NO)
   {
-    config.depth_mode = 13;
-    config.ir_mode = 13;
+    if (config.depth_mode != 13 && config.depth_mode != 14)
+    {
+      config.depth_mode = 13;
+    }
+    if (config.ir_mode != 13 && config.ir_mode != 14 && config.ir_mode != 16)
+    {
+      config.ir_mode = 13;
+    }
   }
   else if (device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
   {
-    config.depth_mode = 13;
-    config.ir_mode = 13;
+    if (config.depth_mode != 13 && config.depth_mode != 17)
+    {
+      config.depth_mode = 13;
+    }
+    if (config.ir_mode != 13 && config.ir_mode != 17)
+    {
+      config.ir_mode = 13;
+    }
     uvc_flip_ = 1;
   }
   bool stream_reset = false;
@@ -747,8 +759,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height
   else
   {
     // If uncalibrated, fill in default values
-    if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO ||
-        device_->getDeviceTypeNo() == OB_ASTRA_PRO_NO)
+    if (astraWithUVC(device_->getDeviceTypeNo()))
     {
       sensor_msgs::CameraInfo cinfo = convertAstraCameraInfo(device_->getCameraParams(), time);
       info = boost::make_shared<sensor_msgs::CameraInfo>(ir_info_manager_->getCameraInfo());
@@ -807,8 +818,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
   {
     // If uncalibrated, fill in default values
     info = getDefaultCameraInfo(width, height, device_->getDepthFocalLength(height));
-    if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO ||
-        device_->getDeviceTypeNo() == OB_ASTRA_PRO_NO)
+    if (astraWithUVC(device_->getDeviceTypeNo()))
     {
       OBCameraParams p = device_->getCameraParams();
       info->D.resize(5, 0.0);
@@ -1088,7 +1098,10 @@ output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x1024@30
                                gen.const( "QQVGA_30Hz", int_t, 11, "160x120@30Hz"),
                                gen.const( "QQVGA_60Hz", int_t, 12, "160x120@60Hz"),
                                gen.const("640400_30Hz", int_t, 13, "640x400@30Hz"),
-                               gen.const("320200_30Hz", int_t, 14, "320x200@30Hz")],
+                               gen.const("320200_30Hz", int_t, 14, "320x200@30Hz"),
+                               gen.const("1280800_7Hz", int_t, 15, "1280x800@7Hz"),
+                               gen.const("1280800_30Hz", int_t, 16, "1280x800@30Hz"),
+                               gen.const("640400_60Hz", int_t, 17, "640x400@60Hz")],
                                "output mode")
   */
 
@@ -1193,6 +1206,27 @@ output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x1024@30
   video_mode.frame_rate_ = 30;
 
   video_modes_lookup_[14] = video_mode;
+
+  // 1280*800_7Hz
+  video_mode.x_resolution_ = 1280;
+  video_mode.y_resolution_ = 800;
+  video_mode.frame_rate_ = 7;
+
+  video_modes_lookup_[15] = video_mode;
+
+  // 1280*800_30Hz
+  video_mode.x_resolution_ = 1280;
+  video_mode.y_resolution_ = 800;
+  video_mode.frame_rate_ = 30;
+
+  video_modes_lookup_[16] = video_mode;
+
+  // 640*400_60Hz
+  video_mode.x_resolution_ = 640;
+  video_mode.y_resolution_ = 400;
+  video_mode.frame_rate_ = 60;
+
+  video_modes_lookup_[17] = video_mode;
 }
 
 int AstraDriver::lookupVideoModeFromDynConfig(int mode_nr, AstraVideoMode& video_mode)

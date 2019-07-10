@@ -15,7 +15,7 @@
 #include <astra_camera/SetUVCGain.h>
 #include <astra_camera/GetUVCWhiteBalance.h>
 #include <astra_camera/SetUVCWhiteBalance.h>
-
+#include <astra_camera/astra_device_type.h>
 #include <libuvc_camera/UVCCameraConfig.h>
 
 #include <string>
@@ -107,7 +107,7 @@ private:
   std::string device_type_;
   sensor_msgs::CameraInfo camera_info_;
   int uvc_flip_;
-  int device_type_no_;
+  OB_DEVICE_NO device_type_no_;
 };
 
 };
