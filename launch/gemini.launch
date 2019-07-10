@@ -86,7 +86,7 @@
 	    <arg name="num_worker_threads"  value="$(arg num_worker_threads)" />
 	  </include>
     <include if="$(arg load_driver)"
-	     file="$(find astra_launch)/launch/includes/device.launch.xml">
+	     file="$(find astra_camera)/launch/includes/device.launch.xml">
       <arg name="manager"                         value="$(arg manager)" />
       <arg name="device_id"                       value="$(arg device_id)" />
       <arg name="bootorder"                       value="$(arg bootorder)" />
@@ -124,7 +124,7 @@
     </include>
   </group>
   <include if="$(arg publish_tf)"
-	   file="$(find astra_launch)/launch/includes/astra_frames.launch">
+	   file="$(find astra_camera)/launch/includes/astra_frames.launch">
     <arg name="camera" value="$(arg camera)" />
   </include>
 </launch>
