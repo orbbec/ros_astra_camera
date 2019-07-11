@@ -22,18 +22,21 @@ This package supports ROS Kinetic and Melodic.
 	
 4. Pull the repository into your ROS workspace
     ```sh
+    cd ~/catkin_ws/src
     git clone https://github.com/orbbec/ros_astra_camera
     ```
 
 5. Create astra udev rule
     ```sh
-    cd ros_astra_camera
+    roscd astra_camera
     ./scripts/create_udev_rules
     ```
 
 6. Go to catkin workspace and compile astra_camera
-
-    `catkin_make --pkg astra_camera`
+    ```sh
+    cd ~/catkin_ws
+    catkin_make --pkg astra_camera
+    ```
 
 ### Filter Enable
 
