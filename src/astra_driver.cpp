@@ -231,6 +231,10 @@ void AstraDriver::advertiseROSTopics()
   reset_ir_gain_server = nh_.advertiseService("reset_ir_gain", &AstraDriver::resetIRGainCb, this);
   reset_ir_exposure_server = nh_.advertiseService("reset_ir_exposure", &AstraDriver::resetIRExposureCb, this);
   get_camera_info = nh_.advertiseService("get_camera_info", &AstraDriver::getCameraInfoCb, this);
+  if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_GEMINI_NO)
+  {
+    switch_ir_camera = nh_.advertiseService("switch_ir_camera", &AstraDriver::switchIRCameraCb, this);
+  }
 }
 
 bool AstraDriver::getSerialCb(astra_camera::GetSerialRequest& req, astra_camera::GetSerialResponse& res)
@@ -299,6 +303,17 @@ bool AstraDriver::setIRFloodCb(astra_camera::SetIRFloodRequest& req, astra_camer
   return true;
 }
 
+bool AstraDriver::switchIRCameraCb(astra_camera::SwitchIRCameraRequest& req, astra_camera::SwitchIRCameraResponse& res)
+{
+  if (req.camera == "left")
+    device_->switchIRCamera(0);
+  else if (req.camera == "right")
+    device_->switchIRCamera(1);
+  else
+    ROS_ERROR("Only support left/right");
+  return true;
+}
+
 void AstraDriver::configCb(Config &config, uint32_t level)
 {
   if (device_->getDeviceTypeNo() == OB_STEREO_S_NO)
@@ -311,6 +326,7 @@ void AstraDriver::configCb(Config &config, uint32_t level)
     {
       config.ir_mode = 13;
     }
+    device_->switchIRCamera(0);
   }
   else if (device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
   {
@@ -323,6 +339,18 @@ void AstraDriver::configCb(Config &config, uint32_t level)
       config.ir_mode = 13;
     }
     uvc_flip_ = 1;
+  }
+  else if (device_->getDeviceTypeNo() == OB_GEMINI_NO)
+  {
+    if (config.depth_mode != 13 && config.depth_mode != 14)
+    {
+      config.depth_mode = 13;
+    }
+    if (config.ir_mode != 13 && config.ir_mode != 14)
+    {
+      config.ir_mode = 13;
+    }
+    device_->switchIRCamera(0);
   }
   bool stream_reset = false;
 
@@ -638,12 +666,11 @@ void AstraDriver::newDepthFrameCallback(sensor_msgs::ImagePtr image)
       if (depth_registration_)
       {
         image->header.frame_id = color_frame_id_;
-        cam_info = getColorCameraInfo(image->width, image->height, image->header.stamp);
       } else
       {
         image->header.frame_id = depth_frame_id_;
-        cam_info = getDepthCameraInfo(image->width, image->height, image->header.stamp);
       }
+      cam_info = getDepthCameraInfo(image->width, image->height, image->header.stamp);
 
       if (depth_raw_subscribers_)
       {
@@ -770,10 +797,6 @@ sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height
       info->distortion_model = sensor_msgs::distortion_models::PLUMB_BOB;
       info->width = width;
       info->height = height;
-      for (int i = 0; i < 5; i++)
-      {
-        info->D[i] = cinfo.D[i];
-      }
 
       for (int i = 0; i < 9; i++)
       {
@@ -822,18 +845,23 @@ sensor_msgs::CameraInfoPtr AstraDriver::getIRCameraInfo(int width, int height, r
     {
       OBCameraParams p = device_->getCameraParams();
       info->D.resize(5, 0.0);
-      info->D[0] = p.l_k[0];
-      info->D[1] = p.l_k[1];
-      info->D[2] = p.l_k[3];
-      info->D[3] = p.l_k[4];
-      info->D[4] = p.l_k[2];
+      // info->D[0] = p.l_k[0];
+      // info->D[1] = p.l_k[1];
+      // info->D[2] = p.l_k[3];
+      // info->D[3] = p.l_k[4];
+      // info->D[4] = p.l_k[2];
 
       info->K.assign(0.0);
-      info->K[0] = (1 - uvc_flip_)*p.r_intr_p[0] + (uvc_flip_)*(-p.r_intr_p[0]);
-      info->K[2] = (1 - uvc_flip_)*p.r_intr_p[2] + (uvc_flip_)*(width - p.r_intr_p[2]);
+      info->K[0] = p.l_intr_p[0];
+      info->K[2] = p.l_intr_p[2];
       info->K[4] = p.l_intr_p[1];
       info->K[5] = p.l_intr_p[3];
       info->K[8] = 1.0;
+
+      info->R.assign(0.0);
+      info->R[0] = 1;
+      info->R[4] = 1;
+      info->R[8] = 1;
 
       info->P.assign(0.0);
       info->P[0] = info->K[0];

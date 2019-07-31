@@ -71,10 +71,15 @@ CameraDriver::CameraDriver(ros::NodeHandle nh, ros::NodeHandle priv_nh)
   camera_info_init_ = false;
   uvc_flip_ = 0;
   device_type_no_ = OB_ASTRA_NO;
-  if (ns.length() > 1)
+  int slash_end;
+  for (slash_end = 0; slash_end < ns.length(); slash_end++)
   {
-    ns_no_slash = ns.substr(1);
+    if (ns[slash_end] != '/')
+    {
+      break;
+    }
   }
+  ns_no_slash = ns.substr(slash_end);
 }
 
 CameraDriver::~CameraDriver() {
@@ -319,6 +324,10 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
       {
         device_type_no_ = OB_ASTRA_PRO_NO;
       }
+      else if (strcmp(device_type_.c_str(), OB_GEMINI) == 0)
+      {
+        device_type_no_ = OB_GEMINI_NO;
+      }
       else
       {
         device_type_no_ = OB_ASTRA_NO;
@@ -346,10 +355,11 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
       cinfo->width = image->width;
       cinfo->distortion_model = camera_info_.distortion_model;
       cinfo->D.resize(5, 0.0);
-      for (int i = 0; i < 5; i++)
-      {
-        cinfo->D[i] = camera_info_.D[i];
-      }
+      cinfo->D[4] = 0.0000000001;
+      // for (int i = 0; i < 5; i++)
+      // {
+      //   cinfo->D[i] = camera_info_.D[i];
+      // }
       for (int i = 0; i < 9; i++)
       {
         cinfo->K[i] = camera_info_.K[i];

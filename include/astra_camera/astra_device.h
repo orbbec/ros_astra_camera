@@ -140,6 +140,8 @@ public:
   void setLaser(bool enable);
   void setIRFlood(bool enable);
 
+  void switchIRCamera(int cam);
+
   void setAutoExposure(bool enable);
   void setAutoWhiteBalance(bool enable);
 

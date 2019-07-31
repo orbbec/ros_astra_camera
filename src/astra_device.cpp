@@ -98,6 +98,10 @@ AstraDevice::AstraDevice(const std::string& device_URI):
   {
     device_type_no = OB_EMBEDDED_S_NO;
   }
+  else if (strcmp(device_type, OB_GEMINI) == 0)
+  {
+    device_type_no = OB_GEMINI_NO;
+  }
   else if (strcmp(device_type, OB_ASTRA_PRO) == 0)
   {
     device_type_no = OB_ASTRA_PRO_NO;
@@ -237,6 +241,14 @@ void AstraDevice::setIRFlood(bool enable)
     enable_ = 0;
   }
   openni_device_->setProperty(XN_MODULE_PROPERTY_IRFLOOD_STATE, enable_);
+}
+
+void AstraDevice::switchIRCamera(int cam)
+{
+  if (device_type_no == OB_STEREO_S_NO || device_type_no == OB_GEMINI_NO)
+  {
+    openni_device_->setProperty(XN_MODULE_PROPERTY_SWITCH_IR, (uint8_t*)&cam, 4);
+  }
 }
 
 float AstraDevice::getIRFocalLength(int output_y_resolution) const

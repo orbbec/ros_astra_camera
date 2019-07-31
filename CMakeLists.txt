@@ -56,6 +56,7 @@ add_service_files(
   SetUVCExposure.srv
   ResetIRGain.srv
   ResetIRExposure.srv
+  SwitchIRCamera.srv
 )
 
 generate_messages(

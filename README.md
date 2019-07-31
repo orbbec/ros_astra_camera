@@ -38,7 +38,7 @@ This package supports ROS Kinetic and Melodic.
     catkin_make --pkg astra_camera
     ```
 
-### Filter Enable
+### Filter Enable (To be deprecated: recommend to try master branch at first)
 
 Astra driver provides normal and filtering methods. With filter driver, we can get more precise depth data but it would cost more computing resources. If the program will be executed on embedded systems, we suggest to use normal method. You can use `-DFILTER=ON / OFF` to change the method as below.
 
@@ -88,6 +88,7 @@ This package provides multiple [ros services](http://wiki.ros.org/Services) for 
 * `/camera/set_uvc_gain`: set uvc gain
 * `/camera/set_uvc_white_balance`: set uvc white balance (set **0** indicating auto mode)
 * `/camera/set_ir_flood`: turn on (**true**) or turn off (**false**) ir flood
+* `/camera/switch_ir_camera`: while using stereo_s/gemini, you can switch (left/right) ir camera
 
 ### Examples
 
@@ -103,11 +104,26 @@ After launching an astra camera, you can get ir exposure by the following comman
 
 2. turn on/off laser
     ```sh
-    rosservice call /camera/set_laser "{enable: true}"    #turn on
-    rosservice call /camera/set_laser "{enable: false}"   #turn off
+    rosservice call /camera/set_laser "{enable: true}" # turn on
+    rosservice call /camera/set_laser "{enable: false}" # turn off
+    ```
+
+3. switch ir
+    ```sh
+    rosservice call /camera/switch_ir_camera "camera: 'left'" # left
+    rosservice call /camera/switch_ir_camera "camera: 'right'" # right
     ```
 
 For the other services, the usage is same as the above example.
+
+## Multiple Cameras
+
+To launch multiple cameras, you could modify `multi_astra.launch` to match your setting. The important settings are `device_x_id`(serial number of your devices), `3d_sensor`(name of launch file), and `has_uvc_serial`(does your camera's uvc have serial number).
+
+If you received **USB Buffer Error**, you could try to increase your USBFS buffer size by the following command.
+```sh
+echo 64 > /sys/module/usbcore/parameters/usbfs_memory_mb # or maybe 128
+```
 
 ## License
 
