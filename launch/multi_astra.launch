@@ -3,13 +3,13 @@
        into the "camera" namespace, and it is prepended to tf frame ids. -->
   <arg name="camera"      default="camera"/>
   <arg name="publish_tf"  default="true"/>
-  <arg name="3d_sensor"   default="astrapro"/>  <!-- kinect, asus_xtion_pro, astra -->
+  <arg name="3d_sensor"   default="gemini"/>  <!-- gemini, astrapro, astra -->
 
   <arg name="device_1_prefix"   default="01"/>
   <arg name="device_2_prefix"   default="02"/>
-  <arg name="device_1_id"       default="18101730327"/> <!--AY053930173-->
-  <arg name="device_2_id"       default="18101630010"/> <!--AY053930032-->
-  <arg name="has_uvc_serial"    default="false"/>
+  <arg name="device_1_id"       default="AY053930173"/>
+  <arg name="device_2_id"       default="AY053930051"/>
+  <arg name="has_uvc_serial"    default="true"/>
 
   <!-- Factory-calibrated depth registration -->
   <arg name="depth_registration"              default="false"/>
@@ -36,7 +36,8 @@
     <arg name="publish_tf"                      value="$(arg publish_tf)"/>
     <arg name="depth_registration"              value="$(arg depth_registration)"/>
     <arg name="num_worker_threads"              value="$(arg num_worker_threads)" />
-    <arg name="index"                           value="0"/>
+    <!-- add index if uvc does not have serial -->
+    <!--<arg name="index"                           value="0"/>-->
 
     <!-- Processing Modules -->
     <arg name="rgb_processing"                  value="$(arg rgb_processing)"/>
@@ -56,7 +57,8 @@
     <arg name="publish_tf"                      value="$(arg publish_tf)"/>
     <arg name="depth_registration"              value="$(arg depth_registration)"/>
     <arg name="num_worker_threads"              value="$(arg num_worker_threads)" />
-    <arg name="index"                           value="1"/>
+    <!-- add index if uvc does not have serial -->
+    <!--<arg name="index"                           value="1"/>-->
 
     <!-- Processing Modules -->
     <arg name="rgb_processing"                  value="$(arg rgb_processing)"/>
