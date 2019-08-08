@@ -3,7 +3,7 @@ Changelog for package astra_camera
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 0.3.0 (2019-07-19)
 ------------
-* Integrate cameras with UVC
+* Add UVC support
 * Add OPENNI2 include files under include folder 
 * Add more video modes
 * Add useful services to control cameras
@@ -11,6 +11,7 @@ Changelog for package astra_camera
 * Merge astra_launch package
 * 56-orbbec-usb.rules now includes uvc support
 * CMakeLists.txt changes accordingly
+* Update README
 * Contributors: Chi-Ju Wu, Nan Xu
 
 0.2.2 (2018-03-22)
