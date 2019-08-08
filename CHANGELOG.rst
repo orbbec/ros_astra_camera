@@ -4,10 +4,10 @@ Changelog for package astra_camera
 0.3.0 (2019-07-19)
 ------------
 * Add UVC support
-* Add OPENNI2 include files under include folder 
+* Add OPENNI2 include files under include folder
 * Add more video modes
 * Add useful services to control cameras
-* Support Stereo S, Embedded S, and Gemini
+* Support Stereo S, Embedded S, and Stereo S U3
 * Merge astra_launch package
 * 56-orbbec-usb.rules now includes uvc support
 * CMakeLists.txt changes accordingly

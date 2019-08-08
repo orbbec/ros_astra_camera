@@ -98,9 +98,9 @@ AstraDevice::AstraDevice(const std::string& device_URI):
   {
     device_type_no = OB_EMBEDDED_S_NO;
   }
-  else if (strcmp(device_type, OB_GEMINI) == 0)
+  else if (strcmp(device_type, OB_STEREO_S_U3) == 0)
   {
-    device_type_no = OB_GEMINI_NO;
+    device_type_no = OB_STEREO_S_U3_NO;
   }
   else if (strcmp(device_type, OB_ASTRA_PRO) == 0)
   {
@@ -245,7 +245,7 @@ void AstraDevice::setIRFlood(bool enable)
 
 void AstraDevice::switchIRCamera(int cam)
 {
-  if (device_type_no == OB_STEREO_S_NO || device_type_no == OB_GEMINI_NO)
+  if (device_type_no == OB_STEREO_S_NO || device_type_no == OB_STEREO_S_U3_NO)
   {
     openni_device_->setProperty(XN_MODULE_PROPERTY_SWITCH_IR, (uint8_t*)&cam, 4);
   }

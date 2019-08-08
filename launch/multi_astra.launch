@@ -3,12 +3,12 @@
        into the "camera" namespace, and it is prepended to tf frame ids. -->
   <arg name="camera"      default="camera"/>
   <arg name="publish_tf"  default="true"/>
-  <arg name="3d_sensor"   default="gemini"/>  <!-- gemini, astrapro, astra -->
+  <arg name="3d_sensor"   default="stereo_s_u3"/>  <!-- stereo_s_u3, astrapro, astra -->
 
   <arg name="device_1_prefix"   default="01"/>
   <arg name="device_2_prefix"   default="02"/>
   <arg name="device_1_id"       default="AY053930173"/>
-  <arg name="device_2_id"       default="AY053930051"/>
+  <arg name="device_2_id"       default="AY053930032"/>
   <arg name="has_uvc_serial"    default="true"/>
 
   <!-- Factory-calibrated depth registration -->

@@ -88,7 +88,7 @@ This package provides multiple [ros services](http://wiki.ros.org/Services) for 
 * `/camera/set_uvc_gain`: set uvc gain
 * `/camera/set_uvc_white_balance`: set uvc white balance (set **0** indicating auto mode)
 * `/camera/set_ir_flood`: turn on (**true**) or turn off (**false**) ir flood
-* `/camera/switch_ir_camera`: while using stereo_s/gemini, you can switch (left/right) ir camera
+* `/camera/switch_ir_camera`: while using stereo_s/stereo_s_u3, you can switch (left/right) ir camera
 
 ### Examples
 

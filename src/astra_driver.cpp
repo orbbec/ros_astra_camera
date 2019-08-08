@@ -231,7 +231,7 @@ void AstraDriver::advertiseROSTopics()
   reset_ir_gain_server = nh_.advertiseService("reset_ir_gain", &AstraDriver::resetIRGainCb, this);
   reset_ir_exposure_server = nh_.advertiseService("reset_ir_exposure", &AstraDriver::resetIRExposureCb, this);
   get_camera_info = nh_.advertiseService("get_camera_info", &AstraDriver::getCameraInfoCb, this);
-  if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_GEMINI_NO)
+  if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_STEREO_S_U3_NO)
   {
     switch_ir_camera = nh_.advertiseService("switch_ir_camera", &AstraDriver::switchIRCameraCb, this);
   }
@@ -340,7 +340,7 @@ void AstraDriver::configCb(Config &config, uint32_t level)
     }
     uvc_flip_ = 1;
   }
-  else if (device_->getDeviceTypeNo() == OB_GEMINI_NO)
+  else if (device_->getDeviceTypeNo() == OB_STEREO_S_U3_NO)
   {
     if (config.depth_mode != 13 && config.depth_mode != 14)
     {

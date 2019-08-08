@@ -324,9 +324,9 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
       {
         device_type_no_ = OB_ASTRA_PRO_NO;
       }
-      else if (strcmp(device_type_.c_str(), OB_GEMINI) == 0)
+      else if (strcmp(device_type_.c_str(), OB_STEREO_S_U3) == 0)
       {
-        device_type_no_ = OB_GEMINI_NO;
+        device_type_no_ = OB_STEREO_S_U3_NO;
       }
       else
       {
