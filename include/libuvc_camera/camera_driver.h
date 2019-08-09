@@ -16,7 +16,7 @@
 #include <astra_camera/GetUVCWhiteBalance.h>
 #include <astra_camera/SetUVCWhiteBalance.h>
 #include <astra_camera/astra_device_type.h>
-#include <libuvc_camera/UVCCameraConfig.h>
+#include <astra_camera/UVCCameraConfig.h>
 
 #include <string>
 

@@ -35,7 +35,7 @@ ENDIF ()
 message(STATUS "ORRBEC : ${HOST_PLATFORM}")
 message(STATUS "libuvc ${libuvc_VERSION_MAJOR}.${libuvc_VERSION_MINOR}.${libuvc_VERSION_PATCH}")
 
-generate_dynamic_reconfigure_options(cfg/Astra.cfg)
+generate_dynamic_reconfigure_options(cfg/Astra.cfg cfg/UVCCamera.cfg)
 
 add_service_files(
   FILES
