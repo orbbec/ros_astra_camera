@@ -1,7 +1,7 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package astra_camera
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-0.3.0 (2019-07-19)
+0.3.0 (2019-08-08)
 ------------
 * Add UVC support
 * Add OPENNI2 include files under include folder
@@ -12,7 +12,7 @@ Changelog for package astra_camera
 * 56-orbbec-usb.rules now includes uvc support
 * CMakeLists.txt changes accordingly
 * Update README
-* Contributors: Chi-Ju Wu, Nan Xu
+* Contributors: Chi-Ju Wu, Nan Xu, dandedrick, coxep
 
 0.2.2 (2018-03-22)
 -----------
