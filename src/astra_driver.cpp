@@ -154,6 +154,10 @@ AstraDriver::AstraDriver(ros::NodeHandle& n, ros::NodeHandle& pnh) :
   advertiseROSTopics();
 }
 
+AstraDriver::~AstraDriver() {
+  device_->stopAllStreams();
+}
+
 void AstraDriver::advertiseROSTopics()
 {
 
