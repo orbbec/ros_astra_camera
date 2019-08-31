@@ -108,6 +108,7 @@ private:
   sensor_msgs::CameraInfo camera_info_;
   int uvc_flip_;
   OB_DEVICE_NO device_type_no_;
+  bool camera_info_valid_;
 };
 
 };

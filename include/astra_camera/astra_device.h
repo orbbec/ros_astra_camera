@@ -128,6 +128,7 @@ public:
   float getDepthFocalLength (int output_y_resolution) const;
   float getBaseline () const;
   OBCameraParams getCameraParams() const;
+  bool isCameraParamsValid();
   char* getSerialNumber();
   char* getDeviceType();
   OB_DEVICE_NO getDeviceTypeNo();
@@ -181,6 +182,7 @@ protected:
   bool use_device_time_;
 
   OBCameraParams m_CamParams;
+  bool m_ParamsValid;
   char serial_number[12];
   char device_type[32];
   OB_DEVICE_NO device_type_no;
