@@ -41,6 +41,7 @@
 #include <libuvc/libuvc.h>
 #include <astra_camera/GetDeviceType.h>
 #include <astra_camera/GetCameraInfo.h>
+#include <cmath>
 
 #define libuvc_VERSION (libuvc_VERSION_MAJOR * 10000 \
                       + libuvc_VERSION_MINOR * 100 \
@@ -80,6 +81,7 @@ CameraDriver::CameraDriver(ros::NodeHandle nh, ros::NodeHandle priv_nh)
     }
   }
   ns_no_slash = ns.substr(slash_end);
+  camera_info_valid_ = false;
 }
 
 CameraDriver::~CameraDriver() {
@@ -342,6 +344,11 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
     {
       camera_info_ = camera_info_srv.response.info;
       camera_info_init_ = true;
+      camera_info_valid_ = true;
+      if (std::isnan(camera_info_.K[0]) || std::isnan(camera_info_.K[2]) || std::isnan(camera_info_.K[4]) || std::isnan(camera_info_.K[5]))
+      {
+        camera_info_valid_ = false;
+      }
     }
   }
 
@@ -349,7 +356,7 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
   if (device_type_init_ == true && astraWithUVC(device_type_no_))
   {
     // update cinfo
-    if (camera_info_init_ == true)
+    if (camera_info_init_ == true && camera_info_valid_ == true)
     {
       cinfo->height = image->height;
       cinfo->width = image->width;
