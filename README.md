@@ -84,6 +84,7 @@ This package provides multiple [ros services](http://wiki.ros.org/Services) for 
 * `/camera/set_ir_exposure`: set ir exposure to specific value
 * `/camera/set_ir_gain`: set ir gain to specific value
 * `/camera/set_laser`: turn on (**true**) or turn off (**false**) laser
+* `/camera/set_ldp`: turn on (**true**) or turn off (**false**) ldp
 * `/camera/set_uvc_exposure`: set uvc exposure. (set **0** indicating auto mode)
 * `/camera/set_uvc_gain`: set uvc gain
 * `/camera/set_uvc_white_balance`: set uvc white balance (set **0** indicating auto mode)

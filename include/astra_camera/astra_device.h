@@ -140,6 +140,7 @@ public:
   void setIRExposure(int exposure);
   void setLaser(bool enable);
   void setIRFlood(bool enable);
+  void setLDP(bool enable);
 
   void switchIRCamera(int cam);
 

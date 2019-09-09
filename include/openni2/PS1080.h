@@ -157,7 +157,34 @@ enum
 	//rgb Ae mode
 	XN_MODULE_PROPERTY_RGB_AE_MODE = 0x1080FFB1,
 
+	//IR Temperature mode
+	XN_MODULE_PROPERTY_CAL_IR_TEMP = 0x1080FFB2,
+	//LDMP Temperature mode
+	XN_MODULE_PROPERTY_CAL_LDMP_TEMP = 0x1080FFB3,
+	//IR real time Temperature mode
+	XN_MODULE_PROPERTY_RT_IR_TEMP = 0x1080FFB4,
+	//LDMP real time Temperature mode
+	XN_MODULE_PROPERTY_RT_LDMP_TEMP = 0x1080FFB5,
+	//IR temperature compensation coefficient mode
+	XN_MODULE_PROPERTY_IR_TEMP_COMP_CO = 0x1080FFB6,
+	//Ldmp temperature compensation coefficient mode
+	XN_MODULE_PROPERTY_LDMP_TEMP_COMP_CO = 0x1080FFB7,
 
+	//Temperature comp
+	XN_MODULE_PROPERTY_TEMP_COMP = 0x1080FFB8,
+
+	//Depth optimization enabled state
+	XN_MODULE_PROPERTY_DEPTH_OPTIM_STATE = 0x1080FFB9,
+
+	//Depth optimization param
+	XN_MODULE_PROPERTY_DEPTH_OPTIM_PARAM = 0x1080FFBA,
+
+	XN_MODULE_PROPERTY_UPDATE_FIRMWARE_FLASH_CHUNK = 0x1080FFBD,
+
+	XN_MODULE_PROPERTY_LDP_ENABLE = 0x1080FFBE,
+        XN_MODULE_PROPERTY_EMITTER_STATE_V1 = 0x1080FFBF, // "get Emitter enable"
+	XN_MODULE_PROPERTY_LDP_SCALE = 0x1080FFC0,       //ldp scale
+	XN_MODULE_PROPERTY_LDP_STATUS = 0x1080FFC1,      //ldp status
 	/*******************************************************************/
 	/* Common stream properties                                        */
 	/*******************************************************************/
@@ -221,6 +248,9 @@ enum
 	XN_STREAM_PROPERTY_DEPTH_SENSOR_CALIBRATION_INFO = 0x10801012,
 	/** Boolean */
 	XN_STREAM_PROPERTY_GMC_MODE	= 0x1080FF44, // "GmcMode"
+
+        XN_STREAM_PROPERTY_MIN_DEPTH  = 0x1080FF40, // "MinDepthValue"
+        XN_STREAM_PROPERTY_MAX_DEPTH  = 0x1080FF41, // "MaxDepthValue"
 	/** Boolean */
 	XN_STREAM_PROPERTY_GMC_DEBUG = 0x1080FF45, // "GmcDebug"
 	/** Boolean */
@@ -230,6 +260,7 @@ enum
 
     /** Boolean */
     XN_STREAM_PROPERTY_SOFTWARE_REGISTRATION = 0x2080FF42, // "Software Registration"
+	XN_STREAM_PROPERTY_SOFTWARE_FILTER = 0x2080FF43,		//soft filter enable
 
 	/*******************************************************************/
 	/* Color stream properties                                         */
@@ -291,7 +322,7 @@ typedef enum
 {
 	XN_CMOS_TYPE_IMAGE = 0,
 	XN_CMOS_TYPE_DEPTH = 1,
-
+	XN_CMOS_TYPE_IR = 2,
 	XN_CMOS_COUNT
 } XnCMOSType;
 
@@ -707,6 +738,14 @@ typedef struct XnRgbAeMode
 	uint16_t nAeMode;
 	uint16_t nAeTarget;
 } XnRgbAeMode;
+
+typedef struct XnDepthOptimizationParam
+{
+	double nParam1;
+	double nParam2;
+	double nParam3;
+}XnDepthOptimizationParam;
+
 
 #pragma pack (pop)
 

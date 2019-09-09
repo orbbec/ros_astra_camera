@@ -53,6 +53,7 @@ add_service_files(
   SetIRGain.srv
   SetIRFlood.srv
   SetLaser.srv
+  SetLDP.srv
   SetUVCExposure.srv
   ResetIRGain.srv
   ResetIRExposure.srv

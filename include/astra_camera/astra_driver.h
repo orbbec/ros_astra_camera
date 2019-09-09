@@ -59,6 +59,7 @@
 #include "astra_camera/GetIRExposure.h"
 #include "astra_camera/SetIRExposure.h"
 #include "astra_camera/SetLaser.h"
+#include "astra_camera/SetLDP.h"
 #include "astra_camera/ResetIRGain.h"
 #include "astra_camera/ResetIRExposure.h"
 #include "astra_camera/GetCameraInfo.h"
@@ -116,6 +117,7 @@ private:
   bool getCameraInfoCb(astra_camera::GetCameraInfoRequest& req, astra_camera::GetCameraInfoResponse& res);
   bool setIRFloodCb(astra_camera::SetIRFloodRequest& req, astra_camera::SetIRFloodResponse& res);
   bool switchIRCameraCb(astra_camera::SwitchIRCameraRequest& req, astra_camera::SwitchIRCameraResponse& res);
+  bool setLDPCb(astra_camera::SetLDPRequest& req, astra_camera::SetLDPResponse& res);
 
   void configCb(Config &config, uint32_t level);
 
@@ -148,6 +150,7 @@ private:
   ros::ServiceServer set_ir_exposure_server;
   ros::ServiceServer set_ir_flood_server;
   ros::ServiceServer set_laser_server;
+  ros::ServiceServer set_ldp_server;
   ros::ServiceServer reset_ir_gain_server;
   ros::ServiceServer reset_ir_exposure_server;
   ros::ServiceServer switch_ir_camera;
