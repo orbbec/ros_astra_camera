@@ -29,6 +29,7 @@
   <run_depend>roscpp</run_depend>
   <run_depend>image_transport</run_depend>
   <run_depend>message_runtime</run_depend>
+  <run_depend>rgbd_launch</run_depend>
 
   <export>
     <nodelet plugin="${prefix}/astra_nodelets.xml"/>
