@@ -63,6 +63,7 @@ You can use **rviz** or **image_view** to verify the outputs.
 ## Important Topics
 
 * `*/image_raw`: depth/rgb/ir raw images
+  * If showing IR image is required, it would be more visible to normalize it from 16bit to 8bit (0 to 255)
 * `*/image_rect_raw`: images rectified by intrinsic/extrinsic parameters
 * `*/camera_info`: camera intrinsic/extrinsic parameters
 * `/camera/depth/points`: point cloud without color information
