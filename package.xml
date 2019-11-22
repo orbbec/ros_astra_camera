@@ -5,6 +5,7 @@
   <description>Drivers for Orbbec Astra Devices. </description>
   <author email="liuhua@orbbec.com">Tim Liu</author>
   <license>Apache License 2.0</license>
+  <maintainer email="nan@orbbec3d.com">Orbbec3D</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
 
