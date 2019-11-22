@@ -232,6 +232,7 @@ void AstraDriver::advertiseROSTopics()
   set_ir_exposure_server = nh_.advertiseService("set_ir_exposure", &AstraDriver::setIRExposureCb, this);
   set_ir_flood_server = nh_.advertiseService("set_ir_flood", &AstraDriver::setIRFloodCb, this);
   set_laser_server = nh_.advertiseService("set_laser", &AstraDriver::setLaserCb, this);
+  set_ldp_server = nh_.advertiseService("set_ldp", &AstraDriver::setLDPCb, this);
   reset_ir_gain_server = nh_.advertiseService("reset_ir_gain", &AstraDriver::resetIRGainCb, this);
   reset_ir_exposure_server = nh_.advertiseService("reset_ir_exposure", &AstraDriver::resetIRExposureCb, this);
   get_camera_info = nh_.advertiseService("get_camera_info", &AstraDriver::getCameraInfoCb, this);
@@ -280,6 +281,12 @@ bool AstraDriver::setIRExposureCb(astra_camera::SetIRExposureRequest& req, astra
 bool AstraDriver::setLaserCb(astra_camera::SetLaserRequest& req, astra_camera::SetLaserResponse& res)
 {
   device_->setLaser(req.enable);
+  return true;
+}
+
+bool AstraDriver::setLDPCb(astra_camera::SetLDPRequest& req, astra_camera::SetLDPResponse& res)
+{
+  device_->setLDP(req.enable);
   return true;
 }
 

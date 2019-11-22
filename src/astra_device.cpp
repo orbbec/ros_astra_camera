@@ -255,6 +255,30 @@ void AstraDevice::setIRFlood(bool enable)
   openni_device_->setProperty(XN_MODULE_PROPERTY_IRFLOOD_STATE, enable_);
 }
 
+void AstraDevice::setLDP(bool enable)
+{
+  int data_size = 4;
+  int enable_ = 1;
+  if (enable == false)
+  {
+    enable_ = 0;
+  }
+  if (device_type_no == OB_STEREO_S_U3_NO)
+  {
+    openni_device_->setProperty(XN_MODULE_PROPERTY_LDP_ENABLE, (uint8_t *)&enable_, 4);
+  }
+  else
+  {
+    boost::shared_ptr<openni::VideoStream> depth_stream = getDepthVideoStream();
+    boost::shared_ptr<openni::VideoStream> ir_stream = getIRVideoStream();
+    depth_stream->stop();
+    ir_stream->stop();
+    openni_device_->setProperty(openni::OBEXTENSION_ID_LDP_EN, (uint8_t *)&enable_, 4);
+    depth_stream->start();
+    ir_stream->start();
+  }
+}
+
 void AstraDevice::switchIRCamera(int cam)
 {
   if (device_type_no == OB_STEREO_S_NO || device_type_no == OB_STEREO_S_U3_NO)

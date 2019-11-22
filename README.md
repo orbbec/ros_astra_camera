@@ -18,6 +18,7 @@ This package supports ROS Kinetic and Melodic.
     mkdir -p ~/catkin_ws/src
 	cd ~/catkin_ws/
 	catkin_make
+	source devel/setup.bash
     ```
 	
 4. Pull the repository into your ROS workspace
@@ -63,6 +64,7 @@ You can use **rviz** or **image_view** to verify the outputs.
 ## Important Topics
 
 * `*/image_raw`: depth/rgb/ir raw images
+  * If showing IR image is required, it would be more visible to normalize it from 16bit to 8bit (0 to 255)
 * `*/image_rect_raw`: images rectified by intrinsic/extrinsic parameters
 * `*/camera_info`: camera intrinsic/extrinsic parameters
 * `/camera/depth/points`: point cloud without color information
@@ -84,6 +86,7 @@ This package provides multiple [ros services](http://wiki.ros.org/Services) for 
 * `/camera/set_ir_exposure`: set ir exposure to specific value
 * `/camera/set_ir_gain`: set ir gain to specific value
 * `/camera/set_laser`: turn on (**true**) or turn off (**false**) laser
+* `/camera/set_ldp`: turn on (**true**) or turn off (**false**) ldp
 * `/camera/set_uvc_exposure`: set uvc exposure. (set **0** indicating auto mode)
 * `/camera/set_uvc_gain`: set uvc gain
 * `/camera/set_uvc_white_balance`: set uvc white balance (set **0** indicating auto mode)
