@@ -57,7 +57,7 @@
   <!-- Worker threads for the nodelet manager -->
   <arg name="num_worker_threads" default="4" />
   <group ns="$(arg camera)">
-    <node pkg="astra_camera" type="camera_node" name="stereo_s">
+    <node pkg="astra_camera" type="camera_node" name="embedded_s">
       <!-- Parameters used to find the camera -->
       <param name="vendor" value="0x2bc5"/>
       <param name="product" value="0x050b"/>
