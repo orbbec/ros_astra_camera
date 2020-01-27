@@ -23,7 +23,7 @@
   <arg name="depth_camera_info_url" default="" />
 
   <!-- Hardware depth registration -->
-  <arg name="depth_registration" default="false" />
+  <arg name="depth_registration" default="true" />
 
   <!-- Driver parameters -->
   <arg name="color_depth_synchronization"     default="false" />
