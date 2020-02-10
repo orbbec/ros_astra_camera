@@ -896,14 +896,20 @@ sensor_msgs::CameraInfoPtr AstraDriver::getDepthCameraInfo(int width, int height
   // The depth image has essentially the same intrinsics as the IR image, BUT the
   // principal point is offset by half the size of the hardware correlation window
   // (probably 9x9 or 9x7 in 640x480 mode). See http://www.ros.org/wiki/kinect_calibration/technical
-
   double scaling = (double)width / 640;
-
   sensor_msgs::CameraInfoPtr info = getIRCameraInfo(width, height, time);
-  info->K[2] -= depth_ir_offset_x_*scaling; // cx
-  info->K[5] -= depth_ir_offset_y_*scaling; // cy
-  info->P[2] -= depth_ir_offset_x_*scaling; // cx
-  info->P[6] -= depth_ir_offset_y_*scaling; // cy
+  info->K[0] *= scaling; // fx
+  info->K[2] *= scaling; // cx
+  info->K[2] -= depth_ir_offset_x_ * scaling;
+  info->K[4] *= scaling; // fy
+  info->K[5] *= scaling; // cy
+  info->K[5] -= depth_ir_offset_y_ * scaling;
+  info->P[0] *= scaling; // fx
+  info->P[2] *= scaling; // cx
+  info->P[2] -= depth_ir_offset_x_ * scaling;
+  info->P[5] *= scaling; // fy
+  info->P[6] *= scaling; // cy
+  info->P[6] -= depth_ir_offset_y_ * scaling;
 
   /// @todo Could put this in projector frame so as to encode the baseline in P[3]
   return info;
