@@ -820,6 +820,7 @@ sensor_msgs::CameraInfoPtr AstraDriver::getColorCameraInfo(int width, int height
         info->P[i] = cinfo.P[i];
       }
 /*01112020 color camera param change according to resolution */
+  double scaling = (double)width / 640;
   info->K[0] *= scaling; // fx
   info->K[2] *= scaling; // cx
   info->K[2] -= depth_ir_offset_x_ * scaling;
