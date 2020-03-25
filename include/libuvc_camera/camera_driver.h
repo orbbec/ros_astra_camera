@@ -88,7 +88,6 @@ private:
   bool config_changed_;
 
   camera_info_manager::CameraInfoManager cinfo_manager_;
-  bool param_init_;
   std::string ns;
   std::string ns_no_slash;
 
