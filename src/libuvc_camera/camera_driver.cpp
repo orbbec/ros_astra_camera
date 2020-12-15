@@ -170,7 +170,7 @@ bool CameraDriver::Start() {
 }
 
 void CameraDriver::Stop() {
-  boost::recursive_mutex::scoped_lock(mutex_);
+  boost::recursive_mutex::scoped_lock lock(mutex_);
 
   assert(state_ != kInitial);
 
@@ -186,7 +186,7 @@ void CameraDriver::Stop() {
 }
 
 void CameraDriver::ReconfigureCallback(UVCCameraConfig &new_config, uint32_t level) {
-  boost::recursive_mutex::scoped_lock(mutex_);
+  boost::recursive_mutex::scoped_lock lock(mutex_);
 
   if ((level & kReconfigureClose) == kReconfigureClose) {
     if (state_ == kRunning)
@@ -253,7 +253,7 @@ void CameraDriver::ImageCallback(uvc_frame_t *frame) {
     timestamp = ros::Time::now();
   }
 
-  boost::recursive_mutex::scoped_lock(mutex_);
+  boost::recursive_mutex::scoped_lock lock(mutex_);
 
   assert(state_ == kRunning);
   assert(rgb_frame_);
@@ -410,7 +410,7 @@ void CameraDriver::AutoControlsCallback(
   int selector,
   enum uvc_status_attribute status_attribute,
   void *data, size_t data_len) {
-  boost::recursive_mutex::scoped_lock(mutex_);
+  boost::recursive_mutex::scoped_lock lock(mutex_);
 
   printf("Controls callback. class: %d, event: %d, selector: %d, attr: %d, data_len: %zu\n",
          status_class, event, selector, status_attribute, data_len);
