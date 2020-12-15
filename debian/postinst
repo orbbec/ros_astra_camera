@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+LOCAL_UDEV_RULE="/etc/udev/rules.d/56-orbbec-usb.rules"
+
+case "$1" in
+    configure)
+        if [ -f ${LOCAL_UDEV_RULE} ]; then
+            echo "WARNING: Locally installed udev rule should removed:" 1>&2
+            echo "         sudo rm -f ${LOCAL_UDEV_RULE}" 1>&2
+	fi
+    ;;
+
+    abort-upgrade|abort-deconfigure|abort-remove)
+    ;;
+
+    *)
+        echo "$0 called with unknown argument \`$1'" 1>&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
