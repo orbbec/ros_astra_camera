@@ -12,7 +12,7 @@
       <param name="width" value="640"/>
       <param name="height" value="480"/>
       <!-- choose whichever uncompressed format the camera supports: -->
-      <param name="video_mode" value="yuyv"/> <!-- or yuyv/nv12/jpeg -->
+      <param name="video_mode" value="mjpeg"/> <!-- or yuyv/nv12/jpeg -->
       <param name="frame_rate" value="30"/>
 
       <param name="timestamp_method" value="start"/> <!-- start of frame -->

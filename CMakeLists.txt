@@ -15,15 +15,15 @@ MESSAGE(STATUS "ORRBEC Machine Bits : ${MACHINES_BIT}")
 IF ( (${MACHINES} MATCHES "x86_64") AND (${MACHINES_BIT} MATCHES "64")  )
       set(HOST_PLATFORM  "x64")
 # for schroot enviroment
-ELSEIF ( (${MACHINES} MATCHES "x86_64") AND (${MACHINES_BIT} MATCHES "32")  )
-      set(HOST_PLATFORM  "x86")
-ELSEIF ( ${MACHINES} MATCHES "x86" )
-ELSEIF ( ${MACHINES} MATCHES "x86" )
-      set(HOST_PLATFORM  "x86")
-ELSEIF ( ${MACHINES} MATCHES "i686" )
-      set(HOST_PLATFORM  "x86")
-ELSEIF ( ${MACHINES} MATCHES "i386" )
-      set(HOST_PLATFORM  "x86")
+#ELSEIF ( (${MACHINES} MATCHES "x86_64") AND (${MACHINES_BIT} MATCHES "32")  )
+#      set(HOST_PLATFORM  "x86")
+#ELSEIF ( ${MACHINES} MATCHES "x86" )
+#ELSEIF ( ${MACHINES} MATCHES "x86" )
+#      set(HOST_PLATFORM  "x86")
+#ELSEIF ( ${MACHINES} MATCHES "i686" )
+#      set(HOST_PLATFORM  "x86")
+#ELSEIF ( ${MACHINES} MATCHES "i386" )
+#      set(HOST_PLATFORM  "x86")
 ELSEIF ( ${MACHINES} MATCHES "arm" )
       set(HOST_PLATFORM  "arm")
 ELSEIF ( (${MACHINES} MATCHES "aarch64") AND (${MACHINES_BIT} MATCHES "64")  )
@@ -54,10 +54,17 @@ add_service_files(
   SetIRFlood.srv
   SetLaser.srv
   SetLDP.srv
+  SetFan.srv
   SetUVCExposure.srv
   ResetIRGain.srv
   ResetIRExposure.srv
   SwitchIRCamera.srv
+  SetDistortioncal.srv
+  SetAeEnable.srv
+  GetVersion.srv
+  SetAutoExposure.srv
+  SetAutoWhiteBalance.srv
+  SetMirror.srv
 )
 
 generate_messages(

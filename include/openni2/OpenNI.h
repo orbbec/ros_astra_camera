@@ -1,4 +1,4 @@
-/*****************************************************************************
+﻿/*****************************************************************************
 *                                                                            *
 *  OpenNI 2.x Alpha                                                          *
 *  Copyright (C) 2012 PrimeSense Ltd.                                        *
@@ -2145,7 +2145,7 @@ public:
 	{
 		return (Status)oniInitialize(ONI_API_VERSION); // provide version of API, to make sure proper struct sizes are used
 	}
-
+	
 	/**
 	Stop using the library. Unload all drivers, close all streams and devices.
 	Once @ref shutdown was called, no other calls to OpenNI is allowed.
@@ -2392,6 +2392,13 @@ public:
 	{
 		return (Status)oniSetLogAndroidOutput(bAndroidOutput);
 	}
+
+
+	static Status setLogAndroidOutputRedirect(bool bAndroidOutput)
+	{
+		return (Status)oniSetLogAndroidOutputRedirect(bAndroidOutput);
+	}
+
 	#endif
 	
 private:

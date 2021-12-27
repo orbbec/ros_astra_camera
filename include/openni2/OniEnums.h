@@ -1,4 +1,4 @@
-/*****************************************************************************
+﻿/*****************************************************************************
 *                                                                            *
 *  OpenNI 2.x Alpha                                                          *
 *  Copyright (C) 2012 PrimeSense Ltd.                                        *
@@ -34,6 +34,33 @@ typedef enum
 	STATUS_BAD_PARAMETER = 4,
 	STATUS_OUT_OF_FLOW = 5,
 	STATUS_NO_DEVICE = 6,
+	STATUS_NOT_WRITE_PUBLIC_KEY = 7,
+	STATUS_PUBLIC_KEY_MD5_VERIFY_FAILED = 8,
+	STATUS_NOT_WRITE_MD5 = 9,
+	STATUS_RSKEY_VERIFY_FAILED =10,
+
+	//New add
+	STATUS_DEVICE_IS_ALREADY_OPENED = 0x1001,                   //Device is already opened
+	STATUS_USB_DRIVER_NOT_FOUND = 0x1002,                       //USB driver not found,for windows!
+	STATUS_USB_DEVICE_NOT_FOUND = 0x1003,                       //USB device not found
+	STATUS_USB_GET_DRIVER_VERSION = 0x1004,                     //Failed to get the USB driver version,for windows!
+	STATUS_USB_GET_SPEED_FAILED = 0x1005,                       //Failed to get the device speed!
+	STATUS_USB_SET_INTERFACE_FAILED = 0x1006,                   //Failed to set USB interface!
+	STATUS_USB_DEVICE_OPEN_FAILED = 0x1007,						//pid,vid,bus id is zero,for linux
+	STATUS_USB_ENUMERATE_FAILED = 0x1008,						//USB enum fail,for linux
+	STATUS_USB_SET_CONFIG_FAILED = 0x1009,						//usb set config fail ,for linux
+	STATUS_USB_INIT_FAILED = 0x1010,							//libusb open fail
+	STATUS_LIBUSB_ERROR_NO_MEM = 0x1011,						//Insufficient memory
+	STATUS_LIBUSB_ERROR_ACCESS = 0x1012,						//Access denied (insufficient permissions)
+	STATUS_LIBUSB_ERROR_NO_DEVICE = 0x1013,						//No such device (it may have been disconnected)
+	STATUS_LIBUSB_ERROR_IO = 0x1014,							//Input/output error
+	STATUS_LIBUSB_ERROR_NOT_FOUND = 0x1015,                     //Entity not found
+	STATUS_LIBUSB_ERROR_BUSY = 0x1016,                          //Resource busy
+	STATUS_LIBUSB_ERROR_OTHER = 0x1000,							//Other error
+
+	//STATUS_STREAM_ALREADY_EXISTS = 25,						//stream already exists
+	//STATUS_UNSUPPORTED_STREAM = 26,							// unsupport stream
+
 	STATUS_TIME_OUT = 102,
 } Status;
 
@@ -62,6 +89,7 @@ typedef enum
 	PIXEL_FORMAT_GRAY16 = 203,
 	PIXEL_FORMAT_JPEG = 204,
 	PIXEL_FORMAT_YUYV = 205,
+	PIXEL_FORMAT_LOG = 207,
 } PixelFormat;
 
 typedef enum

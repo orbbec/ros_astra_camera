@@ -97,6 +97,7 @@ AstraDevice::AstraDevice(const std::string& device_URI):
   int device_type_size = sizeof(device_type);
   memset(device_type, 0, device_type_size);
   openni_device_->getProperty(openni::OBEXTENSION_ID_DEVICETYPE, (uint8_t*)&device_type, &device_type_size);
+  ROS_INFO("device name: %s", device_type);
   if (strcmp(device_type, OB_STEREO_S) == 0)
   {
     device_type_no = OB_STEREO_S_NO;
@@ -113,6 +114,22 @@ AstraDevice::AstraDevice(const std::string& device_URI):
   {
     device_type_no = OB_ASTRA_PRO_NO;
   }
+  else if (strcmp(device_type, OB_ASTRA_PRO_PLUS) == 0)
+  {
+    device_type_no = OB_ASTRA_PRO_PLUS_NO;
+  }
+  else if (strcmp(device_type, OB_DABAI) == 0)
+  {
+      device_type_no = OB_DABAI_NO;
+  }
+  else if (strcmp(device_type, OB_DABAI_PRO) == 0)
+  {
+      device_type_no = OB_DABAI_PRO_NO;
+  }
+  else if (strcmp(device_type, OB_ASTRA_PLUS) == 0)
+  {
+      device_type_no = OB_ASTRA_PLUS_NO;
+  }
   else
   {
     device_type_no = OB_ASTRA_NO;
@@ -121,7 +138,6 @@ AstraDevice::AstraDevice(const std::string& device_URI):
   ir_frame_listener = boost::make_shared<AstraFrameListener>();
   color_frame_listener = boost::make_shared<AstraFrameListener>();
   depth_frame_listener = boost::make_shared<AstraFrameListener>();
-
 }
 
 AstraDevice::~AstraDevice()
@@ -130,7 +146,28 @@ AstraDevice::~AstraDevice()
 
   shutdown();
 
+  keep_alive_ = false;
+
+  keep_alive_thread.join();
+
   openni_device_->close();
+}
+
+void AstraDevice::keepAlive()
+{
+  while(keep_alive_)
+  {
+    openni::Status rc = openni_device_->setProperty(XN_MODULE_PROPERTY_LASER_SECURE_KEEPALIVE, NULL, 0);
+		if (rc != openni::STATUS_OK)
+		{
+			printf("Error: %s\n", openni::OpenNI::getExtendedError());
+		}
+		else
+		{
+			printf("keep alive success\n");
+		}
+    boost::this_thread::sleep_for(boost::chrono::seconds(10));
+  }
 }
 
 const std::string AstraDevice::getUri() const
@@ -199,12 +236,76 @@ OB_DEVICE_NO AstraDevice::getDeviceTypeNo()
   return device_type_no;
 }
 
+int AstraDevice::getColorGain() const
+{
+  int ret = 0;
+
+  boost::shared_ptr<openni::VideoStream> stream = getColorVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getGain();
+  }
+
+  return ret;
+}
+
+int AstraDevice::getDepthGain() const
+{
+  int ret = 0;
+
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getGain();
+  }
+
+  return ret;
+}
+
 int AstraDevice::getIRGain() const
 {
   int gain = 0;
   int data_size = 4;
   openni_device_->getProperty(openni::OBEXTENSION_ID_IR_GAIN, (uint8_t*)&gain, &data_size);
   return gain;
+}
+
+int AstraDevice::getColorExposure() const
+{
+  int ret = 0;
+
+  boost::shared_ptr<openni::VideoStream> stream = getColorVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getExposure();
+  }
+
+  return ret;
+}
+
+int AstraDevice::getDepthExposure() const
+{
+  int ret = 0;
+
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getExposure();
+  }
+
+  return ret;
 }
 
 int AstraDevice::getIRExposure() const
@@ -221,10 +322,74 @@ void AstraDevice::setCameraParams(OBCameraParams param)
   openni_device_->setProperty(openni::OBEXTENSION_ID_CAM_PARAMS, (uint8_t*)&param, data_size);
 }
 
+void AstraDevice::setColorGain(int gain)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getColorVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+    {
+      const openni::Status rc = camera_settings->setGain(gain);
+      if (rc != openni::STATUS_OK)
+        ROS_WARN("Couldn't set color gain: \n%s\n", openni::OpenNI::getExtendedError());
+    }
+  }
+}
+
+void AstraDevice::setDepthGain(int gain)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+    {
+      const openni::Status rc = camera_settings->setGain(gain);
+      if (rc != openni::STATUS_OK)
+        ROS_WARN("Couldn't set depth gain: \n%s\n", openni::OpenNI::getExtendedError());
+    }
+  }
+}
+
 void AstraDevice::setIRGain(int gain)
 {
   int data_size = 4;
   openni_device_->setProperty(openni::OBEXTENSION_ID_IR_GAIN, (uint8_t*)&gain, data_size);
+}
+
+void AstraDevice::setColorExposure(int exposure)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getColorVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+    {
+      const openni::Status rc = camera_settings->setExposure(exposure);
+      if (rc != openni::STATUS_OK)
+        ROS_WARN("Couldn't set color exposure: \n%s\n", openni::OpenNI::getExtendedError());
+    }
+  }
+}
+
+void AstraDevice::setDepthExposure(int exposure)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+    {
+      const openni::Status rc = camera_settings->setExposure(exposure);
+      if (rc != openni::STATUS_OK)
+        ROS_WARN("Couldn't set depth exposure: \n%s\n", openni::OpenNI::getExtendedError());
+    }
+  }
 }
 
 void AstraDevice::setIRExposure(int exposure)
@@ -263,7 +428,7 @@ void AstraDevice::setLDP(bool enable)
   {
     enable_ = 0;
   }
-  if (device_type_no == OB_STEREO_S_U3_NO)
+  if (device_type_no == OB_STEREO_S_U3_NO || device_type_no == OB_DABAI_NO || device_type_no == OB_DABAI_PRO_NO)
   {
     openni_device_->setProperty(XN_MODULE_PROPERTY_LDP_ENABLE, (uint8_t *)&enable_, 4);
   }
@@ -279,9 +444,76 @@ void AstraDevice::setLDP(bool enable)
   }
 }
 
+void AstraDevice::setFan(bool enable)
+{
+    int fan_enable = 0;
+
+    if (enable == false)
+    {
+        //ROS_INFO("*********** setfan false************************ ");
+        fan_enable = 0;
+    }
+    else
+    {
+        //ROS_INFO("*********** setfan true************************ ");
+        fan_enable = 1;
+    }
+
+    if(device_type_no == OB_ASTRA_PLUS_NO)
+    {
+        openni_device_->setProperty(XN_MODULE_PROPERTY_FAN_ENABLE, (uint8_t *)&fan_enable, 4);
+    }
+}
+
+void AstraDevice::setDistortioncal(bool enable)
+{
+    int data_size = 4;
+    int distortioncal_enable = 1;
+
+    if (enable == false)
+    {
+      //ROS_INFO("*********** setDistortioncal false************************ ");
+      distortioncal_enable = 0;
+    }
+    else
+    {
+      //ROS_INFO("*********** setDistortioncal true************************ ");
+      distortioncal_enable = 1;
+    }
+	
+	if (device_type_no == OB_STEREO_S_U3_NO)
+    {
+        openni_device_->setProperty(XN_MODULE_PROPERTY_DISTORTION_STATE, (uint8_t *)&distortioncal_enable, 4);
+    }
+
+}
+
+void AstraDevice::setAeEnable(bool enable)
+{
+    int ae_enable = 0;
+
+    if (enable == false)
+    {
+        //ROS_INFO("*********** SetAeEnable false************************ ");
+        ae_enable = 0;
+    }
+    else
+    {
+        //ROS_INFO("*********** SetAeEnable true************************ ");
+        ae_enable = 1;
+    }
+
+    if (device_type_no == OB_STEREO_S_U3_NO)
+    {
+        openni_device_->setProperty(XN_MODULE_PROPERTY_AE, (uint8_t *)&ae_enable, 4);
+    }
+
+}
+
+
 void AstraDevice::switchIRCamera(int cam)
 {
-  if (device_type_no == OB_STEREO_S_NO || device_type_no == OB_STEREO_S_U3_NO)
+  if (device_type_no == OB_STEREO_S_NO || device_type_no == OB_STEREO_S_U3_NO || device_type_no == OB_DABAI_NO || device_type_no == OB_DABAI_PRO_NO)
   {
     openni_device_->setProperty(XN_MODULE_PROPERTY_SWITCH_IR, (uint8_t*)&cam, 4);
   }
@@ -648,7 +880,10 @@ void AstraDevice::setIRVideoMode(const AstraVideoMode& video_mode)
   if (stream)
   {
     const openni::VideoMode videoMode = astra_convert(video_mode);
+    ROS_INFO("set ir video mode: %dx%d@%d", videoMode.getResolutionX(), videoMode.getResolutionY(), videoMode.getFps());
+    stream->stop();
     const openni::Status rc = stream->setVideoMode(videoMode);
+    stream->start();
     if (rc != openni::STATUS_OK)
       THROW_OPENNI_EXCEPTION("Couldn't set IR video mode: \n%s\n", openni::OpenNI::getExtendedError());
   }
@@ -661,7 +896,10 @@ void AstraDevice::setColorVideoMode(const AstraVideoMode& video_mode)
   if (stream)
   {
     const openni::VideoMode videoMode = astra_convert(video_mode);
+    ROS_INFO("set color video mode: %dx%d@%d", videoMode.getResolutionX(), videoMode.getResolutionY(), videoMode.getFps());
+    stream->stop();
     const openni::Status rc = stream->setVideoMode(videoMode);
+    stream->start();
     if (rc != openni::STATUS_OK)
       THROW_OPENNI_EXCEPTION("Couldn't set color video mode: \n%s\n", openni::OpenNI::getExtendedError());
   }
@@ -674,46 +912,103 @@ void AstraDevice::setDepthVideoMode(const AstraVideoMode& video_mode)
   if (stream)
   {
     const openni::VideoMode videoMode = astra_convert(video_mode);
+    ROS_INFO("set depth video mode: %dx%d@%d", videoMode.getResolutionX(), videoMode.getResolutionY(), videoMode.getFps());
+    stream->stop();
     const openni::Status rc = stream->setVideoMode(videoMode);
+    stream->start();
     if (rc != openni::STATUS_OK)
       THROW_OPENNI_EXCEPTION("Couldn't set depth video mode: \n%s\n", openni::OpenNI::getExtendedError());
   }
 }
 
-void AstraDevice::setAutoExposure(bool enable)
+void AstraDevice::setColorAutoExposure(bool enable)
 {
   boost::shared_ptr<openni::VideoStream> stream = getColorVideoStream();
 
   if (stream)
   {
-    openni::CameraSettings* camera_seeting = stream->getCameraSettings();
-    if (camera_seeting)
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
     {
-      const openni::Status rc = camera_seeting->setAutoExposureEnabled(enable);
+      const openni::Status rc = camera_settings->setAutoExposureEnabled(enable);
       if (rc != openni::STATUS_OK)
         THROW_OPENNI_EXCEPTION("Couldn't set auto exposure: \n%s\n", openni::OpenNI::getExtendedError());
     }
-
   }
 }
-void AstraDevice::setAutoWhiteBalance(bool enable)
+
+void AstraDevice::setDepthAutoExposure(bool enable)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+    {
+      const openni::Status rc = camera_settings->setAutoExposureEnabled(enable);
+      if (rc != openni::STATUS_OK)
+        THROW_OPENNI_EXCEPTION("Couldn't set auto exposure: \n%s\n", openni::OpenNI::getExtendedError());
+    }
+  }
+}
+
+void AstraDevice::setIRAutoExposure(bool enable)
+{
+  const openni::Status rc = openni_device_->setProperty(XN_MODULE_PROPERTY_AE, enable);
+  if (rc != openni::STATUS_OK)
+        THROW_OPENNI_EXCEPTION("Couldn't set auto exposure: \n%s\n", openni::OpenNI::getExtendedError());
+}
+
+void AstraDevice::setColorAutoWhiteBalance(bool enable)
 {
   boost::shared_ptr<openni::VideoStream> stream = getColorVideoStream();
 
   if (stream)
   {
-    openni::CameraSettings* camera_seeting = stream->getCameraSettings();
-    if (camera_seeting)
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
     {
-      const openni::Status rc = camera_seeting->setAutoWhiteBalanceEnabled(enable);
+      const openni::Status rc = camera_settings->setAutoWhiteBalanceEnabled(enable);
       if (rc != openni::STATUS_OK)
         THROW_OPENNI_EXCEPTION("Couldn't set auto white balance: \n%s\n", openni::OpenNI::getExtendedError());
     }
-
   }
 }
 
-bool AstraDevice::getAutoExposure() const
+void AstraDevice::setDepthAutoWhiteBalance(bool enable)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+    {
+      const openni::Status rc = camera_settings->setAutoWhiteBalanceEnabled(enable);
+      if (rc != openni::STATUS_OK)
+        THROW_OPENNI_EXCEPTION("Couldn't set auto white balance: \n%s\n", openni::OpenNI::getExtendedError());
+    }
+  }
+}
+
+void AstraDevice::setIRAutoWhiteBalance(bool enable)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getIRVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+    {
+      const openni::Status rc = camera_settings->setAutoWhiteBalanceEnabled(enable);
+      if (rc != openni::STATUS_OK)
+        THROW_OPENNI_EXCEPTION("Couldn't set auto white balance: \n%s\n", openni::OpenNI::getExtendedError());
+    }
+  }
+}
+
+bool AstraDevice::getColorAutoExposure() const
 {
   bool ret = false;
 
@@ -721,14 +1016,47 @@ bool AstraDevice::getAutoExposure() const
 
   if (stream)
   {
-    openni::CameraSettings* camera_seeting = stream->getCameraSettings();
-    if (camera_seeting)
-      ret = camera_seeting->getAutoExposureEnabled();
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getAutoExposureEnabled();
   }
 
   return ret;
 }
-bool AstraDevice::getAutoWhiteBalance() const
+
+bool AstraDevice::getDepthAutoExposure() const
+{
+  bool ret = false;
+
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getAutoExposureEnabled();
+  }
+
+  return ret;
+}
+
+bool AstraDevice::getIRAutoExposure() const
+{
+  bool ret = false;
+
+  boost::shared_ptr<openni::VideoStream> stream = getIRVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getAutoExposureEnabled();
+  }
+
+  return ret;
+}
+
+bool AstraDevice::getColorAutoWhiteBalance() const
 {
   bool ret = false;
 
@@ -736,12 +1064,74 @@ bool AstraDevice::getAutoWhiteBalance() const
 
   if (stream)
   {
-    openni::CameraSettings* camera_seeting = stream->getCameraSettings();
-    if (camera_seeting)
-      ret = camera_seeting->getAutoWhiteBalanceEnabled();
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getAutoWhiteBalanceEnabled();
   }
 
   return ret;
+}
+
+bool AstraDevice::getDepthAutoWhiteBalance() const
+{
+  bool ret = false;
+
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getAutoWhiteBalanceEnabled();
+  }
+
+  return ret;
+}
+
+bool AstraDevice::getIRAutoWhiteBalance() const
+{
+  bool ret = false;
+
+  boost::shared_ptr<openni::VideoStream> stream = getIRVideoStream();
+
+  if (stream)
+  {
+    openni::CameraSettings* camera_settings = stream->getCameraSettings();
+    if (camera_settings)
+      ret = camera_settings->getAutoWhiteBalanceEnabled();
+  }
+
+  return ret;
+}
+
+void AstraDevice::setColorMirror(bool enable)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getColorVideoStream();
+
+  if (stream)
+  {
+    stream->setMirroringEnabled(enable);
+  }
+}
+
+void AstraDevice::setDepthMirror(bool enable)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getDepthVideoStream();
+
+  if (stream)
+  {
+    stream->setMirroringEnabled(enable);
+  }
+}
+
+void AstraDevice::setIRMirror(bool enable)
+{
+  boost::shared_ptr<openni::VideoStream> stream = getIRVideoStream();
+
+  if (stream)
+  {
+    stream->setMirroringEnabled(enable);
+  }
 }
 
 void AstraDevice::setUseDeviceTimer(bool enable)
@@ -754,6 +1144,16 @@ void AstraDevice::setUseDeviceTimer(bool enable)
 
   if (depth_frame_listener)
     depth_frame_listener->setUseDeviceTimer(enable);
+}
+
+void AstraDevice::setKeepAlive(bool enable)
+{
+  if(enable && !keep_alive_)
+  {
+    boost::function0<void> f = boost::bind(&AstraDevice::keepAlive, this);
+    keep_alive_thread = boost::thread(f);
+  }
+  keep_alive_ = enable;
 }
 
 void AstraDevice::setIRFrameCallback(FrameCallbackFunction callback)

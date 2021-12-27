@@ -44,6 +44,9 @@
 #include <boost/cstdint.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
+#include <boost/bind.hpp>
 
 #include <sensor_msgs/Image.h>
 
@@ -132,32 +135,59 @@ public:
   char* getSerialNumber();
   char* getDeviceType();
   OB_DEVICE_NO getDeviceTypeNo();
+  int getColorGain() const;
+  int getDepthGain() const;
   int getIRGain() const;
+  int getColorExposure() const;
+  int getDepthExposure() const;
   int getIRExposure() const;
 
   void setCameraParams(OBCameraParams param);
+  void setColorGain(int gain);
+  void setDepthGain(int gain);
   void setIRGain(int gain);
+  void setColorExposure(int exposure);
+  void setDepthExposure(int exposure);
   void setIRExposure(int exposure);
   void setLaser(bool enable);
   void setIRFlood(bool enable);
   void setLDP(bool enable);
+  void setFan(bool enable);
+  void setDistortioncal(bool enable);
+  void setAeEnable(bool enable);
+  void setColorAutoExposure(bool enable);
+  void setDepthAutoExposure(bool enable);
+  void setIRAutoExposure(bool enable);
+  void setColorAutoWhiteBalance(bool enable);
+  void setDepthAutoWhiteBalance(bool enable);
+  void setIRAutoWhiteBalance(bool enable);
+  void setColorMirror(bool enable);
+  void setDepthMirror(bool enable);
+  void setIRMirror(bool enable);
 
   void switchIRCamera(int cam);
 
-  void setAutoExposure(bool enable);
-  void setAutoWhiteBalance(bool enable);
-
-  bool getAutoExposure() const;
-  bool getAutoWhiteBalance() const;
+  bool getColorAutoExposure() const;
+  bool getDepthAutoExposure() const;
+  bool getIRAutoExposure() const;
+  bool getColorAutoWhiteBalance() const;
+  bool getDepthAutoWhiteBalance() const;
+  bool getIRAutoWhiteBalance() const;
 
   void setUseDeviceTimer(bool enable);
 
+  void setKeepAlive(bool enable);
+
 protected:
   void shutdown();
+  
+  void keepAlive();
 
   boost::shared_ptr<openni::VideoStream> getIRVideoStream() const;
   boost::shared_ptr<openni::VideoStream> getColorVideoStream() const;
   boost::shared_ptr<openni::VideoStream> getDepthVideoStream() const;
+
+  boost::thread keep_alive_thread;
 
   boost::shared_ptr<openni::Device> openni_device_;
   boost::shared_ptr<openni::DeviceInfo> device_info_;
@@ -181,6 +211,8 @@ protected:
   bool image_registration_activated_;
 
   bool use_device_time_;
+
+  bool keep_alive_;
 
   OBCameraParams m_CamParams;
   bool m_ParamsValid;

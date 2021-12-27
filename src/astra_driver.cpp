@@ -33,6 +33,7 @@
 #include "astra_camera/astra_driver.h"
 #include "astra_camera/astra_exception.h"
 #include "astra_camera/astra_device_type.h"
+#include "astra_camera/astra_version.h"
 
 #include <unistd.h>  
 #include <stdlib.h>  
@@ -226,20 +227,50 @@ void AstraDriver::advertiseROSTopics()
 
   get_serial_server = nh_.advertiseService("get_serial", &AstraDriver::getSerialCb, this);
   get_device_type_server = nh_.advertiseService("get_device_type", &AstraDriver::getDeviceTypeCb, this);
+  // get_color_gain_server = nh_.advertiseService("get_color_gain", &AstraDriver::getColorGainCb, this);
+  // get_depth_gain_server = nh_.advertiseService("get_depth_gain", &AstraDriver::getDepthGainCb, this);
   get_ir_gain_server = nh_.advertiseService("get_ir_gain", &AstraDriver::getIRGainCb, this);
+  // set_color_gain_server = nh_.advertiseService("set_color_gain", &AstraDriver::setColorGainCb, this);
+  // set_depth_gain_server = nh_.advertiseService("set_depth_gain", &AstraDriver::setDepthGainCb, this);
   set_ir_gain_server = nh_.advertiseService("set_ir_gain", &AstraDriver::setIRGainCb, this);
+  // get_color_exposure_server = nh_.advertiseService("get_color_exposure", &AstraDriver::getColorExposureCb, this);
+  // get_depth_exposure_server = nh_.advertiseService("get_depth_exposure", &AstraDriver::getDepthExposureCb, this);
   get_ir_exposure_server = nh_.advertiseService("get_ir_exposure", &AstraDriver::getIRExposureCb, this);
+  // set_color_exposure_server = nh_.advertiseService("set_color_exposure", &AstraDriver::setColorExposureCb, this);
+  // set_depth_exposure_server = nh_.advertiseService("set_depth_exposure", &AstraDriver::setDepthExposureCb, this);
   set_ir_exposure_server = nh_.advertiseService("set_ir_exposure", &AstraDriver::setIRExposureCb, this);
   set_ir_flood_server = nh_.advertiseService("set_ir_flood", &AstraDriver::setIRFloodCb, this);
   set_laser_server = nh_.advertiseService("set_laser", &AstraDriver::setLaserCb, this);
   set_ldp_server = nh_.advertiseService("set_ldp", &AstraDriver::setLDPCb, this);
+  set_fan_server = nh_.advertiseService("set_fan", &AstraDriver::setFanCb, this);
   reset_ir_gain_server = nh_.advertiseService("reset_ir_gain", &AstraDriver::resetIRGainCb, this);
   reset_ir_exposure_server = nh_.advertiseService("reset_ir_exposure", &AstraDriver::resetIRExposureCb, this);
   get_camera_info = nh_.advertiseService("get_camera_info", &AstraDriver::getCameraInfoCb, this);
-  if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_STEREO_S_U3_NO)
+  get_version_server = nh_.advertiseService("get_version", &AstraDriver::getVersionCb, this);
+  // set_color_auto_exposure_server = nh_.advertiseService("set_color_auto_exposure", &AstraDriver::setColorAutoExposureCb, this);
+  // set_depth_auto_exposure_server = nh_.advertiseService("set_depth_auto_exposure", &AstraDriver::setDepthAutoExposureCb, this);
+  set_ir_auto_exposure_server = nh_.advertiseService("set_ir_auto_exposure", &AstraDriver::setIRAutoExposureCb, this);
+  // set_color_auto_white_balance_server = nh_.advertiseService("set_color_auto_white_balance", &AstraDriver::setColorAutoWhiteBalanceCb, this);
+  // set_depth_auto_white_balance_server = nh_.advertiseService("set_depth_auto_white_balance", &AstraDriver::setDepthAutoWhiteBalanceCb, this);
+  // set_ir_auto_white_balance_server = nh_.advertiseService("set_ir_auto_white_balance", &AstraDriver::setIRAutoWhiteBalanceCb, this);
+  set_color_mirror_server = nh_.advertiseService("set_color_mirror", &AstraDriver::setColorMirrorCb, this);
+  set_depth_mirror_server = nh_.advertiseService("set_depth_mirror", &AstraDriver::setDepthMirrorCb, this);
+  set_ir_mirror_server = nh_.advertiseService("set_ir_mirror", &AstraDriver::setIRMirrorCb, this);
+
+  if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || 
+      device_->getDeviceTypeNo() == OB_STEREO_S_U3_NO || 
+      device_->getDeviceTypeNo() == OB_DABAI_NO ||
+      device_->getDeviceTypeNo() == OB_DABAI_PRO_NO)
   {
     switch_ir_camera = nh_.advertiseService("switch_ir_camera", &AstraDriver::switchIRCameraCb, this);
   }
+
+  if (device_->getDeviceTypeNo() == OB_STEREO_S_NO || device_->getDeviceTypeNo() == OB_STEREO_S_U3_NO)
+  {
+      set_distortioncal_server = nh_.advertiseService("set_distortioncal", &AstraDriver::setDistortioncalCb, this);
+      set_ae_enable_server = nh_.advertiseService("set_ae_enable", &AstraDriver::setAeEnableCb, this);
+  }
+
 }
 
 bool AstraDriver::getSerialCb(astra_camera::GetSerialRequest& req, astra_camera::GetSerialResponse& res)
@@ -254,11 +285,35 @@ bool AstraDriver::getDeviceTypeCb(astra_camera::GetDeviceTypeRequest& req, astra
   return true;
 }
 
+// bool AstraDriver::getColorGainCb(astra_camera::GetIRGainRequest& req, astra_camera::GetIRGainResponse& res)
+// {
+//   res.gain = device_->getColorGain();
+//   return true;
+// }
+
+// bool AstraDriver::getDepthGainCb(astra_camera::GetIRGainRequest& req, astra_camera::GetIRGainResponse& res)
+// {
+//   res.gain = device_->getDepthGain();
+//   return true;
+// }
+
 bool AstraDriver::getIRGainCb(astra_camera::GetIRGainRequest& req, astra_camera::GetIRGainResponse& res)
 {
   res.gain = device_->getIRGain();
   return true;
 }
+
+// bool AstraDriver::setColorGainCb(astra_camera::SetIRGainRequest& req, astra_camera::SetIRGainResponse& res)
+// {
+//   device_->setColorGain(req.gain);
+//   return true;
+// }
+
+// bool AstraDriver::setDepthGainCb(astra_camera::SetIRGainRequest& req, astra_camera::SetIRGainResponse& res)
+// {
+//   device_->setDepthGain(req.gain);
+//   return true;
+// }
 
 bool AstraDriver::setIRGainCb(astra_camera::SetIRGainRequest& req, astra_camera::SetIRGainResponse& res)
 {
@@ -266,11 +321,35 @@ bool AstraDriver::setIRGainCb(astra_camera::SetIRGainRequest& req, astra_camera:
   return true;
 }
 
+// bool AstraDriver::getColorExposureCb(astra_camera::GetIRExposureRequest& req, astra_camera::GetIRExposureResponse& res)
+// {
+//   res.exposure = device_->getColorExposure();
+//   return true;
+// }
+
+// bool AstraDriver::getDepthExposureCb(astra_camera::GetIRExposureRequest& req, astra_camera::GetIRExposureResponse& res)
+// {
+//   res.exposure = device_->getDepthExposure();
+//   return true;
+// }
+
 bool AstraDriver::getIRExposureCb(astra_camera::GetIRExposureRequest& req, astra_camera::GetIRExposureResponse& res)
 {
   res.exposure = device_->getIRExposure();
   return true;
 }
+
+// bool AstraDriver::setColorExposureCb(astra_camera::SetIRExposureRequest& req, astra_camera::SetIRExposureResponse& res)
+// {
+//   device_->setColorExposure(req.exposure);
+//   return true;
+// }
+
+// bool AstraDriver::setDepthExposureCb(astra_camera::SetIRExposureRequest& req, astra_camera::SetIRExposureResponse& res)
+// {
+//   device_->setDepthExposure(req.exposure);
+//   return true;
+// }
 
 bool AstraDriver::setIRExposureCb(astra_camera::SetIRExposureRequest& req, astra_camera::SetIRExposureResponse& res)
 {
@@ -288,6 +367,24 @@ bool AstraDriver::setLDPCb(astra_camera::SetLDPRequest& req, astra_camera::SetLD
 {
   device_->setLDP(req.enable);
   return true;
+}
+
+bool AstraDriver::setFanCb(astra_camera::SetFanRequest& req, astra_camera::SetFanResponse& res)
+{
+  device_->setFan(req.enable);
+  return true;
+}
+
+bool AstraDriver::setDistortioncalCb(astra_camera::SetDistortioncalRequest& req, astra_camera::SetDistortioncalResponse& res)
+{
+    device_->setDistortioncal(req.enable);
+    return true;
+}
+
+bool AstraDriver::setAeEnableCb(astra_camera::SetAeEnableRequest& req, astra_camera::SetAeEnableResponse& res)
+{
+    device_->setAeEnable(req.enable);
+    return true;
 }
 
 bool AstraDriver::resetIRGainCb(astra_camera::ResetIRGainRequest& req, astra_camera::ResetIRGainResponse& res)
@@ -325,44 +422,105 @@ bool AstraDriver::switchIRCameraCb(astra_camera::SwitchIRCameraRequest& req, ast
   return true;
 }
 
+bool AstraDriver::getVersionCb(astra_camera::GetVersionRequest& req, astra_camera::GetVersionResponse& res)
+{
+  res.version = ASTRA_ROS_VERSION_STR;
+  res.core_version = ONI_VERSION_STRING;
+  return true;
+}
+
+// bool AstraDriver::setColorAutoExposureCb(astra_camera::SetAutoExposureRequest& req, astra_camera::SetAutoExposureResponse& res)
+// {
+//   device_->setColorAutoExposure(req.enable);
+//   return true;
+// }
+
+// bool AstraDriver::setDepthAutoExposureCb(astra_camera::SetAutoExposureRequest& req, astra_camera::SetAutoExposureResponse& res)
+// {
+//   device_->setDepthAutoExposure(req.enable);
+//   return true;
+// }
+
+bool AstraDriver::setIRAutoExposureCb(astra_camera::SetAutoExposureRequest& req, astra_camera::SetAutoExposureResponse& res)
+{
+  device_->setIRAutoExposure(req.enable);
+  return true;
+}
+
+// bool AstraDriver::setColorAutoWhiteBalanceCb(astra_camera::SetAutoWhiteBalanceRequest& req, astra_camera::SetAutoWhiteBalanceResponse& res)
+// {
+//   device_->setColorAutoWhiteBalance(req.enable);
+//   return true;
+// }
+
+// bool AstraDriver::setDepthAutoWhiteBalanceCb(astra_camera::SetAutoWhiteBalanceRequest& req, astra_camera::SetAutoWhiteBalanceResponse& res)
+// {
+//   device_->setDepthAutoWhiteBalance(req.enable);
+//   return true;
+// }
+
+// bool AstraDriver::setIRAutoWhiteBalanceCb(astra_camera::SetAutoWhiteBalanceRequest& req, astra_camera::SetAutoWhiteBalanceResponse& res)
+// {
+//   device_->setIRAutoWhiteBalance(req.enable);
+//   return true;
+// }
+
+bool AstraDriver::setColorMirrorCb(astra_camera::SetMirrorRequest& req, astra_camera::SetMirrorResponse& res)
+{
+  device_->setColorMirror(req.enable);
+  return true;
+}
+
+bool AstraDriver::setDepthMirrorCb(astra_camera::SetMirrorRequest& req, astra_camera::SetMirrorResponse& res)
+{
+  device_->setDepthMirror(req.enable);
+  return true;
+}
+
+bool AstraDriver::setIRMirrorCb(astra_camera::SetMirrorRequest& req, astra_camera::SetMirrorResponse& res)
+{
+  device_->setIRMirror(req.enable);
+  return true;
+}
+
 void AstraDriver::configCb(Config &config, uint32_t level)
 {
-  if (device_->getDeviceTypeNo() == OB_STEREO_S_NO)
-  {
-    if (config.depth_mode != 13 && config.depth_mode != 14)
-    {
-      config.depth_mode = 13;
-    }
-    if (config.ir_mode != 13 && config.ir_mode != 14 && config.ir_mode != 16)
-    {
-      config.ir_mode = 13;
-    }
-    device_->switchIRCamera(0);
-  }
-  else if (device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
-  {
-    if (config.depth_mode != 13 && config.depth_mode != 17)
-    {
-      config.depth_mode = 13;
-    }
-    if (config.ir_mode != 13 && config.ir_mode != 17)
-    {
-      config.ir_mode = 13;
-    }
-    uvc_flip_ = 1;
-  }
-  else if (device_->getDeviceTypeNo() == OB_STEREO_S_U3_NO)
-  {
-    if (config.depth_mode != 13 && config.depth_mode != 14)
-    {
-      config.depth_mode = 13;
-    }
-    if (config.ir_mode != 13 && config.ir_mode != 14)
-    {
-      config.ir_mode = 13;
-    }
-    device_->switchIRCamera(0);
-  }
+  // if (device_->getDeviceTypeNo() == OB_STEREO_S_NO)
+  // {
+  //   if (config.depth_mode != 13 && config.depth_mode != 14)
+  //   {
+  //     config.depth_mode = 13;
+  //   }
+  //   if (config.ir_mode != 13 && config.ir_mode != 14 && config.ir_mode != 16)
+  //   {
+  //     config.ir_mode = 13;
+  //   }
+  //   device_->switchIRCamera(0);
+  // }
+  // else if (device_->getDeviceTypeNo() == OB_EMBEDDED_S_NO)
+  // {
+  //   if (config.depth_mode != 13 && config.depth_mode != 17)
+  //   {
+  //     config.depth_mode = 13;
+  //   }
+  //   if (config.ir_mode != 13 && config.ir_mode != 17)
+  //   {
+  //     config.ir_mode = 13;
+  //   }
+  //   uvc_flip_ = 1;
+  // }
+  // else if (device_->getDeviceTypeNo() == OB_STEREO_S_U3_NO || device_->getDeviceTypeNo() == OB_DABAI_NO)
+  // {
+  //   if (config.depth_mode != 13 && config.depth_mode != 14)
+  //   {
+  //     config.depth_mode = 13;
+  //   }
+  //   if (config.ir_mode != 13 && config.ir_mode != 14)
+  //   {
+  //     config.ir_mode = 13;
+  //   }
+  //   device_->switchIRCamera(0);
+  // }
   bool stream_reset = false;
 
   rgb_preferred_ = config.rgb_preferred;
@@ -410,6 +568,8 @@ void AstraDriver::configCb(Config &config, uint32_t level)
   auto_white_balance_ = config.auto_white_balance;
 
   use_device_time_ = config.use_device_time;
+
+  keep_alive_ = config.keep_alive;
 
   data_skip_ = config.data_skip+1;
 
@@ -501,28 +661,29 @@ void AstraDriver::applyConfigToOpenNIDevice()
     ROS_ERROR("Could not set color depth synchronization. Reason: %s", exception.what());
   }
 
-  try
-  {
-    if (!config_init_ || (old_config_.auto_exposure != auto_exposure_))
-      device_->setAutoExposure(auto_exposure_);
-  }
-  catch (const AstraException& exception)
-  {
-    ROS_ERROR("Could not set auto exposure. Reason: %s", exception.what());
-  }
+  // try
+  // {
+  //   if (!config_init_ || (old_config_.auto_exposure != auto_exposure_))
+  //     device_->setAutoExposure(auto_exposure_);
+  // }
+  // catch (const AstraException& exception)
+  // {
+  //   ROS_ERROR("Could not set auto exposure. Reason: %s", exception.what());
+  // }
 
-  try
-  {
-    if (!config_init_ || (old_config_.auto_white_balance != auto_white_balance_))
-      device_->setAutoWhiteBalance(auto_white_balance_);
-  }
-  catch (const AstraException& exception)
-  {
-    ROS_ERROR("Could not set auto white balance. Reason: %s", exception.what());
-  }
+  // try
+  // {
+  //   if (!config_init_ || (old_config_.auto_white_balance != auto_white_balance_))
+  //     device_->setAutoWhiteBalance(auto_white_balance_);
+  // }
+  // catch (const AstraException& exception)
+  // {
+  //   ROS_ERROR("Could not set auto white balance. Reason: %s", exception.what());
+  // }
 
   device_->setUseDeviceTimer(use_device_time_);
 
+  device_->setKeepAlive(keep_alive_);
 }
 
 void AstraDriver::imageConnectCb()
@@ -1172,123 +1333,200 @@ output_mode_enum = gen.enum([  gen.const(  "SXGA_30Hz", int_t, 1,  "1280x1024@30
   AstraVideoMode video_mode;
 
   // SXGA_30Hz
-  video_mode.x_resolution_ = 1280;
-  video_mode.y_resolution_ = 1024;
-  video_mode.frame_rate_ = 30;
+    video_mode.x_resolution_ = 1280;
+    video_mode.y_resolution_ = 1024;
+    video_mode.frame_rate_ = 30;
 
-  video_modes_lookup_[1] = video_mode;
+    video_modes_lookup_[1] = video_mode;
 
   // SXGA_15Hz
-  video_mode.x_resolution_ = 1280;
-  video_mode.y_resolution_ = 1024;
-  video_mode.frame_rate_ = 15;
+    video_mode.x_resolution_ = 1280;
+    video_mode.y_resolution_ = 1024;
+    video_mode.frame_rate_ = 15;
 
-  video_modes_lookup_[2] = video_mode;
+    video_modes_lookup_[2] = video_mode;
 
-  // XGA_30Hz
-  video_mode.x_resolution_ = 1280;
-  video_mode.y_resolution_ = 720;
-  video_mode.frame_rate_ = 30;
+    // 1280x800_30Hz
+    video_mode.x_resolution_ = 1280;
+    video_mode.y_resolution_ = 800;
+    video_mode.frame_rate_ = 30;
 
-  video_modes_lookup_[3] = video_mode;
+    video_modes_lookup_[3] = video_mode;
 
-  // XGA_15Hz
-  video_mode.x_resolution_ = 1280;
-  video_mode.y_resolution_ = 720;
-  video_mode.frame_rate_ = 15;
+    // 1280x800_15Hz
+    video_mode.x_resolution_ = 1280;
+    video_mode.y_resolution_ = 800;
+    video_mode.frame_rate_ = 15;
 
-  video_modes_lookup_[4] = video_mode;
+    video_modes_lookup_[4] = video_mode;
 
-  // VGA_30Hz
-  video_mode.x_resolution_ = 640;
-  video_mode.y_resolution_ = 480;
-  video_mode.frame_rate_ = 30;
+    // XGA_30Hz
+    video_mode.x_resolution_ = 1280;
+    video_mode.y_resolution_ = 720;
+    video_mode.frame_rate_ = 30;
 
-  video_modes_lookup_[5] = video_mode;
+    video_modes_lookup_[5] = video_mode;
 
-  // VGA_25Hz
-  video_mode.x_resolution_ = 640;
-  video_mode.y_resolution_ = 480;
-  video_mode.frame_rate_ = 25;
+    // XGA_15Hz
+    video_mode.x_resolution_ = 1280;
+    video_mode.y_resolution_ = 720;
+    video_mode.frame_rate_ = 15;
 
-  video_modes_lookup_[6] = video_mode;
+    video_modes_lookup_[6] = video_mode;
 
-  // QVGA_25Hz
-  video_mode.x_resolution_ = 320;
-  video_mode.y_resolution_ = 240;
-  video_mode.frame_rate_ = 25;
+    // VGA_30Hz
+    video_mode.x_resolution_ = 640;
+    video_mode.y_resolution_ = 480;
+    video_mode.frame_rate_ = 30;
 
-  video_modes_lookup_[7] = video_mode;
+    video_modes_lookup_[7] = video_mode;
 
-  // QVGA_30Hz
-  video_mode.x_resolution_ = 320;
-  video_mode.y_resolution_ = 240;
-  video_mode.frame_rate_ = 30;
+    // VGA_15Hz
+    video_mode.x_resolution_ = 640;
+    video_mode.y_resolution_ = 480;
+    video_mode.frame_rate_ = 15;
 
-  video_modes_lookup_[8] = video_mode;
+    video_modes_lookup_[8] = video_mode;
 
-  // QVGA_60Hz
-  video_mode.x_resolution_ = 320;
-  video_mode.y_resolution_ = 240;
-  video_mode.frame_rate_ = 60;
+    // VGA_60Hz
+    video_mode.x_resolution_ = 640;
+    video_mode.y_resolution_ = 480;
+    video_mode.frame_rate_ = 60;
 
-  video_modes_lookup_[9] = video_mode;
+    video_modes_lookup_[9] = video_mode;
 
-  // QQVGA_25Hz
-  video_mode.x_resolution_ = 160;
-  video_mode.y_resolution_ = 120;
-  video_mode.frame_rate_ = 25;
+    // QVGA_30Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 240;
+    video_mode.frame_rate_ = 30;
 
-  video_modes_lookup_[10] = video_mode;
+    video_modes_lookup_[10] = video_mode;
 
-  // QQVGA_30Hz
-  video_mode.x_resolution_ = 160;
-  video_mode.y_resolution_ = 120;
-  video_mode.frame_rate_ = 30;
+    // QVGA_15Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 240;
+    video_mode.frame_rate_ = 15;
 
-  video_modes_lookup_[11] = video_mode;
+    video_modes_lookup_[11] = video_mode;
 
-  // QQVGA_60Hz
-  video_mode.x_resolution_ = 160;
-  video_mode.y_resolution_ = 120;
-  video_mode.frame_rate_ = 60;
+    // QVGA_60Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 240;
+    video_mode.frame_rate_ = 60;
 
-  video_modes_lookup_[12] = video_mode;
+    video_modes_lookup_[12] = video_mode;
 
-  // 640*400_30Hz
-  video_mode.x_resolution_ = 640;
-  video_mode.y_resolution_ = 400;
-  video_mode.frame_rate_ = 30;
+    // QQVGA_30Hz
+    video_mode.x_resolution_ = 160;
+    video_mode.y_resolution_ = 120;
+    video_mode.frame_rate_ = 30;
 
-  video_modes_lookup_[13] = video_mode;
+    video_modes_lookup_[13] = video_mode;
 
-  // 320*200_30Hz
-  video_mode.x_resolution_ = 320;
-  video_mode.y_resolution_ = 200;
-  video_mode.frame_rate_ = 30;
+    // QQVGA_15Hz
+    video_mode.x_resolution_ = 160;
+    video_mode.y_resolution_ = 120;
+    video_mode.frame_rate_ = 15;
 
-  video_modes_lookup_[14] = video_mode;
+    video_modes_lookup_[14] = video_mode;
 
-  // 1280*800_7Hz
-  video_mode.x_resolution_ = 1280;
-  video_mode.y_resolution_ = 800;
-  video_mode.frame_rate_ = 7;
+    // QQVGA_60Hz
+    video_mode.x_resolution_ = 160;
+    video_mode.y_resolution_ = 120;
+    video_mode.frame_rate_ = 60;
 
-  video_modes_lookup_[15] = video_mode;
+    video_modes_lookup_[15] = video_mode;
 
-  // 1280*800_30Hz
-  video_mode.x_resolution_ = 1280;
-  video_mode.y_resolution_ = 800;
-  video_mode.frame_rate_ = 30;
+    // 640*400_30Hz
+    video_mode.x_resolution_ = 640;
+    video_mode.y_resolution_ = 400;
+    video_mode.frame_rate_ = 30;
 
-  video_modes_lookup_[16] = video_mode;
+    video_modes_lookup_[16] = video_mode;
 
-  // 640*400_60Hz
-  video_mode.x_resolution_ = 640;
-  video_mode.y_resolution_ = 400;
-  video_mode.frame_rate_ = 60;
+    // 640*400_15Hz
+    video_mode.x_resolution_ = 640;
+    video_mode.y_resolution_ = 400;
+    video_mode.frame_rate_ = 15;
 
-  video_modes_lookup_[17] = video_mode;
+    video_modes_lookup_[17] = video_mode;
+
+    // 640*400_10Hz
+    video_mode.x_resolution_ = 640;
+    video_mode.y_resolution_ = 400;
+    video_mode.frame_rate_ = 10;
+
+    video_modes_lookup_[18] = video_mode;
+
+    // 640*400_5Hz
+    video_mode.x_resolution_ = 640;
+    video_mode.y_resolution_ = 400;
+    video_mode.frame_rate_ = 5;
+
+    video_modes_lookup_[19] = video_mode;
+
+    // 640*400_60Hz
+    video_mode.x_resolution_ = 640;
+    video_mode.y_resolution_ = 400;
+    video_mode.frame_rate_ = 60;
+
+    video_modes_lookup_[20] = video_mode;
+
+    // 320*200_30Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 200;
+    video_mode.frame_rate_ = 30;
+
+    video_modes_lookup_[21] = video_mode;
+
+    // 320*200_15Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 200;
+    video_mode.frame_rate_ = 15;
+
+    video_modes_lookup_[22] = video_mode;
+
+    // 320*200_10Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 200;
+    video_mode.frame_rate_ = 10;
+
+    video_modes_lookup_[23] = video_mode;
+
+    // 320*200_5Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 200;
+    video_mode.frame_rate_ = 5;
+
+    video_modes_lookup_[24] = video_mode;
+
+    // 1280*1024_7Hz
+    video_mode.x_resolution_ = 1280;
+    video_mode.y_resolution_ = 800;
+    video_mode.frame_rate_ = 7;
+
+    video_modes_lookup_[25] = video_mode;
+
+    // 1280*800_7Hz
+    video_mode.x_resolution_ = 1280;
+    video_mode.y_resolution_ = 800;
+    video_mode.frame_rate_ = 7;
+
+    video_modes_lookup_[26] = video_mode;
+
+    // 320*200_60Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 200;
+    video_mode.frame_rate_ = 60;
+
+    video_modes_lookup_[27] = video_mode;
+
+    // 320*240_60Hz
+    video_mode.x_resolution_ = 320;
+    video_mode.y_resolution_ = 240;
+    video_mode.frame_rate_ = 60;
+
+    video_modes_lookup_[28] = video_mode;
 }
 
 int AstraDriver::lookupVideoModeFromDynConfig(int mode_nr, AstraVideoMode& video_mode)

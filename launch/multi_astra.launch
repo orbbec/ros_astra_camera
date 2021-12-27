@@ -3,7 +3,7 @@
        into the "camera" namespace, and it is prepended to tf frame ids. -->
   <arg name="camera"      default="camera"/>
   <arg name="publish_tf"  default="true"/>
-  <arg name="3d_sensor"   default="stereo_s_u3"/>  <!-- stereo_s_u3, astrapro, astra -->
+  <arg name="3d_sensor"   default="astra"/>  <!-- stereo_s_u3, astrapro, astra -->
 
   <arg name="device_1_prefix"   default="01"/>
   <arg name="device_2_prefix"   default="02"/>

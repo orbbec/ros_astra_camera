@@ -179,12 +179,142 @@ enum
 	//Depth optimization param
 	XN_MODULE_PROPERTY_DEPTH_OPTIM_PARAM = 0x1080FFBA,
 
+	//Distortion calibration param
+	XN_MODULE_PROPERTY_DISTORTION_PARAM = 0x1080FFBB,
+
+	//Distortion calibration enable
+	XN_MODULE_PROPERTY_DISTORTION_STATE = 0x1080FFBC,
+
 	XN_MODULE_PROPERTY_UPDATE_FIRMWARE_FLASH_CHUNK = 0x1080FFBD,
 
 	XN_MODULE_PROPERTY_LDP_ENABLE = 0x1080FFBE,
-        XN_MODULE_PROPERTY_EMITTER_STATE_V1 = 0x1080FFBF, // "get Emitter enable"
-	XN_MODULE_PROPERTY_LDP_SCALE = 0x1080FFC0,       //ldp scale
-	XN_MODULE_PROPERTY_LDP_STATUS = 0x1080FFC1,      //ldp status
+	XN_MODULE_PROPERTY_EMITTER_STATE_V1 = 0x1080FFBF,   // "get Emitter enable"
+	XN_MODULE_PROPERTY_LDP_SCALE = 0x1080FFC0,          //ldp scale
+	XN_MODULE_PROPERTY_LDP_STATUS = 0x1080FFC1,         //ldp status
+	XN_MODULE_PROPERTY_LDP_THRES_UP = 0x1080FFFB,       //ldp thres up
+	XN_MODULE_PROPERTY_LDP_THRES_LOW = 0x1080FFFC,      //ldp thres low
+	XN_MODULE_PROPERTY_LDP_NOIST_VALUE = 0x1080FFFD,    //ldp noise value
+
+	//Device QN read/write 
+	XN_MODULE_PROPERTY_QN_INFO = 0x1080FFC2,
+	XN_MODULE_PROPERTY_QN_VERIFY = 0x1080FFC3,
+
+	//public br version
+	XN_MODULE_PROPERTY_PUBLIC_BOARD_VERSION = 0x1080FFC4,
+
+	//mx6300 version
+	XN_MODULE_PROPERTY_VERSION_MX6300 = 0x1080FFC5,
+	//rgb resolution for d2c
+	XN_MODULE_PROPERTY_D2C_RESOLUTION = 0x1080FFC6,
+	XN_MODULE_PROPERTY_USB_SPEED = 0x1080FFC7,
+	XN_MODULE_PROPERTY_PRODUCT_SERIAL_NUMBER = 0x1080FFC8,//product write sn(S1/T1)
+	XN_MODULE_PROPERTY_CORE_BROAD_FLASH_ID = 0x1080FFC9,  //mipi project core broad status
+	//ir flood level
+	XN_MODULE_PROPERTY_IRFLOOD_LEVEL = 0x1080FFCA,
+	XN_MODULE_PROPERTY_PRODUCT_NUMBER = 0x1080FFCB,
+
+	//Auto AE
+	XN_MODULE_PROPERTY_AE = 0x1080FFCC,
+	//u1
+	XN_MODULE_PROPERTY_MIPI_TEST = 0x1080FFCD,
+	//get z0 and baseline
+	XN_MODULE_PROPERTY_Z0_BASELINE = 0x1080FFCE,
+	XN_MODULE_PROPERTY_I2C_READ_FLASH_MIPI = 0x1080FFCF,
+	XN_MODULE_PROPERTY_CFG_SNPN = 0x1080FFD0,
+	XN_MODULE_PROPERTY_CFG_PN = 0x1080FFD1,
+	XN_MODULE_PROPERTY_WRITE_REF = 0x1080FFD2,
+	XN_MODULE_PROPERTY_WRITE_SW_ALIGN_PARAM = 0x1080FFD3,
+	XN_MODULE_PROPERTY_WRITE_HW_ALIGN_PARAM = 0x1080FFD4,
+	XN_MODULE_PROPERTY_WRITE_HW_DISTORTION_PARAM = 0x1080FFD5,
+	XN_MODULE_PROPERTY_IRS_MODEl = 0x1080FFD6,
+	XN_MODULE_PROPERTY_RGBS_MODEl = 0x1080FFD7,
+
+	XN_MODULE_PROPERTY_FLOOD_AE_OPTIONS = 0x1080FFD8,
+	XN_MODULE_PROPERTY_EMITTER_AE_OPTIONS = 0x1080FFD9,
+
+	//PD
+	XN_MODULE_PROPERTY_PD_ENABLE_STATUS = 0x1080FFDA,
+	XN_MODULE_PROPERTY_PD_ALERT_STATUS = 0x1080FFDB,
+	XN_MODULE_PROPERTY_PD_UPPER_TLV = 0x1080FFDC,
+	XN_MODULE_PROPERTY_PD_LOWER_TLV = 0x1080FFDD,
+	XN_MODULE_PROPERTY_PD_CUR_TLV = 0x1080FFDE,
+	//Bootloader protection status
+	XN_MODULE_PROPERTY_BOOTLOADER_PTS =0x1080FFDF,
+
+	// Depth config.
+	XN_MODULE_PROPERTY_WRITE_DEPTH_CONFIG = 0x1080FFE0,
+
+	//laser time cli tool function
+	XN_MODULE_PROPERTY_LASER_TIME = 0x1080FFE1,
+	//post filter threshold
+	XN_MODULE_PROPERTY_POSTFILTER_THRESHOLD = 0x1080FFE2,
+	//get zpps
+	XN_MODULE_PROPERTY_ZPPS = 0x1080FFE3,
+
+	XN_MODULE_PROPERTY_IRGAIN_FLASH = 0x1080FFE4,
+	XN_MODULE_PROPERTY_IREXP_FLASH = 0x1080FFE5,
+	XN_MODULE_PROPERTY_POSTFILTER_THRESHOLD_FLASH = 0x1080FFE6,
+	XN_MODULE_PROPERTY_LASER_CURRENT_FLASH = 0x1080FFE7,
+	XN_MODULE_PROPERTY_LASER_TIME_FLASH = 0x1080FFE8,
+	XN_MODULE_PROPERTY_CUP_VERIFY_VERSION = 0x1080FFE9,
+
+
+	XN_MODULE_PROPERTY_TOF_SENSOR_ENABLE = 0x1080FFEA,
+	XN_MODULE_PROPERTY_TOF_SENSOR_MEA_RESULT = 0x1080FFEB,
+	XN_MODULE_PROPERTY_TOF_SENSOR_APP_ID = 0x1080FFEC,
+	XN_MODULE_PROPERTY_TOF_SENSOR_CAL = 0x1080FFED,
+	XN_MODULE_PROPERTY_TOF_SENSOR_APP_START = 0x1080FFEE,
+	XN_MODULE_PROPERTY_TOF_SENSOR_CAL_PARAMS = 0x1080FFEF,
+	XN_MODULE_PROPERTY_TOF_SIMPLE_PERIOD = 0x1080FFF9,
+	XN_MODULE_PROPERTY_DEPTH_IR_MODE = 0x1080FFF0,
+	XN_MODULE_PROPERTY_TEMP_COMP_PARAMS = 0x1080FFF1,
+	XN_MODULE_PROPERTY_MULTI_PARSE_REFERENCE = 0x1080FFF2,
+	XN_MODULE_PROPERTY_THIRD_ROM_VERSION = 0x1080FFF3,
+	XN_MODULE_PROPERTY_THIRD_CHIP_MODEL = 0x1080FFF4,
+	XN_MODULE_PROPERTY_THIRD_SDK_VERSION = 0x1080FFF5,
+	XN_MODULE_PROPERTY_HW_FRAME_SYC = 0x1080FFF6,
+	XN_MODULE_PROPERTY_THIRD_LOGCAT = 0x1080FFF7,
+	XN_MODULE_PROPERTY_THIRD_LOGCAT_LEVEL = 0x1080FFF8,
+	XN_MODULE_PROPERTY_THIRD_ROM_DOWDLOAD = 0x1080FFFA,
+	XN_MODULE_PROPERTY_THIRD_AGING_STATUS = 0x1080FFFE,
+	XN_MODULE_PROPERTY_THIRD_AGING_TIME = 0x1080FFFF,
+	XN_MODULE_PROPERTY_THIRD_AGING_RESULT = 0x10810000,
+	XN_MODULE_PROPERTY_THIRD_ROM_DOWDLOAD_STATE = 0x10810001,
+	XN_MODULE_PROPERTY_ANT_ALGORITHM_PARAMS = 0x10810002,
+	XN_MODULE_PROPERTY_ANT_SECURITY_KEY = 0x10810003,
+	XN_MODULE_PROPERTY_TEC_ENABLE = 0x10810004,
+	XN_MODULE_PROPERTY_TOF_LONGOPEN_MODE = 0x10810005,
+	XN_MODULE_PROPERTY_TOF_SINGLE_RANGING = 0x10810006,
+	XN_MODULE_PROPERTY_SERIAL_PORT_ENABLE = 0x10810007,
+	XN_MODULE_PROPERTY_HW_SYN_FPS = 0x10810008,
+	XN_MODULE_PROPERTY_LASER_OVERCURRENT_PTS = 0x10810009,
+	XN_MODULE_PROPERTY_THIRD_SAVE_LOG_ENABLE = 0x1081000A,
+	XN_MODULE_PROPERTY_THIRD_SF_FRAME_SYNC_ENABLE = 0x1081000B,
+	XN_MODULE_PROPERTY_DEVICE_PID = 0x1081000C,
+
+	XN_MODULE_PROPERTY_DEVICE_SBG_ENABLE = 0x1081000D,
+	XN_MODULE_PROPERTY_DEVICE_SBG_MODE = 0x1081000E,
+	XN_MODULE_PROPERTY_DEVICE_IR_GAMMA_ENABLE = 0x1081000F,
+	XN_MODULE_PROPERTY_DEVICE_IR_FACE_AE_ROI = 0x10810010,
+
+	XN_MODULE_PROPERTY_ACTIVATION_CODE = 0x10810011,
+	XN_MODULE_PROPERTY_ACTIVATION_STATUS = 0x10810012,
+	XN_MODULE_PROPERTY_VERIFY_ACTIVATION_CODE = 0x10810013,
+	XN_MODULE_PROPERTY_FAN_ENABLE = 0x10810014,
+	XN_MODULE_PROPERTY_FAN_STATUS = 0x10810015,
+	XN_MODULE_PROPERTY_TEC_SET_CURRENT = 0x10810016,
+	XN_MODULE_PROPERTY_TEC_GET_CURRENT = 0x10810017,
+	XN_MODULE_PROPERTY_FAN_F_ENABLE = 0x10810018,
+	XN_MODULE_PROPERTY_FAN_F_STATUS = 0x10810019,
+	XN_MODULE_PROPERTY_TEC_SET_CURRENT_F = 0x1081001A,
+	XN_MODULE_PROPERTY_TEC_GET_CURRENT_F = 0x1081001B,
+	XN_MODULE_PROPERTY_CFG_PN_11 = 0x1081001C,
+	XN_MODULE_PROPERTY_CFG_SET_PN = 0x1081001D,
+	XN_MODULE_PROPERTY_LASER_PWM = 0x1081001E,
+	XN_MODULE_PROPERTY_GPM = 0x1081001F,
+
+
+
 	/*******************************************************************/
 	/* Common stream properties                                        */
 	/*******************************************************************/
@@ -249,8 +379,8 @@ enum
 	/** Boolean */
 	XN_STREAM_PROPERTY_GMC_MODE	= 0x1080FF44, // "GmcMode"
 
-        XN_STREAM_PROPERTY_MIN_DEPTH  = 0x1080FF40, // "MinDepthValue"
-        XN_STREAM_PROPERTY_MAX_DEPTH  = 0x1080FF41, // "MaxDepthValue"
+    XN_STREAM_PROPERTY_MIN_DEPTH  = 0x1080FF40, // "MinDepthValue"
+    XN_STREAM_PROPERTY_MAX_DEPTH  = 0x1080FF41, // "MaxDepthValue"
 	/** Boolean */
 	XN_STREAM_PROPERTY_GMC_DEBUG = 0x1080FF45, // "GmcDebug"
 	/** Boolean */
@@ -261,7 +391,13 @@ enum
     /** Boolean */
     XN_STREAM_PROPERTY_SOFTWARE_REGISTRATION = 0x2080FF42, // "Software Registration"
 	XN_STREAM_PROPERTY_SOFTWARE_FILTER = 0x2080FF43,		//soft filter enable
-
+	XN_STREAM_PROPERTY_DEPTH_ROTATE = 0x2080FF44, 			//atlas depth rotate
+	XN_STREAM_PROPERTY_DEPTH_MAX_DIFF = 0x2080FF45, 		//soft filter maxdiff param
+	XN_STREAM_PROPERTY_DEPTH_MAX_SPECKLE_SIZE = 0x2080FF46, 	//soft filter maxSpeckleSize
+	XN_STREAM_PROPERTY_DEPTH_UNIT_COEFFICIENT = 0x2080FF47, 	//Calibration unit accuracy coefficient
+	XN_STREAM_PROPERTY_DEPTH_LEFT_EXTEND = 0x2080FF48, 	//Calibration unit accuracy coefficient
+	XN_STREAM_PROPERTY_DEPTH_ORIGINAL_SHIFT = 0x2080FF49, 	//original shift or openni shift
+	XN_STREAM_PROPERTY_DEPTH_SHIFT_COMPENSATION = 0x2080FF4A, //shift compensation
 	/*******************************************************************/
 	/* Color stream properties                                         */
 	/*******************************************************************/
@@ -336,6 +472,8 @@ typedef enum
 	XN_IO_IMAGE_FORMAT_UNCOMPRESSED_YUV422 = 5,
 	XN_IO_IMAGE_FORMAT_UNCOMPRESSED_BAYER = 6,
 	XN_IO_IMAGE_FORMAT_UNCOMPRESSED_YUYV = 7,
+	XN_IO_IMAGE_FORMAT_MJPEG = 8,
+	XN_IO_IMAGE_FORMAT_PLATFORM_LOG = 10,
 } XnIOImageFormats;
 
 typedef enum
@@ -345,7 +483,37 @@ typedef enum
 	XN_IO_DEPTH_FORMAT_UNCOMPRESSED_10_BIT = 2,
 	XN_IO_DEPTH_FORMAT_UNCOMPRESSED_11_BIT = 3,
 	XN_IO_DEPTH_FORMAT_UNCOMPRESSED_12_BIT = 4,
+
+	//New addition
+	XN_IO_DEPTH_FORMAT_UNCOMPRESSED_16_BIT_DEPTH = 5,      //No compression 16 bit depth, no parallax depth
+	XN_IO_DEPTH_FORMAT_COMPRESSED_10_BIT = 6,              //Compress 10bit parallax
+	XN_IO_DEPTH_FORMAT_COMPRESSED_11_BIT = 7,              //Compress 11bit parallax
+	XN_IO_DEPTH_FORMAT_COMPRESSED_12_BIT = 8,              //Compress 12bit parallax
+	XN_IO_DEPTH_FORMAT_COMPRESSED_16_BIT = 9,              //Compress 16bit parallax
+	XN_IO_DEPTH_FORMAT_COMPRESSED_16_BIT_DEPTH = 10,       //Compress 16bit depth without parallax depth
+
+	//Standard Mipi packing raw data unpacking type is supported,
+	//non-standard Mipi packing data unpacking is not supported
+	XN_IO_DEPTH_FORMAT_UNCOMPRESSED_10_BIT_MIPI = 11,      //uncompressed 10bit Mipi package parallax
+	XN_IO_DEPTH_FORMAT_UNCOMPRESSED_11_BIT_MIPI = 12,      //uncompressed 11bit Mipi package parallax
+	XN_IO_DEPTH_FORMAT_UNCOMPRESSED_12_BIT_MIPI = 13,      //uncompressed 12bit Mipi package parallax
+
 } XnIODepthFormats;
+
+typedef enum
+{
+	XN_IO_IR_FORMAT_UNCOMPRESSED_16_BIT = 0,
+	XN_IO_IR_FORMAT_COMPRESSED_PS = 1,
+	XN_IO_IR_FORMAT_UNCOMPRESSED_10_BIT = 2,
+	XN_IO_IR_FORMAT_UNCOMPRESSED_11_BIT = 3,
+	XN_IO_IR_FORMAT_UNCOMPRESSED_12_BIT = 4,
+
+	//New addition
+	XN_IO_IR_FORMAT_COMPRESSED_16_BIT = 5,             //Compress 16bit
+	XN_IO_IR_FORMAT_COMPRESSED_10_BIT = 6,             //Compress 10bit
+	XN_IO_IR_FORMAT_COMPRESSED_11_BIT = 7,             //Compress 11bit
+	XN_IO_IR_FORMAT_COMPRESSED_12_BIT = 8,             //Compress 18bit
+} XnIOIRFormats;
 
 typedef enum
 {
@@ -511,6 +679,13 @@ typedef enum XnImageCMOSType
 	XN_IMAGE_CMOS_MT9D131 = 2,
 	XN_IMAGE_CMOS_MT9M114 = 3,
 } XnImageCMOSType;
+
+typedef enum {
+	XN_USB_LOW_SPEED = 0,
+	XN_USB_FULL_SPEED,
+	XN_USB_HIGH_SPEED,
+	XN_USB_SUPER_SPEED,
+} XnUSBSpeed;
 
 #define XN_IO_MAX_I2C_BUFFER_SIZE 10
 #define XN_MAX_LOG_SIZE	(6*1024)
@@ -746,7 +921,249 @@ typedef struct XnDepthOptimizationParam
 	double nParam3;
 }XnDepthOptimizationParam;
 
+typedef struct {
+	uint32_t nSize;
+	unsigned char* data;
+}XnDistortionParam;
+
+
+typedef struct OBFirmwareQN
+{
+	uint8_t QN[8];
+}OBFirmwareQN;
+
+typedef struct OBPublicBoardVersion
+{
+	uint8_t cVersion[4];
+}OBPublicBoardVersion;
+
+typedef struct ObMX6300Version
+{
+	uint8_t cVersion[4];
+} ObMX6300Version;
+
+typedef struct OBSerialNumber
+{
+	uint32_t size;
+	uint8_t SN[32];
+}OBSerialNumber;
+
+typedef struct OBKTProductNumber
+{
+	uint8_t PN[32];
+}OBKTProductNumber;
+
+typedef struct OBZ0Baseline
+{
+	float fZ0;
+	float fBaseline;
+}OBZ0Baseline;
+typedef struct OBCfgSerialProductNumber
+{
+	uint8_t SerialNumber[12];
+	uint8_t ProductNumber[12];
+}OBCfgSerialProductNumber;
+
+typedef struct {
+	uint32_t nRegNum;
+	uint32_t nSize;
+	unsigned char data[64*1024];
+}OBCfgHwD2cDistortion;
+
+#define OB_AUTHORIZATION_CODE_SIZE 16
+#define OB_ACTIVATION_CODE_SIZE 49
+
+typedef struct OBAuthorizationCode{
+	uint8_t AuthCode[OB_AUTHORIZATION_CODE_SIZE];
+}OBAuthorizationCode;
+
+typedef struct OBActivationCode{
+	uint8_t ActiveCode[OB_ACTIVATION_CODE_SIZE];
+}OBActivationCode;
+
+enum ObDeviceActivationStatus
+{
+	DEVICE_ACTIVATION_STATUS_DEACTIVATED = 0,
+	DEVICE_ACTIVATION_STATUS_ACTIVATED = 1,
+};
+
+typedef struct OBPdThreshold
+{
+	uint32_t PdThreshold;
+}OBPdThreshold;
+
+enum AEOPTIONPARAMES
+{
+	EXPTIME = 0,
+	AGAIN, 
+	LASERCURRENT, 
+	TARGETBRIGHTNESS,
+	TARGETTHD,
+	CENTERWEIGHT,
+	SKIPFRAME, 
+	SMOOTHSTEPS,
+	DELAYMS,
+	METERMETHOD,
+	EXPTIMEADJ, 
+	AGAINADJ, 
+	LASERCURRENTADJ,
+};
+
+typedef struct _Range
+{
+	uint32_t min;
+	uint32_t max;
+}RANGE;
+
+enum METER_METHOD
+{
+	CENTER_METERING = 0,
+	AVERRAGE_METERING,
+	SPOT_METERING,
+	ROI_METERING,
+	AUTO_METERING,
+	WEIGHT_METERING,
+	INV_TRIANGLE,
+};
+typedef struct
+{
+	RANGE expTime;
+	RANGE AGain;
+	RANGE laserCurrent;
+	uint32_t targetBrightness;
+	uint32_t targetThd;
+	uint32_t centerWeight;
+	uint32_t skipFrame;
+	uint32_t smoothSteps;
+	uint32_t dealy_ms;
+	uint32_t meterMethod;
+	uint8_t expTimeAdj;
+	uint8_t AGainAdj;
+	uint8_t laserCurrentAdj;
+	uint8_t reserve;
+} AeParamsStruct;
+
+//china union pay certification
+typedef struct
+{
+	uint8_t ProductType[32];
+	uint8_t FirewareVersion[4];
+}CupCertify;
+
+
+typedef struct OBTofSensorCalParams
+{
+	uint8_t calParams[14];
+}OBTofSensorCalParams;
+
+typedef struct OBTempParams
+{
+	uint32_t temp_Enable;       //Enable or disable temperature compensation.
+	float temp_IR;         //Real-time temperature of IR module.
+	float temp_Laser;      //Real-time temperature of Laser module.
+	float temp_Cal_IR;     //Calibration temperature of IR module.
+	float temp_Cal_Laser;  //Calibration temperature of Laser module.
+	float ncost_IR;        //Temperature coefficient of IR module.
+	float ncost_Laser;     //Temperature coefficient of Laser module.
+} OBTempParams;
+
+
+typedef struct {
+	uint32_t nSize;
+	unsigned char* data;
+}OBMultiParseRef;
+
+typedef struct {
+	uint32_t nSize;
+	unsigned char* data;
+}OBThirdRomBuffer;
+
+enum THIRD_LOG_LEVEL
+{
+	THIRD_LOG_LEVEL_NO = 0,
+	THIRD_LOG_LEVEL_ERROR,
+	THIED_LOG_LEVEL_WARNING,
+	THIRD_LOG_LEVEL_INFO,
+};
+
+enum THIRD_AGING_STATE
+{
+	THIRD_DEVICE_AGING_STOP = 0,  //Stop aging
+	THIRD_DEVICE_AGING_START = 1, //Start aging
+};
+
+typedef enum
+{
+	PROTOCOL_DEPTH_NIR = 0,     //Depth + pure IR interleaving (USB device default mode)
+	PROTOCOL_SPECKLE_IR = 1,    //Speckle IR
+	PROTOCOL_NIR = 2,           //Floodlight (pure) IR
+	PROTOCOL_IR_NIR = 3,        //nterleaved output of speckle IR and pure IR
+} OBDepthIrMode;
+
+enum THREAD_UPDATE_STATE
+{
+	THIRD_UPDATE_STATE_COMPLETE = 0,                                      //upgrade completed and succeeded
+	THREAD_UPDATE_STATE_IN_PROCESSING = 1,                                //Upgrade in progress
+	THREAD_UPDATE_STATE_NO_START = -1,                                    //the upgrade has not started yet
+	THREAD_UPDATE_STATE_SAVE_ROM_FILE_FAILED = -2,                        //upgrade write save ROM file failed
+	THREAD_UPDATE_STATE_SAVE_WRITE_END_MARK_FILE_FAILED = -3,             //upgrade write save end flag file failed
+};
+
+typedef struct
+{
+	uint32_t nSize;
+	unsigned char* pData;
+} AntAlgorithmParams;
+
+typedef struct
+{
+	uint32_t keyPos;
+	uint32_t keyValues[8];
+} AntSecurityKey;
+
+typedef struct
+{
+	uint32_t keyPos;
+	int32_t  keyStatus;
+} AntSecurityKeyStatus;
+
+typedef enum
+{
+	DEPTH_IR_FPS_15 = 0,    //Firmware depth, IR 15 frame output
+	DEPTH_IR_FPS_30 = 1,    //Firmware depth, IR 30 frame output
+} HardwareFrameSynFPS;
+
+typedef enum
+{
+	SBG_MODE_0 = 0,
+	SBG_MODE_1 = 1,
+	SBG_MODE_2 = 2,
+} SBG_MODE;
+
+typedef struct
+{
+	uint32_t nEnable;  //1:enable ir faceAE;0: disable ir faceAE
+	uint16_t nLeft;	   
+	uint16_t nTop;
+	uint16_t nWidth;
+	uint16_t nHeight;
+}IrFaceAERoi;
+
+typedef struct
+{
+	uint32_t mode;        //mode:0~3
+	uint32_t dutyRatio;   //Duty ratio 0 ~ 99
+	uint32_t frequency;   //Frequency: 10Hz ~ 15000hz
+} LaserPWM;
+
+
+typedef struct
+{
+	LaserPWM pwm0;
+	LaserPWM pwm2;
+	LaserPWM pwm3;
+} LaserPWMS;
+
 
 #pragma pack (pop)
-
 #endif // PS1080_H

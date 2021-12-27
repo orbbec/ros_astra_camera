@@ -60,11 +60,18 @@
 #include "astra_camera/SetIRExposure.h"
 #include "astra_camera/SetLaser.h"
 #include "astra_camera/SetLDP.h"
+#include "astra_camera/SetFan.h"
+#include "astra_camera/SetDistortioncal.h"
+#include "astra_camera/SetAeEnable.h"
 #include "astra_camera/ResetIRGain.h"
 #include "astra_camera/ResetIRExposure.h"
 #include "astra_camera/GetCameraInfo.h"
 #include "astra_camera/SetIRFlood.h"
 #include "astra_camera/SwitchIRCamera.h"
+#include "astra_camera/GetVersion.h"
+#include "astra_camera/SetAutoExposure.h"
+#include "astra_camera/SetAutoWhiteBalance.h"
+#include "astra_camera/SetMirror.h"
 #include <astra_camera/astra_device_type.h>
 
 #include <ros/ros.h>
@@ -107,9 +114,17 @@ private:
 
   bool getSerialCb(astra_camera::GetSerialRequest& req, astra_camera::GetSerialResponse& res);
   bool getDeviceTypeCb(astra_camera::GetDeviceTypeRequest& req, astra_camera::GetDeviceTypeResponse& res);
+  bool getColorGainCb(astra_camera::GetIRGainRequest& req, astra_camera::GetIRGainResponse& res);
+  bool getDepthGainCb(astra_camera::GetIRGainRequest& req, astra_camera::GetIRGainResponse& res);
   bool getIRGainCb(astra_camera::GetIRGainRequest& req, astra_camera::GetIRGainResponse& res);
+  bool setColorGainCb(astra_camera::SetIRGainRequest& req, astra_camera::SetIRGainResponse& res);
+  bool setDepthGainCb(astra_camera::SetIRGainRequest& req, astra_camera::SetIRGainResponse& res);
   bool setIRGainCb(astra_camera::SetIRGainRequest& req, astra_camera::SetIRGainResponse& res);
+  bool getColorExposureCb(astra_camera::GetIRExposureRequest& req, astra_camera::GetIRExposureResponse& res);
+  bool getDepthExposureCb(astra_camera::GetIRExposureRequest& req, astra_camera::GetIRExposureResponse& res);
   bool getIRExposureCb(astra_camera::GetIRExposureRequest& req, astra_camera::GetIRExposureResponse& res);
+  bool setColorExposureCb(astra_camera::SetIRExposureRequest& req, astra_camera::SetIRExposureResponse& res);
+  bool setDepthExposureCb(astra_camera::SetIRExposureRequest& req, astra_camera::SetIRExposureResponse& res);
   bool setIRExposureCb(astra_camera::SetIRExposureRequest& req, astra_camera::SetIRExposureResponse& res);
   bool setLaserCb(astra_camera::SetLaserRequest& req, astra_camera::SetLaserResponse& res);
   bool resetIRGainCb(astra_camera::ResetIRGainRequest& req, astra_camera::ResetIRGainResponse& res);
@@ -118,6 +133,19 @@ private:
   bool setIRFloodCb(astra_camera::SetIRFloodRequest& req, astra_camera::SetIRFloodResponse& res);
   bool switchIRCameraCb(astra_camera::SwitchIRCameraRequest& req, astra_camera::SwitchIRCameraResponse& res);
   bool setLDPCb(astra_camera::SetLDPRequest& req, astra_camera::SetLDPResponse& res);
+  bool setFanCb(astra_camera::SetFanRequest& req, astra_camera::SetFanResponse& res);
+  bool setDistortioncalCb(astra_camera::SetDistortioncalRequest& req, astra_camera::SetDistortioncalResponse& res);
+  bool setAeEnableCb(astra_camera::SetAeEnableRequest& req, astra_camera::SetAeEnableResponse& res);
+  bool getVersionCb(astra_camera::GetVersionRequest& req, astra_camera::GetVersionResponse& res);
+  bool setColorAutoExposureCb(astra_camera::SetAutoExposureRequest& req, astra_camera::SetAutoExposureResponse& res);
+  bool setDepthAutoExposureCb(astra_camera::SetAutoExposureRequest& req, astra_camera::SetAutoExposureResponse& res);
+  bool setIRAutoExposureCb(astra_camera::SetAutoExposureRequest& req, astra_camera::SetAutoExposureResponse& res);
+  bool setColorAutoWhiteBalanceCb(astra_camera::SetAutoWhiteBalanceRequest& req, astra_camera::SetAutoWhiteBalanceResponse& res);
+  bool setDepthAutoWhiteBalanceCb(astra_camera::SetAutoWhiteBalanceRequest& req, astra_camera::SetAutoWhiteBalanceResponse& res);
+  bool setIRAutoWhiteBalanceCb(astra_camera::SetAutoWhiteBalanceRequest& req, astra_camera::SetAutoWhiteBalanceResponse& res);
+  bool setColorMirrorCb(astra_camera::SetMirrorRequest& req, astra_camera::SetMirrorResponse& res);
+  bool setDepthMirrorCb(astra_camera::SetMirrorRequest& req, astra_camera::SetMirrorResponse& res);
+  bool setIRMirrorCb(astra_camera::SetMirrorRequest& req, astra_camera::SetMirrorResponse& res);
 
   void configCb(Config &config, uint32_t level);
 
@@ -144,16 +172,37 @@ private:
   ros::ServiceServer get_camera_info;
   ros::ServiceServer get_serial_server;
   ros::ServiceServer get_device_type_server;
+  // ros::ServiceServer get_color_gain_server;
+  // ros::ServiceServer get_depth_gain_server;
   ros::ServiceServer get_ir_gain_server;
+  // ros::ServiceServer set_color_gain_server;
+  // ros::ServiceServer set_depth_gain_server;
   ros::ServiceServer set_ir_gain_server;
+  // ros::ServiceServer get_color_exposure_server;
+  // ros::ServiceServer get_depth_exposure_server;
   ros::ServiceServer get_ir_exposure_server;
+  // ros::ServiceServer set_color_exposure_server;
+  // ros::ServiceServer set_depth_exposure_server;
   ros::ServiceServer set_ir_exposure_server;
   ros::ServiceServer set_ir_flood_server;
   ros::ServiceServer set_laser_server;
   ros::ServiceServer set_ldp_server;
+  ros::ServiceServer set_fan_server;
   ros::ServiceServer reset_ir_gain_server;
   ros::ServiceServer reset_ir_exposure_server;
   ros::ServiceServer switch_ir_camera;
+  ros::ServiceServer set_distortioncal_server;
+  ros::ServiceServer set_ae_enable_server;
+  ros::ServiceServer get_version_server;
+  // ros::ServiceServer set_color_auto_exposure_server;
+  // ros::ServiceServer set_depth_auto_exposure_server;
+  ros::ServiceServer set_ir_auto_exposure_server;
+  // ros::ServiceServer set_color_auto_white_balance_server;
+  // ros::ServiceServer set_depth_auto_white_balance_server;
+  // ros::ServiceServer set_ir_auto_white_balance_server;
+  ros::ServiceServer set_color_mirror_server;
+  ros::ServiceServer set_depth_mirror_server;
+  ros::ServiceServer set_ir_mirror_server;
 
   /** \brief reconfigure server*/
   boost::shared_ptr<ReconfigureServer> reconfigure_server_;
@@ -214,6 +263,8 @@ private:
   bool projector_info_subscribers_;
 
   bool use_device_time_;
+
+  bool keep_alive_;
 
   Config old_config_;
   int uvc_flip_;

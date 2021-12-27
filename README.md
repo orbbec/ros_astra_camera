@@ -68,7 +68,7 @@ You can use **rviz** or **image_view** to verify the outputs.
 * `*/image_rect_raw`: images rectified by intrinsic/extrinsic parameters
 * `*/camera_info`: camera intrinsic/extrinsic parameters
 * `/camera/depth/points`: point cloud without color information
-* `/camera/depth_registered/points`: xyzrgb point cloud (Currently, RGB-D regestration supports default resolution only)
+* `/camera/depth_registered/points`: xyzrgb point cloud
 
 ## Useful Services
 

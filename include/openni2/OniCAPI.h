@@ -127,6 +127,16 @@ ONI_C_API OniBool oniStreamIsCommandSupported(OniStreamHandle stream, int comman
 /** Sets the stream buffer allocation functions. Note that this function may only be called while stream is not started. */
 ONI_C_API OniStatus oniStreamSetFrameBuffersAllocator(OniStreamHandle stream, OniFrameAllocBufferCallback alloc, OniFrameFreeBufferCallback free, void* pCookie);
 
+
+#if ONI_PLATFORM == ONI_PLATFORM_ANDROID_ARM
+
+ONI_C_API OniStatus oniRegisterAndroidLogRedirectCallback(OniAndroidLogRedirectCallback pCallbacks, void* pCookie, OniCallbackHandle* pHandle);
+
+ONI_C_API void oniUnRegisterAndroidLogRedirectCallback(OniCallbackHandle pHandle);
+
+#endif
+
+
 ////
 /** Mark another user of the frame. */
 ONI_C_API void oniFrameAddRef(OniFrame* pFrame);
@@ -260,5 +270,12 @@ ONI_C_API OniStatus oniSetLogFileOutput(OniBool bFileOutput);
  * @retval ONI_STATUS_ERROR Upon any kind of failure.
  */
 ONI_C_API OniStatus oniSetLogAndroidOutput(OniBool bAndroidOutput);
+
+
+ONI_C_API OniStatus oniSetLogAndroidOutputRedirect(OniBool bAndroidOutput);
+
+#ifdef FREE_SELINUX
+ONI_C_API void oniSetUsbParam(int fd,const char* usbpath);
+#endif
 #endif
 #endif // ONICAPI_H

@@ -3,12 +3,9 @@
 
   <!-- "camera" should uniquely identify the device. All topics are pushed down
        into the "camera" namespace, and it is prepended to tf frame ids. -->
-  <arg name="camera"    default="camera" />
-  <arg name="tf_prefix" default="" />
-  <arg name="rgb_frame_id"   if="$(eval arg('tf_prefix') == '')" default="$(arg camera)_rgb_optical_frame" />
-  <arg name="depth_frame_id" if="$(eval arg('tf_prefix') == '')" default="$(arg camera)_depth_optical_frame" />
-  <arg name="rgb_frame_id"   unless="$(eval arg('tf_prefix') == '')" default="$(arg tf_prefix)/$(arg camera)_rgb_optical_frame" />
-  <arg name="depth_frame_id" unless="$(eval arg('tf_prefix') == '')" default="$(arg tf_prefix)/$(arg camera)_depth_optical_frame" />
+  <arg name="camera" default="camera" />
+  <arg name="rgb_frame_id"   default="$(arg camera)_rgb_optical_frame" />
+  <arg name="depth_frame_id" default="$(arg camera)_depth_optical_frame" />
 
   <!-- device_id can have the following formats:
          "#n"            : the nth device found, starts from 1
@@ -77,7 +74,7 @@
       <param name="width" value="640"/>
       <param name="height" value="480"/>
       <!-- choose whichever uncompressed format the camera supports: -->
-      <param name="video_mode" value="yuyv"/> <!-- or yuyv/nv12/jpeg -->
+      <param name="video_mode" value="mjpeg"/> <!-- or yuyv/nv12/jpeg -->
       <param name="frame_rate" value="30"/>
 
       <param name="timestamp_method" value="start"/> <!-- start of frame -->
@@ -141,7 +138,6 @@
   <include if="$(arg publish_tf)"
 	   file="$(find astra_camera)/launch/includes/astra_frames.launch">
     <arg name="camera" value="$(arg camera)" />
-    <arg name="tf_prefix" value="$(arg tf_prefix)"/>
   </include>
 
 </launch>

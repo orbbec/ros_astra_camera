@@ -180,7 +180,7 @@ public:
 		return ONI_STATUS_OK;
 	}
 
-	virtual DeviceBase* deviceOpen(const char* uri, const char* mode) = 0;
+	virtual DeviceBase* deviceOpen(const char* uri, const char* mode, OniStatus& status) = 0;
 	virtual void deviceClose(DeviceBase* pDevice) = 0;
 
 	virtual void shutdown() = 0;
@@ -189,6 +189,9 @@ public:
 
 	virtual void* enableFrameSync(StreamBase** /*pStreams*/, int /*streamCount*/) { return NULL; }
 	virtual void disableFrameSync(void* /*frameSyncGroup*/) {}
+#ifdef FREE_SELINUX
+    virtual void SetUsbParam(int fd, const char* usbpath){}
+#endif
 
 protected:
 	void deviceConnected(const OniDeviceInfo* pInfo) { (m_deviceConnectedEvent)(pInfo, m_pCookie); }
@@ -208,7 +211,7 @@ private:
 
 }} // oni::driver
 
-#define ONI_EXPORT_DRIVER(DriverClass)																						\
+#define ONI_EXPORT_DRIVER_BASE(DriverClass)																						\
 																															\
 oni::driver::DriverBase* g_pDriver = NULL;																					\
 																															\
@@ -235,9 +238,9 @@ ONI_C_API_EXPORT OniStatus oniDriverTryDevice(const char* uri)																\
 }																															\
 																															\
 /* As Device */																												\
-ONI_C_API_EXPORT oni::driver::DeviceBase* oniDriverDeviceOpen(const char* uri, const char* mode)							\
+ONI_C_API_EXPORT oni::driver::DeviceBase* oniDriverDeviceOpen(const char* uri, const char* mode, OniStatus& status)							\
 {																															\
-	return g_pDriver->deviceOpen(uri, mode);																				\
+	return g_pDriver->deviceOpen(uri, mode, status);																				\
 }																															\
 ONI_C_API_EXPORT void oniDriverDeviceClose(oni::driver::DeviceBase* pDevice)												\
 {																															\
@@ -389,5 +392,16 @@ ONI_C_API_EXPORT void oniDriverDisableFrameSync(void* frameSyncGroup)											
 {																															\
 	return g_pDriver->disableFrameSync(frameSyncGroup);																		\
 }																															\
+
+
+#ifdef FREE_SELINUX
+#define ONI_EXPORT_DRIVER(DriverClass) ONI_EXPORT_DRIVER_BASE(DriverClass) \
+ONI_C_API_EXPORT void oniDriverSetUsbParam(int fd, const char* usbpath)														\
+{																															\
+	return g_pDriver->SetUsbParam(fd,usbpath);																		\
+}																									
+#else
+#define ONI_EXPORT_DRIVER(DriverClass) ONI_EXPORT_DRIVER_BASE(DriverClass)
+#endif
 
 #endif // ONIDRIVERAPI_H

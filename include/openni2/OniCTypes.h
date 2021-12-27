@@ -36,6 +36,7 @@ typedef int OniBool;
 
 #define ONI_MAX_STR 256
 #define ONI_MAX_SENSORS 10
+#define ONI_LOG_MAX_MESSAGE_LENGTH	2048
 
 struct OniCallbackHandleImpl;
 typedef struct OniCallbackHandleImpl* OniCallbackHandle;
@@ -123,6 +124,26 @@ typedef struct
 	int stride;
 } OniFrame;
 
+typedef enum OniLogSeverity
+{
+	ONI_LOG_VERBOSE = 0,
+	ONI_LOG_INFO = 1,
+	ONI_LOG_WARNING = 2,
+	ONI_LOG_ERROR = 3,
+	ONI_LOG_SEVERITY_NONE = 10,
+} OniLogSeverity;
+
+typedef struct OniLogEntry
+{
+	uint64_t nTimestamp;
+	OniLogSeverity nSeverity;
+	const char* strSeverity;
+	const char* strMask;
+	const char* strMessage;
+	const char* strFile;
+	uint32_t nLine;
+} OniLogEntry;
+
 typedef void (ONI_CALLBACK_TYPE* OniNewFrameCallback)(OniStreamHandle stream, void* pCookie);
 typedef void (ONI_CALLBACK_TYPE* OniGeneralCallback)(void* pCookie);
 typedef void (ONI_CALLBACK_TYPE* OniDeviceInfoCallback)(const OniDeviceInfo* pInfo, void* pCookie);
@@ -130,6 +151,12 @@ typedef void (ONI_CALLBACK_TYPE* OniDeviceStateCallback)(const OniDeviceInfo* pI
 
 typedef void* (ONI_CALLBACK_TYPE* OniFrameAllocBufferCallback)(int size, void* pCookie);
 typedef void (ONI_CALLBACK_TYPE* OniFrameFreeBufferCallback)(void* data, void* pCookie);
+
+#if ONI_PLATFORM == ONI_PLATFORM_ANDROID_ARM
+
+typedef void (ONI_CALLBACK_TYPE* OniAndroidLogRedirectCallback)(const OniLogEntry* pEntry, void* pCookie);
+
+#endif
 
 typedef struct
 {
