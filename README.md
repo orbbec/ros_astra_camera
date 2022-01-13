@@ -19,7 +19,7 @@ This package supports ROS Kinetic and Melodic.
 	cd ~/catkin_ws/
 	catkin_make
 	source devel/setup.bash
-    ```
+   ```
 	
 4. Pull the repository into your ROS workspace
     ```sh
@@ -30,6 +30,7 @@ This package supports ROS Kinetic and Melodic.
 5. Create astra udev rule
     ```sh
     roscd astra_camera
+    chmod 777 /scripts/create_udev_rules
     ./scripts/create_udev_rules
     ```
 
