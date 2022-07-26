@@ -30,19 +30,16 @@
  *      Author: Tim Liu (liuhua@orbbec.com)
  */
 
-
 #ifndef ASTRA_CONVERT_H_
 #define ASTRA_CONVERT_H_
 
-#include "astra_camera/astra_device_info.h"
-#include "astra_camera/astra_video_mode.h"
-
-#include "openni2/OpenNI.h"
-
 #include <vector>
 
-namespace astra_wrapper
-{
+#include "astra_camera/astra_device_info.h"
+#include "astra_camera/astra_video_mode.h"
+#include "openni2/OpenNI.h"
+
+namespace astra_wrapper {
 
 const AstraDeviceInfo astra_convert(const openni::DeviceInfo* pInfo);
 
@@ -50,6 +47,6 @@ const AstraVideoMode astra_convert(const openni::VideoMode& input);
 const openni::VideoMode astra_convert(const AstraVideoMode& input);
 
 const std::vector<AstraVideoMode> astra_convert(const openni::Array<openni::VideoMode>& input);
-}
+}  // namespace astra_wrapper
 
 #endif

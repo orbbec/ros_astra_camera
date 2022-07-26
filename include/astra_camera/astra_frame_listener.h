@@ -33,37 +33,30 @@
 #ifndef ASTRA_FRAME_LISTENER_H_
 #define ASTRA_FRAME_LISTENER_H_
 
-#include "astra_camera/astra_device.h"
-
 #include <sensor_msgs/Image.h>
 
 #include <vector>
 
+#include "astra_camera/astra_device.h"
 #include "openni2/OpenNI.h"
 
-namespace astra_wrapper
-{
+namespace astra_wrapper {
 
 class AstraTimerFilter;
 
-class AstraFrameListener : public openni::VideoStream::NewFrameListener
-{
-public:
+class AstraFrameListener : public openni::VideoStream::NewFrameListener {
+ public:
   AstraFrameListener();
 
-  virtual ~AstraFrameListener()
-  { };
+  virtual ~AstraFrameListener(){};
 
   void onNewFrame(openni::VideoStream& stream);
 
-  void setCallback(FrameCallbackFunction& callback)
-  {
-    callback_ = callback;
-  }
+  void setCallback(FrameCallbackFunction& callback) { callback_ = callback; }
 
   void setUseDeviceTimer(bool enable);
 
-private:
+ private:
   openni::VideoFrameRef m_frame;
 
   FrameCallbackFunction callback_;
@@ -74,6 +67,6 @@ private:
   double prev_time_stamp_;
 };
 
-}
+}  // namespace astra_wrapper
 
 #endif

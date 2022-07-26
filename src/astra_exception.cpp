@@ -36,50 +36,36 @@
  *
  */
 #include "astra_camera/astra_exception.h"
+
 #include <sstream>
+#include <utility>
 
-namespace astra_wrapper
-{
+namespace astra_wrapper {
 
-AstraException::AstraException (const std::string& function_name, const std::string& file_name, unsigned line_number, const std::string& message)
-: function_name_ (function_name)
-, file_name_ (file_name)
-, line_number_ (line_number)
-, message_ (message)
-{
-  std::stringstream sstream;
-  sstream << function_name_ << " @ " << file_name_ << " @ " << line_number_ << " : " << message_;
-  message_long_ = sstream.str();
+AstraException::AstraException(std::string function_name, std::string file_name,
+                               unsigned line_number, std::string message)
+    : function_name_(std::move(function_name)),
+      file_name_(std::move(file_name)),
+      line_number_(line_number),
+      message_(std::move(message)) {
+  std::stringstream ss;
+  ss << function_name_ << " @ " << file_name_ << " @ " << line_number_ << " : " << message_;
+  message_long_ = ss.str();
 }
 
-AstraException::~AstraException () throw()
-{
-}
+AstraException::~AstraException() noexcept = default;
 
-AstraException& AstraException::operator = (const AstraException& exception)
-{
+AstraException& AstraException::operator=(const AstraException& exception) {
   message_ = exception.message_;
   return *this;
 }
 
-const char* AstraException::what () const throw()
-{
-  return message_long_.c_str();
-}
+const char* AstraException::what() const noexcept { return message_long_.c_str(); }
 
-const std::string& AstraException::getFunctionName () const
-{
-  return function_name_;
-}
+const std::string& AstraException::getFunctionName() const { return function_name_; }
 
-const std::string& AstraException::getFileName () const
-{
-  return file_name_;
-}
+const std::string& AstraException::getFileName() const { return file_name_; }
 
-unsigned AstraException::getLineNumber () const
-{
-  return line_number_;
-}
+unsigned AstraException::getLineNumber() const { return line_number_; }
 
-} //namespace astra_camera
+}  // namespace astra_wrapper

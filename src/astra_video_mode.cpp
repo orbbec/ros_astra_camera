@@ -32,17 +32,13 @@
 
 #include "astra_camera/astra_video_mode.h"
 
-namespace astra_wrapper
-{
+namespace astra_wrapper {
 
+std::ostream& operator<<(std::ostream& stream, const AstraVideoMode& video_mode) {
+  stream << "Resolution: " << (int)video_mode.x_resolution_ << "x" << (int)video_mode.y_resolution_
+         << "@" << video_mode.frame_rate_ << "Hz Format: ";
 
-std::ostream& operator << (std::ostream& stream, const AstraVideoMode& video_mode) {
-  stream << "Resolution: " << (int)video_mode.x_resolution_ << "x" << (int)video_mode.y_resolution_ <<
-                              "@" << video_mode.frame_rate_ <<
-                              "Hz Format: ";
-
-  switch (video_mode.pixel_format_)
-  {
+  switch (video_mode.pixel_format_) {
     case PIXEL_FORMAT_DEPTH_1_MM:
       stream << "Depth 1mm";
       break;
@@ -78,17 +74,15 @@ std::ostream& operator << (std::ostream& stream, const AstraVideoMode& video_mod
   return stream;
 }
 
-bool operator==(const AstraVideoMode& video_mode_a, const AstraVideoMode& video_mode_b)
-{
-  return (video_mode_a.x_resolution_==video_mode_b.x_resolution_) &&
-         (video_mode_a.y_resolution_==video_mode_b.y_resolution_) &&
-         (video_mode_a.frame_rate_  ==video_mode_b.frame_rate_)   &&
-         (video_mode_a.pixel_format_==video_mode_b.pixel_format_);
+bool operator==(const AstraVideoMode& video_mode_a, const AstraVideoMode& video_mode_b) {
+  return (video_mode_a.x_resolution_ == video_mode_b.x_resolution_) &&
+         (video_mode_a.y_resolution_ == video_mode_b.y_resolution_) &&
+         (video_mode_a.frame_rate_ == video_mode_b.frame_rate_) &&
+         (video_mode_a.pixel_format_ == video_mode_b.pixel_format_);
 }
 
-bool operator!=(const AstraVideoMode& video_mode_a, const AstraVideoMode& video_mode_b)
-{
-  return !(video_mode_a==video_mode_b);
+bool operator!=(const AstraVideoMode& video_mode_a, const AstraVideoMode& video_mode_b) {
+  return !(video_mode_a == video_mode_b);
 }
 
-} //namespace openni2_wrapper
+}  // namespace astra_wrapper

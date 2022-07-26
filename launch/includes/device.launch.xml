@@ -18,7 +18,7 @@
   <arg name="auto_exposure" default="true" />
   <arg name="auto_white_balance" default="true" />
 
-  <arg name="respawn" default="false" />
+  <arg name="respawn" default="true" />
 
   <!-- Remapping arguments -->
   <arg name="rgb"              default="rgb" />

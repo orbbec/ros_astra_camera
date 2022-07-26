@@ -90,6 +90,8 @@ ONI_C_API OniBool oniDeviceIsCommandSupported(OniDeviceHandle device, int comman
 
 ONI_C_API OniBool oniDeviceIsImageRegistrationModeSupported(OniDeviceHandle device, OniImageRegistrationMode mode);
 
+ONI_C_API OniBool oniDeviceSetImageRegistrationMode(OniDeviceHandle device, OniImageRegistrationMode mode);
+
 /** @internal */
 ONI_C_API OniStatus oniDeviceOpenEx(const char* uri, const char* mode, OniDeviceHandle* pDevice);
 

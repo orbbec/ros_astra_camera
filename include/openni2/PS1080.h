@@ -161,7 +161,7 @@ enum
 	XN_MODULE_PROPERTY_CAL_IR_TEMP = 0x1080FFB2,
 	//LDMP Temperature mode
 	XN_MODULE_PROPERTY_CAL_LDMP_TEMP = 0x1080FFB3,
-	//IR real time Temperature mode
+	//IR real time Temperature mode,If it is binocular, it indicates the left IR temperature.
 	XN_MODULE_PROPERTY_RT_IR_TEMP = 0x1080FFB4,
 	//LDMP real time Temperature mode
 	XN_MODULE_PROPERTY_RT_LDMP_TEMP = 0x1080FFB5,
@@ -194,6 +194,7 @@ enum
 	XN_MODULE_PROPERTY_LDP_THRES_UP = 0x1080FFFB,       //ldp thres up
 	XN_MODULE_PROPERTY_LDP_THRES_LOW = 0x1080FFFC,      //ldp thres low
 	XN_MODULE_PROPERTY_LDP_NOIST_VALUE = 0x1080FFFD,    //ldp noise value
+	XN_MODULE_PROPERTY_LDP_PS_DATA = 0x10810023,		//ldp PS data
 
 	//Device QN read/write 
 	XN_MODULE_PROPERTY_QN_INFO = 0x1080FFC2,
@@ -312,6 +313,15 @@ enum
 	XN_MODULE_PROPERTY_CFG_SET_PN = 0x1081001D,
 	XN_MODULE_PROPERTY_LASER_PWM = 0x1081001E,
 	XN_MODULE_PROPERTY_GPM = 0x1081001F,
+
+	//Right ir real time Temperature mode
+	XN_MODULE_PROPERTY_RT_RIGHT_IR_TEMP = 0x10810020,
+	//camera params mode
+	XN_MODULE_PROPERTY_CAMERA_PARAMS_MODE = 0x10810021,
+	//Temperature comp
+	XN_MODULE_MOTHERBOARD_TEMP_COMP = 0x10810022,
+	//For third customer platform read/write SN
+	XN_MODULE_PROPERTY_DEVICE_SN = 0x10810024,
 
 
 
@@ -686,6 +696,24 @@ typedef enum {
 	XN_USB_HIGH_SPEED,
 	XN_USB_SUPER_SPEED,
 } XnUSBSpeed;
+
+typedef enum {
+	XN_CAMERA_PARAMS_DEPTH_RES_1024_768 = 0,
+	XN_CAMERA_PARAMS_DEPTH_RES_512_384 = 1,
+	XN_CAMERA_PARAMS_DEPTH_RES_640_480 = 2,
+	XN_CAMERA_PARAMS_DEPTH_RES_320_240 = 3,
+	XN_CAMERA_PARAMS_DEPTH_RES_160_120 = 4,
+	XN_CAMERA_PARAMS_DEPTH_RES_480_360 = 5,
+	XN_CAMERA_PARAMS_DEPTH_RES_240_180 = 6,
+	XN_CAMERA_PARAMS_DEPTH_RES_640_360 = 7,
+	XN_CAMERA_PARAMS_DEPTH_RES_320_180 = 8,
+} XnCameraParamsDepthRes;
+
+typedef enum {
+	XN_CAMERA_PARAMS_COLOR_RES_DEFAULT = 0,
+	XN_CAMERA_PARAMS_COLOR_RES_640_360 = 1,
+	XN_CAMERA_PARAMS_COLOR_RES_320_180 = 2,
+} XnCameraParamsColorRes;
 
 #define XN_IO_MAX_I2C_BUFFER_SIZE 10
 #define XN_MAX_LOG_SIZE	(6*1024)
@@ -1164,6 +1192,18 @@ typedef struct
 	LaserPWM pwm3;
 } LaserPWMS;
 
+typedef struct
+{
+	XnCameraParamsDepthRes depthRes;
+	XnCameraParamsColorRes colorRes;
+	OBCameraParams params;
+} OBCameraParamsData;
+
+typedef struct OBThirdCustomerSN
+{
+	uint32_t size;
+	char SerialNumber[32];
+}OBThirdCustomerSN;
 
 #pragma pack (pop)
 #endif // PS1080_H

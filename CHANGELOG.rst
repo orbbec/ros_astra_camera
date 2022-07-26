@@ -1,6 +1,14 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package astra_camera
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1.0.9(2022-07-25)
+------------
+* Support Dabai DCW/Dabai DW
+* Removed a lot of unnecessary commented code
+* Add support for hotplug
+* Fix point cloud alignment problem (depth alignment)
+* Update README
+
 0.3.0 (2019-08-08)
 ------------
 * Add UVC support

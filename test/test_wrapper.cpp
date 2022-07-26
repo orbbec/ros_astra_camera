@@ -30,14 +30,13 @@
  *      Author: Tim Liu (liuhua@orbbec.com)
  */
 
-#include "astra_camera/astra_device_manager.h"
-#include "astra_camera/astra_device.h"
-
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/thread/thread.hpp>
 #include <boost/foreach.hpp>
-
+#include <boost/thread/thread.hpp>
 #include <iostream>
+
+#include "astra_camera/astra_device.h"
+#include "astra_camera/astra_device_manager.h"
 
 using namespace std;
 using namespace astra_wrapper;
@@ -46,31 +45,21 @@ int ir_counter_ = 0;
 int color_counter_ = 0;
 int depth_counter_ = 0;
 
-void IRCallback(sensor_msgs::ImagePtr image)
-{
-  ++ir_counter_;
-}
+void IRCallback(sensor_msgs::ImagePtr image) { ++ir_counter_; }
 
-void ColorCallback(sensor_msgs::ImagePtr image)
-{
-  ++color_counter_;
-}
+void ColorCallback(sensor_msgs::ImagePtr image) { ++color_counter_; }
 
-void DepthCallback(sensor_msgs::ImagePtr image)
-{
-  ++depth_counter_;
-}
+void DepthCallback(sensor_msgs::ImagePtr image) { ++depth_counter_; }
 
-int main()
-{
+int main() {
   AstraDeviceManager device_manager;
 
   std::cout << device_manager;
 
-  boost::shared_ptr<std::vector<std::string> > device_uris = device_manager.getConnectedDeviceURIs();
+  boost::shared_ptr<std::vector<std::string> > device_uris =
+      device_manager.getConnectedDeviceURIs();
 
-  BOOST_FOREACH(const std::string& uri, *device_uris)
-  {
+  BOOST_FOREACH (const std::string& uri, *device_uris) {
     boost::shared_ptr<AstraDevice> device = device_manager.getDevice(uri);
 
     std::cout << *device;
@@ -90,13 +79,12 @@ int main()
 
     device->stopAllStreams();
 
-    std::cout<<std::endl;
+    std::cout << std::endl;
 
-    std::cout<<"Number of called to IRCallback: "<< ir_counter_ << std::endl;
-    std::cout<<"Number of called to ColorCallback: "<< color_counter_ << std::endl;
-    std::cout<<"Number of called to DepthCallback: "<< depth_counter_ << std::endl;
+    std::cout << "Number of called to IRCallback: " << ir_counter_ << std::endl;
+    std::cout << "Number of called to ColorCallback: " << color_counter_ << std::endl;
+    std::cout << "Number of called to DepthCallback: " << depth_counter_ << std::endl;
   }
-
 
   return 0;
 }
