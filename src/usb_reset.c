@@ -32,17 +32,13 @@
  *      Author: Tim Liu (liuhua@orbbec.com)
  */
 
-#include <stdio.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <errno.h>
-#include <sys/ioctl.h>
-
 #include <linux/usbdevice_fs.h>
+#include <stdio.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
-
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   const char *filename;
   int fd;
   int rc;

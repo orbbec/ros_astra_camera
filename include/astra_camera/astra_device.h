@@ -30,57 +30,50 @@
  *      Author: Tim Liu (liuhua@orbbec.com)
  */
 
-#ifndef ASTRA_DEVICE_H
-#define ASTRA_DEVICE_H
-
-#include "astra_camera/astra_video_mode.h"
-
-#include "astra_camera/astra_exception.h"
-#include "astra_camera/astra_device_type.h"
+#pragma once
 
 #include <openni2/OpenNI.h>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/cstdint.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/thread.hpp>
-#include <boost/chrono.hpp>
-#include <boost/bind.hpp>
-
 #include <sensor_msgs/Image.h>
 
+#include <boost/bind.hpp>
+#include <boost/chrono.hpp>
+#include <boost/cstdint.hpp>
+#include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+#include <atomic>
 #include <string>
 #include <vector>
 
-namespace openni
-{
+#include "astra_camera/astra_device_type.h"
+#include "astra_camera/astra_exception.h"
+#include "astra_camera/astra_video_mode.h"
+
+namespace openni {
 class Device;
 class DeviceInfo;
 class VideoStream;
 class SensorInfo;
-}
+}  // namespace openni
 
-namespace astra_wrapper
-{
+namespace astra_wrapper {
 
 typedef boost::function<void(sensor_msgs::ImagePtr image)> FrameCallbackFunction;
 
 class AstraFrameListener;
 
-class AstraDevice
-{
-public:
-  AstraDevice(const std::string& device_URI);
+class AstraDevice {
+ public:
+  explicit AstraDevice(const std::string& device_URI);
   virtual ~AstraDevice();
 
-  const std::string getUri() const;
-  const std::string getVendor() const;
-  const std::string getName() const;
+  std::string getUri() const;
+  std::string getVendor() const;
+  std::string getName() const;
   uint16_t getUsbVendorId() const;
   uint16_t getUsbProductId() const;
 
-  const std::string getStringID() const;
+  std::string getStringID() const;
 
   bool isValid() const;
 
@@ -98,17 +91,17 @@ public:
   void stopColorStream();
   void stopDepthStream();
 
-  bool isIRStreamStarted();
-  bool isColorStreamStarted();
-  bool isDepthStreamStarted();
+  bool isIRStreamStarted() const;
+  bool isColorStreamStarted() const;
+  bool isDepthStreamStarted() const;
 
   bool isImageRegistrationModeSupported() const;
   void setImageRegistrationMode(bool enabled);
   void setDepthColorSync(bool enabled);
 
-  const AstraVideoMode getIRVideoMode();
-  const AstraVideoMode getColorVideoMode();
-  const AstraVideoMode getDepthVideoMode();
+  AstraVideoMode getIRVideoMode();
+  AstraVideoMode getColorVideoMode();
+  AstraVideoMode getDepthVideoMode();
 
   const std::vector<AstraVideoMode>& getSupportedIRVideoModes() const;
   const std::vector<AstraVideoMode>& getSupportedColorVideoModes() const;
@@ -121,17 +114,19 @@ public:
   void setIRVideoMode(const AstraVideoMode& video_mode);
   void setColorVideoMode(const AstraVideoMode& video_mode);
   void setDepthVideoMode(const AstraVideoMode& video_mode);
+  void updateCameraParams(const AstraVideoMode& video_mode);
+  void setDepthToColorResolution(const AstraVideoMode& video_mode);
 
   void setIRFrameCallback(FrameCallbackFunction callback);
   void setColorFrameCallback(FrameCallbackFunction callback);
   void setDepthFrameCallback(FrameCallbackFunction callback);
 
-  float getIRFocalLength (int output_y_resolution) const;
-  float getColorFocalLength (int output_y_resolution) const;
-  float getDepthFocalLength (int output_y_resolution) const;
-  float getBaseline () const;
+  float getIRFocalLength(int output_y_resolution) const;
+  float getColorFocalLength(int output_y_resolution) const;
+  float getDepthFocalLength(int output_y_resolution) const;
+  float getBaseline() const;
   OBCameraParams getCameraParams() const;
-  bool isCameraParamsValid();
+  bool isCameraParamsValid() const;
   char* getSerialNumber();
   char* getDeviceType();
   OB_DEVICE_NO getDeviceTypeNo();
@@ -178,9 +173,9 @@ public:
 
   void setKeepAlive(bool enable);
 
-protected:
+ protected:
   void shutdown();
-  
+
   void keepAlive();
 
   boost::shared_ptr<openni::VideoStream> getIRVideoStream() const;
@@ -212,7 +207,7 @@ protected:
 
   bool use_device_time_;
 
-  bool keep_alive_;
+  std::atomic_bool keep_alive_{false};
 
   OBCameraParams m_CamParams;
   bool m_ParamsValid;
@@ -221,8 +216,6 @@ protected:
   OB_DEVICE_NO device_type_no;
 };
 
-std::ostream& operator << (std::ostream& stream, const AstraDevice& device);
+std::ostream& operator<<(std::ostream& stream, const AstraDevice& device);
 
-}
-
-#endif /* OPENNI_DEVICE_H */
+}  // namespace astra_wrapper

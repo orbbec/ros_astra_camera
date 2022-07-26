@@ -33,15 +33,12 @@
 #ifndef ASTRA_DEVICE_INFO_H_
 #define ASTRA_DEVICE_INFO_H_
 
+#include <boost/cstdint.hpp>
 #include <ostream>
 
-#include <boost/cstdint.hpp>
+namespace astra_wrapper {
 
-namespace astra_wrapper
-{
-
-struct AstraDeviceInfo
-{
+struct AstraDeviceInfo {
   std::string uri_;
   std::string vendor_;
   std::string name_;
@@ -49,8 +46,8 @@ struct AstraDeviceInfo
   uint16_t product_id_;
 };
 
-std::ostream& operator << (std::ostream& stream, const AstraDeviceInfo& device_info);
+std::ostream& operator<<(std::ostream& stream, const AstraDeviceInfo& device_info);
 
-}
+}  // namespace astra_wrapper
 
 #endif /* DRIVER_H_ */

@@ -33,23 +33,23 @@
 #ifndef ASTRA_DEVICE_MANAGER_H_
 #define ASTRA_DEVICE_MANAGER_H_
 
+#include <boost/thread/mutex.hpp>
+#include <functional>
+#include <ostream>
+#include <string>
+#include <vector>
+
 #include "astra_camera/astra_device_info.h"
 
-#include <boost/thread/mutex.hpp>
-
-#include <vector>
-#include <string>
-#include <ostream>
-
-namespace astra_wrapper
-{
+namespace astra_wrapper {
+using DeviceConnectCb = std::function<void(AstraDeviceInfo)>;
+using DeviceDisconnectCb = std::function<void(AstraDeviceInfo)>;
 
 class AstraDeviceListener;
 class AstraDevice;
 
-class AstraDeviceManager
-{
-public:
+class AstraDeviceManager {
+ public:
   AstraDeviceManager();
   virtual ~AstraDeviceManager();
 
@@ -64,15 +64,16 @@ public:
 
   std::string getSerial(const std::string& device_URI) const;
 
-protected:
+  void setDeviceCallback(const DeviceConnectCb& c1, const DeviceDisconnectCb& c2);
+
+ protected:
   boost::shared_ptr<AstraDeviceListener> device_listener_;
 
   static boost::shared_ptr<AstraDeviceManager> singelton_;
 };
 
+std::ostream& operator<<(std::ostream& stream, const AstraDeviceManager& device_manager);
 
-std::ostream& operator <<(std::ostream& stream, const AstraDeviceManager& device_manager);
-
-}
+}  // namespace astra_wrapper
 
 #endif

@@ -31,34 +31,29 @@
  */
 
 #include "astra_camera/astra_convert.h"
-#include "astra_camera/astra_exception.h"
 
 #include <boost/make_shared.hpp>
-
 #include <string>
 
-namespace astra_wrapper
-{
+#include "astra_camera/astra_exception.h"
 
-const AstraDeviceInfo astra_convert(const openni::DeviceInfo* pInfo)
-{
-  if (!pInfo)
-    THROW_OPENNI_EXCEPTION("astra_convert called with zero pointer\n");
+namespace astra_wrapper {
+
+const AstraDeviceInfo astra_convert(const openni::DeviceInfo* pInfo) {
+  if (!pInfo) THROW_OPENNI_EXCEPTION("astra_convert called with zero pointer\n");
 
   AstraDeviceInfo output;
 
-  output.name_       = pInfo->getName();
-  output.uri_        = pInfo->getUri();
-  output.vendor_     = pInfo->getVendor();
+  output.name_ = pInfo->getName();
+  output.uri_ = pInfo->getUri();
+  output.vendor_ = pInfo->getVendor();
   output.product_id_ = pInfo->getUsbProductId();
-  output.vendor_id_  = pInfo->getUsbVendorId();
+  output.vendor_id_ = pInfo->getUsbVendorId();
 
   return output;
 }
 
-
-const AstraVideoMode astra_convert(const openni::VideoMode& input)
-{
+const AstraVideoMode astra_convert(const openni::VideoMode& input) {
   AstraVideoMode output;
 
   output.x_resolution_ = input.getResolutionX();
@@ -69,8 +64,7 @@ const AstraVideoMode astra_convert(const openni::VideoMode& input)
   return output;
 }
 
-const openni::VideoMode astra_convert(const AstraVideoMode& input)
-{
+const openni::VideoMode astra_convert(const AstraVideoMode& input) {
   openni::VideoMode output;
 
   output.setResolution(input.x_resolution_, input.y_resolution_);
@@ -80,21 +74,18 @@ const openni::VideoMode astra_convert(const AstraVideoMode& input)
   return output;
 }
 
-
-const std::vector<AstraVideoMode> astra_convert(const openni::Array<openni::VideoMode>& input)
-{
+const std::vector<AstraVideoMode> astra_convert(const openni::Array<openni::VideoMode>& input) {
   std::vector<AstraVideoMode> output;
 
-  int size = input.getSize();
+  size_t size = input.getSize();
 
   output.reserve(size);
 
-  for (int i=0; i<size; ++i)
+  for (size_t i = 0; i < size; ++i) {
     output.push_back(astra_convert(input[i]));
+  }
 
   return output;
 }
 
-}
-
-
+}  // namespace astra_wrapper

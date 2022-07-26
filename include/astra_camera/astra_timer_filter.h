@@ -37,12 +37,10 @@
 
 #include "openni2/OpenNI.h"
 
-namespace astra_wrapper
-{
+namespace astra_wrapper {
 
-class AstraTimerFilter
-{
-public:
+class AstraTimerFilter {
+ public:
   AstraTimerFilter(std::size_t filter_len);
   virtual ~AstraTimerFilter();
 
@@ -53,12 +51,12 @@ public:
 
   void clear();
 
-private:
+ private:
   std::size_t filter_len_;
 
   std::deque<double> buffer_;
 };
 
-}
+}  // namespace astra_wrapper
 
 #endif
