@@ -55,6 +55,9 @@ This package supports ROS Kinetic, Melodic and Noetic distributions
    ```sh
    cd ~/catkin_ws/src
    # Method 1: Pull from Github
+   # Install git lfs First, If you alread installed, just ignore this step
+   sudo apt-get clone git-lfs
+   git lfs install
    git clone https://github.com/orbbec/ros_astra_camera
    # Method 2: Download from (latest version) https://developer.orbbec.com.cn/download.html  -> SDK -> OpenNI2 SDK
    ```
