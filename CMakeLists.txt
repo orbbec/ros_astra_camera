@@ -14,8 +14,12 @@ find_package(catkin REQUIRED
 
 find_package(Boost REQUIRED COMPONENTS system thread)
 
-find_package(libuvc REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_search_module(LIBUVC REQUIRED libuvc)
+if (NOT LIBUVC_FOUND)
+  message(FATAL_ERROR "libuvc is not found")
+endif ()
 
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX11)
@@ -95,9 +99,9 @@ catkin_package(
   message_runtime
 )
 
-add_definitions(-Dlibuvc_VERSION_MAJOR=${libuvc_VERSION_MAJOR})
-add_definitions(-Dlibuvc_VERSION_MINOR=${libuvc_VERSION_MINOR})
-add_definitions(-Dlibuvc_VERSION_PATCH=${libuvc_VERSION_PATCH})
+add_definitions(-Dlibuvc_VERSION_MAJOR=0)
+add_definitions(-Dlibuvc_VERSION_MINOR=0)
+add_definitions(-Dlibuvc_VERSION_PATCH=6)
 
 set(ORBBEC_OPENNI2_REDIST
   "${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/${HOST_PLATFORM}")
@@ -111,7 +115,9 @@ include_directories(include
   ${Boost_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2
   ${libuvc_INCLUDE_DIRS}
-  ${OpenCV_INCLUDED_DIRS})
+  ${OpenCV_INCLUDED_DIRS}
+  ${LIBUVC_INCLUDE_DIRS}
+  )
 
 
 add_library(astra_wrapper
@@ -199,8 +205,7 @@ add_executable(camera_node
   src/libuvc_camera/camera_driver.cpp
   src/astra_device_type.cpp)
 target_link_libraries(camera_node
-  LibUVC::UVCShared
-  ${libuvc_LIBRARIES}
+  ${LIBUVC_LIBRARIES}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES})
 
@@ -214,7 +219,7 @@ add_library(libuvc_camera_nodelet
   src/astra_device_type.cpp)
 
 target_link_libraries(libuvc_camera_nodelet
-  LibUVC::UVCShared
+  ${LIBUVC_LIBRARIES}
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES})
 
