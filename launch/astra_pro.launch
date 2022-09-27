@@ -1,0 +1,17 @@
+<launch>
+  <!-- unique camera name-->
+  <arg name="camera_name" default="camera" />
+  <!-- Hardware depth registration -->
+  <arg name="depth_registration" default="false" />
+  <arg name="serial_number" default=""/>
+  <group ns="$(arg camera_name)">
+    <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
+      <rosparam command="load" file="$(find astra_camera)/params/camera_params_template.yaml" />
+      <param name="camera_name" value="$(arg camera_name)" />
+      <param name="serial_number" value="$(arg serial_number)" />
+      <param name="use_uvc_camera" value="true" />
+      <param name="uvc_product_id" value="0x0501" />
+      <remap from="/$(arg camera_name)/depth/color/points" to="/$(arg camera_name)/depth_registered/points"/>
+    </node>
+  </group>
+</launch>

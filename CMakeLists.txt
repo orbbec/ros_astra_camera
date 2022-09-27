@@ -1,34 +1,43 @@
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.5.1)
 project(astra_camera)
-set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fPIC -g")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC -g")
+set(CMAKE_BUILD_TYPE "Release")
+if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif ()
+
 find_package(catkin REQUIRED
-  camera_info_manager
-  dynamic_reconfigure
-  image_transport
-  nodelet
-  sensor_msgs
-  roscpp
-  message_generation
   cv_bridge
+  dynamic_reconfigure
+  image_geometry
+  image_transport
+  message_generation
+  roscpp
+  sensor_msgs
+  std_srvs
+  tf2
+  tf2_ros
+  message_filters
+  camera_info_manager
   )
-
-find_package(Boost REQUIRED COMPONENTS system thread)
-
 find_package(OpenCV REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(LIBUVC REQUIRED libuvc)
 if (NOT LIBUVC_FOUND)
   message(FATAL_ERROR "libuvc is not found")
 endif ()
+pkg_search_module(GLOG REQUIRED libglog)
 
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++14" COMPILER_SUPPORTS_CXX11)
-if (COMPILER_SUPPORTS_CXX11)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-  message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has C++11 support.")
-else ()
-  message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a newer C++ compiler.")
-endif ()
+if (NOT GLOG_FOUND)
+  message(FATAL_ERROR "glog is not found")
+endif()
 
 execute_process(COMMAND uname -m OUTPUT_VARIABLE MACHINES)
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE MACHINES_BIT)
@@ -47,39 +56,25 @@ endif ()
 message(STATUS "ORRBEC : ${HOST_PLATFORM}")
 message(STATUS "libuvc ${libuvc_VERSION_MAJOR}.${libuvc_VERSION_MINOR}.${libuvc_VERSION_PATCH}")
 
-generate_dynamic_reconfigure_options(cfg/Astra.cfg cfg/UVCCamera.cfg)
+generate_dynamic_reconfigure_options(cfg/Astra.cfg)
+
+add_message_files(
+  FILES
+  DeviceInfo.msg
+  Extrinsics.msg
+  Metadata.msg
+)
 
 add_service_files(
   FILES
-  GetSerial.srv
-  GetDeviceType.srv
-  GetIRGain.srv
+  GetBool.srv
   GetCameraInfo.srv
-  GetUVCExposure.srv
-  GetIRExposure.srv
-  GetUVCGain.srv
-  GetUVCWhiteBalance.srv
-  SetUVCWhiteBalance.srv
-  SetUVCGain.srv
-  SetIRExposure.srv
-  SetIRGain.srv
-  SetIRFlood.srv
-  SetLaser.srv
-  SetLDP.srv
-  SetFan.srv
-  SetUVCExposure.srv
-  ResetIRGain.srv
-  ResetIRExposure.srv
-  SwitchIRCamera.srv
-  SetDistortioncal.srv
-  SetAeEnable.srv
-  GetVersion.srv
-  SetAutoExposure.srv
-  SetAutoWhiteBalance.srv
-  SetMirror.srv
-  SetUVCMirror.srv
-  GetUVCMirror.srv
   GetCameraParams.srv
+  GetDeviceInfo.srv
+  GetInt32.srv
+  GetString.srv
+  SetInt32.srv
+  SetString.srv
 )
 
 generate_messages(
@@ -89,19 +84,25 @@ generate_messages(
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES astra_wrapper
-  CATKIN_DEPENDS camera_info_manager
+  LIBRARIES ${PROJECT_NAME}
+  CATKIN_DEPENDS
+  cv_bridge
   dynamic_reconfigure
+  image_geometry
   image_transport
-  nodelet
-  sensor_msgs
-  roscpp
   message_runtime
+  roscpp
+  sensor_msgs
+  tf2
+  tf2_ros
+  std_srvs
+  message_filters
+  camera_info_manager
 )
 
-add_definitions(-Dlibuvc_VERSION_MAJOR=0)
-add_definitions(-Dlibuvc_VERSION_MINOR=0)
-add_definitions(-Dlibuvc_VERSION_PATCH=6)
+add_definitions(-Dlibuvc_VERSION_MAJOR=${libuvc_VERSION_MAJOR})
+add_definitions(-Dlibuvc_VERSION_MINOR=${libuvc_VERSION_MINOR})
+add_definitions(-Dlibuvc_VERSION_PATCH=${libuvc_VERSION_PATCH})
 
 set(ORBBEC_OPENNI2_REDIST
   "${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/${HOST_PLATFORM}")
@@ -110,145 +111,114 @@ link_directories(${ORBBEC_OPENNI2_REDIST}
   ${catkin_LINK_DIRS}
   ${OpenCV_LIBS})
 
-include_directories(include
+add_library(${PROJECT_NAME}
+  src/point_cloud_proc/point_cloud_xyz.cpp
+  src/point_cloud_proc/point_cloud_xyzrgb.cpp
+  src/d2c_filter.cpp
+  src/device_listener.cpp
+  src/ob_camera_info.cpp
+  src/ob_frame_listener.cpp
+  src/ob_timer_filter.cpp
+  src/ob_camera_node_factory.cpp
+  src/ob_camera_node.cpp
+  src/ros_service.cpp
+  src/utils.cpp
+  src/uvc_camera_driver.cpp
+  )
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/openni2
   ${libuvc_INCLUDE_DIRS}
   ${OpenCV_INCLUDED_DIRS}
-  ${LIBUVC_INCLUDE_DIRS}
   )
 
-
-add_library(astra_wrapper
-  src/astra_convert.cpp
-  src/astra_device.cpp
-  src/astra_device_info.cpp
-  src/astra_timer_filter.cpp
-  src/astra_frame_listener.cpp
-  src/astra_device_manager.cpp
-  src/astra_exception.cpp
-  src/astra_video_mode.cpp
-  src/astra_device_type.cpp
-  src/utils.cpp
-  )
-
-target_link_libraries(astra_wrapper
-  ${catkin_LIBRARIES}
+target_link_libraries(${PROJECT_NAME}
   -lOpenNI2
   -L${ORBBEC_OPENNI2_REDIST}
-  ${Boost_LIBRARIES})
-
-add_dependencies(astra_wrapper
-  ${PROJECT_NAME}_gencfg
-  ${PROJECT_NAME}_generate_messages_cpp)
-
-add_library(astra_driver_lib
-  src/astra_driver.cpp
-  src/astra_device_type.cpp
-  )
-target_link_libraries(astra_driver_lib
-  astra_wrapper
   ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${OpenCV_LIBS})
-
-add_dependencies(astra_driver_lib
-  ${PROJECT_NAME}_gencfg
-  ${PROJECT_NAME}_generate_messages_cpp)
-
-add_library(astra_camera_nodelet
-  ros/astra_camera_nodelet.cpp
-  )
-
-target_link_libraries(astra_camera_nodelet
-  astra_driver_lib
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES})
-
-add_dependencies(astra_camera_nodelet
-  ${PROJECT_NAME}_gencfg
-  ${PROJECT_NAME}_generate_messages_cpp)
-
-add_executable(astra_camera_node
-  ros/astra_camera_node.cpp
-  )
-target_link_libraries(astra_camera_node
-  astra_driver_lib
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES})
-
-add_dependencies(astra_camera_node
-  ${PROJECT_NAME}_gencfg
-  ${PROJECT_NAME}_generate_messages_cpp)
-
-add_executable(astra_list_devices
-  src/list_devices.cpp
-  )
-
-target_link_libraries(astra_list_devices astra_wrapper)
-
-add_executable(astra_test_wrapper
-  test/test_wrapper.cpp)
-
-target_link_libraries(astra_test_wrapper
-  astra_wrapper
-  ${Boost_LIBRARIES})
-
-if (UNIX AND NOT APPLE)
-  add_executable(astra_usb_reset src/usb_reset.c)
-  set(ADDITIONAL_EXECUTABLES "astra_usb_reset")
-endif ()
-
-add_executable(camera_node
-  src/libuvc_camera/main.cpp
-  src/libuvc_camera/camera_driver.cpp
-  src/astra_device_type.cpp)
-target_link_libraries(camera_node
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${OpenCV_LIBS}
+  ${GLOG_LIBRARIES}
   ${LIBUVC_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${catkin_LIBRARIES})
+  )
 
-add_dependencies(camera_node
+add_dependencies(${PROJECT_NAME}
   ${PROJECT_NAME}_gencfg
   ${PROJECT_NAME}_generate_messages_cpp)
 
-add_library(libuvc_camera_nodelet
-  src/libuvc_camera/nodelet.cpp
-  src/libuvc_camera/camera_driver.cpp
-  src/astra_device_type.cpp)
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(libuvc_camera_nodelet
+add_executable(${PROJECT_NAME}_node
+  src/main.cpp
+  )
+
+target_include_directories(${PROJECT_NAME}_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${LIBUVC_INCLUDE_DIRS}
+  ${OpenCV_INCLUDED_DIRS}
+  )
+
+target_link_libraries(${PROJECT_NAME}_node
+  -lOpenNI2
+  -L${ORBBEC_OPENNI2_REDIST}
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${OpenCV_LIBS}
   ${LIBUVC_LIBRARIES}
-  ${Boost_LIBRARIES}
-  ${catkin_LIBRARIES})
+  ${GLOG_LIBRARIES}
+  )
 
-add_dependencies(libuvc_camera_nodelet
-  ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_generate_messages_cpp)
+add_executable(list_devices_node
+  src/list_devices_node.cpp
+  )
+target_include_directories(list_devices_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${LIBUVC_INCLUDE_DIRS}
+  ${OpenCV_INCLUDED_DIRS}
+  )
 
-install(TARGETS astra_wrapper
-  astra_camera_nodelet
-  astra_camera_node
-  astra_list_devices
-  astra_driver_lib
-  ${ADDITIONAL_EXECUTABLES}
+target_link_libraries(list_devices_node
+  -lOpenNI2
+  -L${ORBBEC_OPENNI2_REDIST}
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${OpenCV_LIBS}
+  ${GLOG_LIBRARIES}
+  ${LIBUVC_LIBRARIES}
+  )
+
+install(TARGETS ${PROJECT_NAME}
+  ${PROJECT_NAME}_node
+  list_devices_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 
-install(FILES include/openni2_redist/${HOST_PLATFORM}/libOpenNI2.so
+install(FILES ${ORBBEC_OPENNI2_REDIST}/libOpenNI2.so
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
   )
 
-install(DIRECTORY include/openni2_redist/${HOST_PLATFORM}/OpenNI2
+install(DIRECTORY ${ORBBEC_OPENNI2_REDIST}/OpenNI2
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
   )
 
-
-# add xml file
-install(FILES astra_nodelets.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(DIRECTORY include
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/
   )
 
 install(FILES 56-orbbec-usb.rules
@@ -265,10 +235,4 @@ install(FILES 56-orbbec-usb.rules
 
 install(DIRECTORY scripts
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
-
-install(TARGETS camera_node libuvc_camera_nodelet
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
