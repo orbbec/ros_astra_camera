@@ -1,178 +1,315 @@
 # astra_camera
 
-A ROS driver for Orbbec 3D cameras.
+A ROS driver for Orbbec 3D cameras. This package supports ROS Kinetic, Melodic and Noetic distributions
 
-## Install
+## Install dependencies
 
-This package supports ROS Kinetic, Melodic and Noetic distributions
+### ROS
 
-1. Install [ROS](http://wiki.ros.org/ROS/Installation).
+- Please refer directly to ROS [wiki](http://wiki.ros.org/ROS/Installation).
 
-2. Install dependences
+### other dependencies
 
-   ```sh
-   sudo apt install ros-$ROS_DISTRO-rgbd-launch
-   ```
+- Install dependencies (be careful with your ROS distribution)
 
-   **Important: 'ros_astra_camera' relies on the latest 'libuvc' as the old libuvc can get stuck when shutting down the stream**
+  ```bash
+  # Assuming you have sourced the ros environment, same below
+  sudo apt install libgflags-dev  ros-$ROS_DISTRO-image-geometry ros-$ROS_DISTRO-camera-info-manager\
+  ros-$ROS_DISTRO-image-transport ros-$ROS_DISTRO-image-publisher libgoogle-glog-dev libusb-1.0-0-dev libeigen3-dev
+  ```
 
-   ```bash
-   # Uninstall the old libuvc
-   sudo apt purge libuvc-dev
-   sudo apt autoremove
-   # Method 1: Pull from Github
-   git clone https://github.com/libuvc/libuvc.git
-   cd libuvc
-   git checkout d3318ae
-   mkdir build && cd build
-   cmake .. && make -j4
-   sudo make install 
-   sudo ldconfig
-   # Method 2: Use the compressed package in ros_astra_camera (see below) to install
-   cd ~/catkin_ws/src/ros_astra_camera/dependencies
-   unzip libuvc_master_d3318ae72.zip
-   cd libuvc
-   mkdir build && cd build
-   cmake .. && make -j4
-   sudo make install 
-   sudo ldconfig
-   
-   ```
+- Install libuvc.
 
-3. Create a [ROS Workspace](http://wiki.ros.org/ROS/Tutorials/InstallingandConfiguringROSEnvironment)(if you don't have one)
+  ```bash
+  git clone https://github.com/libuvc/libuvc.git
+  cd libuvc
+  mkdir build && cd build
+  cmake .. && make -j4
+  sudo make install
+  sudo ldconfig
+  ```
 
-   ```sh
-   mkdir -p ~/catkin_ws/src
-   cd ~/catkin_ws/
-   catkin_make
-   source devel/setup.bash
-   ```
+## Getting start
 
-   > NOTE: If you are using Ubuntu 16.04 or lower, you may encounter compiling isuue with libuvc. Please goto `ros_astra_camera/CMakeLists.txt` and comment out  `  LibUVC::UVCShared`.
+- Create a ros workspace( if you don't have one).
 
-4. Pull the repository into your ROS workspace
-
-   ```sh
-   cd ~/catkin_ws/src
-   # Method 1: Pull from Github
-   # Install git lfs First, If you already installed, just ignore this step
-   sudo apt-get install git-lfs
-   git lfs install
-   git clone https://github.com/orbbec/ros_astra_camera
-   # Method 2: Download from (latest version) https://developer.orbbec.com.cn/download.html  -> SDK -> OpenNI2 SDK
-   ```
-
-5. Create astra udev rule
-
-   ```sh
-   roscd astra_camera
-   ./scripts/create_udev_rules
-   ```
-
-6. Go to catkin workspace and compile astra_camera
-
-   ```sh
-   cd ~/catkin_ws
-   catkin_make --pkg astra_camera
-   ```
-
-## Run astra_camera
-
-If you didn't add `source $YOUR_WORKSPACE/devel/setup.bash` to your `.bashrc`, remember to source it when open a new terminal :)
-
-### Examples
-
-#### Use Astra
-
+```bash
+mkdir -p ~/ros_ws/src
 ```
+
+- Clone code from github.
+
+```bash
+ cd ~/ros_ws/src
+ git clone https://github.com/orbbec/ros_astra_camera.git
+```
+
+- Build
+
+```bash
+cd ~/ros_ws
+catkin_make
+```
+
+- Install udev rules.
+
+```bash
+cd ~/ros_ws
+source ./devel/setup.bash
+roscd astra_camera
+./scripts/create_udev_rules
+sudo udevadm control --reload && sudo  udevadm trigger
+```
+
+Start the camera
+
+- In terminal 1
+
+```bash
+source ./devel/setup.bash 
 roslaunch astra_camera astra.launch
 ```
 
-#### Use Astra Stereo S (w/ UVC)
+- In terminal 2
 
+```bash
+source ./devel/setup.bash
+rviz
 ```
-roslaunch astra_camera stereo_s.launch
+
+Select the topic you want to display
+
+- Check topics / services/ parameters (open a new terminal)
+
+```bash
+rostopic list
+rosservice list
+rosparam list
 ```
 
-You can use **rviz** or **image_view** to verify the outputs.
+- Check camera extrinsic parameter(from depth to color)
 
-## Important Topics
-
-* `*/image_raw`: depth/rgb/ir raw images
-  * If showing IR image is required, it would be more visible to normalize it from 16bit to 8bit (0 to 255)
-* `*/image_rect_raw`: images rectified by intrinsic/extrinsic parameters
-* `*/camera_info`: camera intrinsic/extrinsic parameters
-* `/camera/depth/points`: point cloud without color information
-* `/camera/depth_registered/points`: xyzrgb point cloud
-
-## Useful Services
-
-This package provides multiple [ros services](http://wiki.ros.org/Services) for users to get useful information and set up devices. To know more about using these services, please check [this tutorial](http://wiki.ros.org/rosservice).
-
-* `/camera/get_device_type`: return a string containing astra device type
-* `/camera/get_ir_exposure`: get exposure value of ir camera
-* `/camera/get_ir_gain`: get gain value of ir camera
-* `/camera/get_serial`: get serial number
-* `/camera/get_uvc_exposure`: get exposure value of rgb camera
-* `/camera/get_uvc_gain`: get gain value of rgb camera
-* `/camera/get_uvc_white_balance`: get white balance value of rgb camera
-* `/camera/reset_ir_exposure`: reset ir exposure to default value
-* `/camera/reset_ir_gain`: reset ir gain to default value
-* `/camera/set_ir_exposure`: set ir exposure to specific value
-* `/camera/set_ir_gain`: set ir gain to specific value
-* `/camera/set_laser`: turn on (**true**) or turn off (**false**) laser
-* `/camera/set_ldp`: turn on (**true**) or turn off (**false**) ldp
-* `/camera/set_uvc_exposure`: set uvc exposure. (set **0** indicating auto mode)
-* `/camera/set_uvc_gain`: set uvc gain
-* `/camera/set_uvc_white_balance`: set uvc white balance (set **0** indicating auto mode)
-* `/camera/set_ir_flood`: turn on (**true**) or turn off (**false**) ir flood
-* `/camera/switch_ir_camera`: while using stereo_s/stereo_s_u3, you can switch (left/right) ir camera
-
-### Examples
-
-After launching an astra camera, you can get ir exposure by the following command
-
-1. ir exposure
-
-   ```sh
-   rosservice call /camera/get_ir_exposure
-   ```
-
-   Next, you can change this value in this way
-
-   ```sh
-   rosservice call /camera/set_ir_exposure "{exposure: 50}" # Press tab to autocomplete
-   ```
-
-2. turn on/off laser
-
-   ```sh
-   rosservice call /camera/set_laser "{enable: true}" # turn on
-   rosservice call /camera/set_laser "{enable: false}" # turn off
-   ```
-
-3. switch ir
-
-   ```sh
-   rosservice call /camera/switch_ir_camera "camera: 'left'" # left
-   rosservice call /camera/switch_ir_camera "camera: 'right'" # right
-   ```
-
-For the other services, the usage is same as the above example.
-
-## Multiple Cameras
-
-To launch multiple cameras, you could modify `multi_astra.launch` to match your setting. The important settings are `device_x_id`(serial number of your devices), `3d_sensor`(name of launch file), and `has_uvc_serial`(does your camera's uvc have serial number).
-
-If you received **USB Buffer Error**, you could try to increase your USBFS buffer size by the following command.
-
-```sh
-echo 64 > /sys/module/usbcore/parameters/usbfs_memory_mb # or maybe 128
+```bash
+rostopic echo /camera/extrinsic/depth_to_color
 ```
+
+- Get camera parameter
+
+```bash
+rosservice call /camera/get_camera_params "{}"
+```
+
+- Check camera parameter, please refer to the ROS documentation for the meaning of the specific fields of the camera parameter [camera info](http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/CameraInfo.html)
+
+```bash
+rostopic echo /camera/depth/camera_info
+rostopic echo /camera/color/camera_info
+```
+
+- Check device information
+
+```bash
+rosservice call /camera/get_device_info "{}" 
+```
+
+- Get the SDK version (Include firmware and OpenNI version )
+
+```bash
+rosservice call /camera/get_version "{}"
+```
+
+- Set/get (auto) exposure
+
+```bash
+rosservice call /camera/set_color_auto_exposure '{data: false}' 
+rosservice call /camera/set_uvc_auto_exposure  '{data: false}'
+rosservice call /camera/set_ir_auto_exposure  "{data: false}"
+    
+# Setting exposure values (Be careful with the data range, the following example may not be correct.)
+rosservice call /camera/set_ir_exposure  "{data: 2000}"
+roservice call /camera/set_color_exposure  "{data: 2000}"
+rosservice call /camera/set_uvc_exposure  "{data: 2000}"
+ # Get exposure
+ rosservice call /camera/get_ir_exposure  "{}"
+ rosservice call /camera/get_color_exposure "{}"
+ rosservice call /camera/get_uvc_exposure "{}"
+```
+
+- Set/get gain
+
+```bash
+# Get Gain
+rosservice call /camera/get_color_gain '{}' # OpenNI camera
+rosservice call /camera/get_ir_gain '{}' # OpenNI camera
+rosservice call /camera/get_uvc_gain "{}" # UVC camera
+# Setting the gain (Be careful with the data range, the following example may not be correct.)
+rosservice call /camera/set_color_gain  "{data: 200}"
+rosservice call /camera/set_ir_gain "{data: 200}"
+roservice call /camera/set_uvc_gain "{data: 200}"
+```
+
+- Set/get mirror
+
+```bash
+rosservice call /camera/set_color_mirror  "{data: true}"
+rosservice call /camera/set_depth_mirror  "{data: true}"
+rosservice call /camera/set_ir_mirror  "{data: true}"
+rosservice call /camera/set_uvc_mirror  "{data: true}"
+```
+
+- Set/get (auto) white balance
+
+```bash
+rosservice call /camera/set_uvc_auto_white_balance  "{data: false}"
+#(Be careful with the data range, the following example may not be correct.)
+rosservice call /camera/set_uvc_white_balance  "{data: 200}"
+```
+
+- Turn on/off laser
+
+```bash
+rosservice call /camera/set_laser '{data: true}' # Turn on
+rosservice call /camera/set_laser '{data: false}' # Turn off
+```
+
+- Turn on/off fans
+
+```bash
+ rosservice call /camera/set_fan  '{data: true}' # Turn on
+ rosservice call /camera/set_fan  '{data: false}' # Turn off
+```
+
+- Turn on/off LDP
+
+```bash
+ros2 service call /camera/set_ldp '{data: true}'
+ros2 service call /camera/set_ldp '{data: false}'
+```
+
+- Turn on/off sensors
+
+```bash
+rosservice call  /camera/toggle_ir "{data: true}"
+rosservice call  /camera/toggle_color "{data: true}"
+rosservice call  /camera/toggle_depth "{data: true}"
+rosservice call  /camera/toggle_uvc_camera "{data : true}"
+```
+
+- Save image
+
+```bash
+rosservice call /camera/save_images "{}"
+```
+
+For dabai and dabai dcw (RGB camera is UVC protocol), run:
+
+```bash
+rosservice call /camera/save_uvc_image "{}" 
+```
+
+NOTE: The images are saved under ~/.ros/image and are only available when the sensor is on.
+
+- Save point cloud
+
+```bash
+rosservice call /camera/save_point_cloud_xyz "{}" # xyz
+rosservice call /camera/save_point_cloud_xyz_rgb "{}" # xyzrgb
+```
+
+NOTE: Point cloud are only available if it is running and saved under ~/.ros/point_cloud.
+
+### **Multiple cameras**
+
+- First, you need to enumerate the serial number of the camera, plug in the cameras and run
+
+  ```bash
+  roslaunch astra_camera list_devices.launch  
+  ```
+
+- **Set the parameter `number_of_devices` to the number of cameras**
+
+- Go to the `ros_astra_camera/launch/multi_xxx.launch`   and  change the serial number. Currently, different cameras can only be distinguished by the serial number,
+
+  ```xml
+  <launch>
+      <!-- unique camera name-->
+      <arg name="camera_name" default="camera"/>
+      <!-- Hardware depth registration -->
+      <arg name="3d_sensor" default="astra"/>
+      <!-- stereo_s_u3, astrapro, astra -->
+      <arg name="camera1_prefix" default="01"/>
+      <arg name="camera2_prefix" default="02"/>
+      <arg name="camera1_serila_number" default="AU094930073"/> <-->Change serial number here </-->
+      <arg name="camera2_serila_number" default="AU1D41100NH"/> <-->Change serial number here </-->
+      <include file="$(find astra_camera)/launch/$(arg 3d_sensor).launch">
+          <arg name="camera_name" value="$(arg camera_name)_$(arg camera1_prefix)"/>
+          <arg name="serial_number" value="$(arg camera1_serila_number)"/>
+      </include>
+  
+      <include file="$(find astra_camera)/launch/$(arg 3d_sensor).launch">
+          <arg name="camera_name" value="$(arg camera_name)_$(arg camera2_prefix)"/>
+          <arg name="serial_number" value="$(arg camera2_serila_number)"/>
+      </include>
+      <node pkg="tf2_ros" type="static_transform_publisher" name="camera_tf" args="0 0 0 0 0 0 camera01_link camera02_link"/>
+  </launch>
+  ```
+
+- Launch
+
+``` bash
+roslaunch astra_camera multi_astra.launch
+```
+
+## Launch parameters
+
+**The configuration file is under the `ros_astra_cameraparams/camera_params_template.yaml`, the param parameters in the launch file can override the yaml values**
+
+- `reconnection_delay`, The delay time for reopening the device in seconds. Some devices would take longer time to initialize, such as Astra mini, so reopening the device immediately would causes firmware crashes when hot plug.
+- `enable_pointcloud`, Whether to enable point cloud.
+- `enable_pointcloud_xyzrgb`, Whether to enable RGB point cloud.
+- `enable_d2c_filter`, Publish D2C overlay image.
+- `number_of_devices`,The number of devices, You need to fill in the number of devices when you need multiple cameras.
+- `enable_reconfigure`,  Whether to enable ROS [dynamic configuration](http://wiki.ros.org/dynamic_reconfigure) changes, set to false `Astra.cfg` configuration will not take effect, recommended for testing purposes only, turn off when in use. .
+- `color_width`， `color_height`， `color_fps`， color stream resolution and frame rate.
+- `ir_width`， `ir_height`， `ir_fps`，IR stream resolution and frame rate
+- `depth_width`， `depth_height`， `depth_fps` depth stream resolution and frame rate
+- `enable_color`， Whether to enable  RGB camera, this parameter has no effect when the RGB camera is UVC protocol
+- `enable_depth` , Whether to enable depth camera
+- `enable_ir`, Whether to enable IR camera
+- `depth_align`, Enables hardware depth to color alignment, requires RGB point cloud to open
+- `depth_scale`, Depth image zoom scale, e.g. set to 2 means aligning depth 320x240 to RGB 640x480
+- `color_roi_x`， `color_roi_y`， `color_roi_width`， `color_roi_height`, Whether to crop RGB images, the default is -1, which is only used when the RGB resolution is greater than the depth resolution and needs to be aligned. For example, if you need to align the depth 640x400 to RGB 640x480, you need to set color_roi_x: 0, color_roi_y: 0, color_roi_width: 640, color_roi_height: 400. roi_height: 400, which will crop the top 400 pixels of the RGB with a corresponding depth ROI.
+- `color_depth_synchronization`，Enable synchronization of RGB with depth
+- `use_uvc_camera`，if the RGB camera is UVC protocol, setting as true, UVC is the protocol that currently includes dabai, dabai_dcwd etc.
+- `uvc_product_id`，pid of UVC camera
+- `uvc_camera_format`，Image format for uvc camera
+- `uvc_retry_count` sometimes the UVC protocol camera does not reconnect successfully when hot-plug, requiring many times to retry.
+- `oni_log_level`, Log levels for OpenNI verbose/ info /warning/ error /none
+- `oni_log_to_console`, Whether to output OpenNI logs to the console
+- `oni_log_to_file`, Whether to output OpenNI logs to a file, by default it will save in Log folder under the path of the currently running program
+- For Special customer Required
+  - `keep_alive`, Whether to send heartbeat packets to the firmware, not enabled by default
+  - `keep_alive_interval`, The time interval in seconds between sending heartbeat packets
+
+## Frequently Asked Questions
+
+- No image when  multiple cameras
+  - Maybe the the power supply is not sufficient, consider to connect the camera with a powered USB hub.
+  - Maybe the the resolution is too high, lower the resolution to test
+- Hot-plug image anomaly
+  - The `reconnection_delay` parameter can be set to bigger, as some devices take longer time to initialize and may not have completed the initialization of the device.
+- No image when hot-plugging
+  - Check if the data cable is plugged in well
+  - Try to connect to a powered usb hub, the ARM development board may have unstable power supply causing the device fail to repoen.
+- The frame rate of a point cloud is very low, Consideration increased by adding an udp buffer
+
+   ```bash
+    sudo sysctl -w net.core.rmem_max=8388608 net.core.rmem_default=8388608
+   ```
 
 ## License
 
-Copyright 2019 Orbbec Ltd.
+Copyright 2022 Orbbec Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with the License. You may obtain a copy of the License at
 

@@ -1,41 +1,54 @@
-/*
- * Copyright (c) 2013, Willow Garage, Inc.
- * Copyright (c) 2016, Orbbec Ltd.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the name of the Willow Garage, Inc. nor the names of its
- *       contributors may be used to endorse or promote products derived from
- *       this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
- *
- *      Author: Tim Liu (liuhua@orbbec.com)
- */
-
+/**************************************************************************/
+/*                                                                        */
+/* Copyright (c) 2013-2022 Orbbec 3D Technology, Inc                      */
+/*                                                                        */
+/* PROPRIETARY RIGHTS of Orbbec 3D Technology are involved in the         */
+/* subject matter of this material. All manufacturing, reproduction, use, */
+/* and sales rights pertaining to this subject matter are governed by the */
+/* license agreement. The recipient of this software implicitly accepts   */
+/* the terms of the license.                                              */
+/*                                                                        */
+/**************************************************************************/
 #pragma once
-#include "openni2/OniCAPI.h"
-#include "ostream"
 
-namespace astra_wrapper {
+#include <glog/logging.h>
+#include <openni2/OpenNI.h>
+#include <ros/ros.h>
+#include <sensor_msgs/CameraInfo.h>
+#include <sensor_msgs/Image.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <eigen3/Eigen/Dense>
+#include <functional>
+#include <sensor_msgs/distortion_models.h>
+#include <sensor_msgs/PointCloud2.h>
 
-std::ostream& operator<<(std::ostream& os, const OBCameraParams& params);
+#include "astra_camera/Extrinsics.h"
+#include "constants.h"
+#include "types.h"
 
-}
+namespace astra_camera {
+bool operator==(const openni::VideoMode& lhs, const openni::VideoMode& rhs);
+
+bool operator!=(const openni::VideoMode& lhs, const openni::VideoMode& rhs);
+
+std::ostream& operator<<(std::ostream& os, const openni::VideoMode& video_mode);
+
+tf2::Quaternion rotationMatrixToQuaternion(const std::vector<float>& rotation);
+
+Extrinsics obExtrinsicsToMsg(const std::vector<float>& rotation,const std::vector<float>& transition,
+                             const std::string& frame_id);
+
+
+bool isValidCameraParams(const OBCameraParams& params);
+
+void cameraParameterPrinter(const std::vector<float>& rotation,
+                            const std::vector<float>& transition);
+
+std::string PixelFormatToString(const openni::PixelFormat& format);
+
+void savePointToPly(sensor_msgs::PointCloud2::Ptr cloud, const std::string& filename);
+
+void saveRGBPointToPly(sensor_msgs::PointCloud2::Ptr cloud, const std::string& filename);
+
+
+}  // namespace astra_camera

@@ -1,0 +1,14 @@
+<launch>
+    <!-- unique camera name-->
+    <arg name="camera_name" default="camera" />
+    <!-- Hardware depth registration -->
+    <arg name="serial_number" default=""/>
+    <group ns="$(arg camera_name)">
+        <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
+            <rosparam command="load" file="$(find astra_camera)/params/camera_params_template.yaml" />
+            <param name="camera_name" value="$(arg camera_name)" />
+            <param name="serial_number" value="$(arg serial_number)" />
+            <remap from="/$(arg camera_name)/depth/color/points" to="/$(arg camera_name)/depth_registered/points"/>
+        </node>
+    </group>
+</launch>
