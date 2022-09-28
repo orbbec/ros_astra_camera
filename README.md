@@ -280,7 +280,7 @@ roslaunch astra_camera multi_astra.launch
 - `depth_scale`, Depth image zoom scale, e.g. set to 2 means aligning depth 320x240 to RGB 640x480
 - `color_roi_x`， `color_roi_y`， `color_roi_width`， `color_roi_height`, Whether to crop RGB images, the default is -1, which is only used when the RGB resolution is greater than the depth resolution and needs to be aligned. For example, if you need to align the depth 640x400 to RGB 640x480, you need to set color_roi_x: 0, color_roi_y: 0, color_roi_width: 640, color_roi_height: 400. roi_height: 400, which will crop the top 400 pixels of the RGB with a corresponding depth ROI.
 - `color_depth_synchronization`，Enable synchronization of RGB with depth
-- `use_uvc_camera`，if the RGB camera is UVC protocol, setting as true, UVC is the protocol that currently includes dabai, dabai_dcwd etc.
+- `use_uvc_camera`，if the RGB camera is UVC protocol, setting as true, UVC is the protocol that currently includes dabai, dabai_dcw etc.
 - `uvc_product_id`，pid of UVC camera
 - `uvc_camera_format`，Image format for uvc camera
 - `uvc_retry_count` sometimes the UVC protocol camera does not reconnect successfully when hot-plug, requiring many times to retry.
@@ -294,8 +294,8 @@ roslaunch astra_camera multi_astra.launch
 ## Frequently Asked Questions
 
 - No image when  multiple cameras
-  - Maybe the the power supply is not sufficient, consider to connect the camera with a powered USB hub.
-  - Maybe the the resolution is too high, lower the resolution to test
+  - Maybe the power supply is not sufficient, consider to connect the camera with a powered USB hub.
+  - Maybe the resolution is too high, lower the resolution to test
 - Hot-plug image anomaly
   - The `reconnection_delay` parameter can be set to bigger, as some devices take longer time to initialize and may not have completed the initialization of the device.
 - No image when hot-plugging
