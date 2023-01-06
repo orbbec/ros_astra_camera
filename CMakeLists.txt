@@ -6,7 +6,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fPIC -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC -g")
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE "Debug")
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif ()
@@ -29,6 +29,7 @@ find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(Threads REQUIRED)
 pkg_search_module(LIBUVC REQUIRED libuvc)
 if (NOT LIBUVC_FOUND)
   message(FATAL_ERROR "libuvc is not found")
@@ -37,7 +38,7 @@ pkg_search_module(GLOG REQUIRED libglog)
 
 if (NOT GLOG_FOUND)
   message(FATAL_ERROR "glog is not found")
-endif()
+endif ()
 
 execute_process(COMMAND uname -m OUTPUT_VARIABLE MACHINES)
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE MACHINES_BIT)
@@ -114,11 +115,9 @@ link_directories(${ORBBEC_OPENNI2_REDIST}
 add_library(${PROJECT_NAME}
   src/point_cloud_proc/point_cloud_xyz.cpp
   src/point_cloud_proc/point_cloud_xyzrgb.cpp
-  src/d2c_filter.cpp
-  src/device_listener.cpp
+  src/d2c_viewer.cpp
+  src/ob_context.cpp
   src/ob_camera_info.cpp
-  src/ob_frame_listener.cpp
-  src/ob_timer_filter.cpp
   src/ob_camera_node_factory.cpp
   src/ob_camera_node.cpp
   src/ros_service.cpp
@@ -201,9 +200,25 @@ target_link_libraries(list_devices_node
   ${LIBUVC_LIBRARIES}
   )
 
+add_executable(astra_cleanup_shm_node
+  src/astra_cleanup_shm_node.cpp
+  )
+
+target_include_directories(astra_cleanup_shm_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  ${catkin_INCLUDE_DIRS}
+  )
+target_link_libraries(astra_cleanup_shm_node
+  Threads::Threads
+  ${catkin_LIBRARIES}
+  )
+
 install(TARGETS ${PROJECT_NAME}
   ${PROJECT_NAME}_node
   list_devices_node
+  astra_cleanup_shm_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -238,9 +253,5 @@ install(DIRECTORY scripts
   )
 
 install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
-
-install(DIRECTORY params
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )

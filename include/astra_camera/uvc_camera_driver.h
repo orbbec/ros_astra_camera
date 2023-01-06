@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <camera_info_manager/camera_info_manager.h>
 #include <image_transport/image_transport.h>
 #include <libuvc/libuvc.h>
 #include <sensor_msgs/CameraInfo.h>
@@ -119,6 +120,7 @@ class UVCCameraDriver {
   UVCCameraConfig config_;
   std::string camera_name_ = "camera";
   std::string frame_id_;
+  std::string color_info_uri_;
   ImageROI roi_;
   uvc_context_t* ctx_ = nullptr;
   uvc_device_t* device_ = nullptr;
@@ -147,5 +149,6 @@ class UVCCameraDriver {
   ros::Publisher camera_info_publisher_;
   boost::optional<sensor_msgs::CameraInfo> camera_info_;
   std::recursive_mutex device_lock_;
+  std::shared_ptr<camera_info_manager::CameraInfoManager> color_info_manager_ = nullptr;
 };
 }  // namespace astra_camera

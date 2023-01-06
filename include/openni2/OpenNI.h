@@ -226,14 +226,15 @@ public:
 	cases, use the copy constructor to copy an existing valid video mode.  This is much less
 	error prone that creating and attempting to configure a new VideoMode from scratch.
 	*/
-	VideoMode() : OniVideoMode() {}
+	VideoMode()
+	{}
 
 	/**
 	Copy constructor, creates a new VideoMode identical to an existing VideoMode.
 
 	@param [in] other Existing VideoMode to copy.
 	*/
-	VideoMode(const VideoMode& other) :OniVideoMode()
+	VideoMode(const VideoMode& other)
 	{
 		*this = other;
 	}
@@ -313,7 +314,7 @@ public:
 
 /**
 The SensorInfo class encapsulates all info related to a specific sensor in a specific
-device.
+device.  
 A @ref Device object holds a SensorInfo object for each sensor it contains.
 A @ref VideoStream object holds one SensorInfo object, describing the sensor used to produce that stream.
 
@@ -389,8 +390,8 @@ There should be no reason for application code to instantiate this object direct
 class DeviceInfo : private OniDeviceInfo
 {
 public:
-	/**
-	Returns the device URI.  URI can be used by @ref Device::open to open a specific device.
+	/** 
+	Returns the device URI.  URI can be used by @ref Device::open to open a specific device. 
 	The URI string format is determined by the driver.
 	*/
 	const char* getUri() const { return uri; }
@@ -398,6 +399,8 @@ public:
 	const char* getVendor() const { return vendor; }
 	/** Returns the device name for this device. */
 	const char* getName() const { return name; }
+	/** Returns the device serialNumber for this device. */
+	const char* getSerialNumber() const { return serialNumber; }
 	/** Returns the USB VID code for this device. */
 	uint16_t getUsbVendorId() const { return usbVendorId; }
 	/** Returns the USB PID code for this device. */
@@ -597,7 +600,7 @@ public:
 		return m_pFrame != NULL;
 	}
 
-	/**
+	/** 
 	Release the reference to the frame. Once this method is called, the object becomes invalid, and no method
 	should be called other than the assignment operator, or passing this object to a @ref VideoStream::readFrame() call.
 	*/
@@ -656,7 +659,7 @@ Several video streams can be created to stream data from the same sensor. This i
 need to read frames separately.
 
 While some device might allow different streams
-from the same sensor to have different configurations, most devices will have a single configuration for the sensor,
+from the same sensor to have different configurations, most devices will have a single configuration for the sensor, 
 shared by all streams.
 */
 class VideoStream
@@ -666,7 +669,7 @@ public:
 	The @ref VideoStream::NewFrameListener class is provided to allow the implementation of event driven frame reading.  To use
 	it, create a class that inherits from it and implement override the onNewFrame() method.  Then, register
 	your created class with an active @ref VideoStream using the @ref VideoStream::addNewFrameListener() function.  Once this is done, the
-	event handler function you implemented will be called whenever a new frame becomes available. You may call
+	event handler function you implemented will be called whenever a new frame becomes available. You may call 
 	@ref VideoStream::readFrame() from within the event handler.
 	*/
 	class NewFrameListener
@@ -802,7 +805,7 @@ public:
 	}
 
 	void setSoftwareRegistrator(ParamsRegistrationMode mode){
-	    setProperty(STREAM_PROPERTY_SOFTWARE_REGISTRATION, (int)mode);
+	    setProperty(STREAM_PROPERTY_SOFTWARE_REGISTRATION, (int)mode); 
 	}
 
 	/**
@@ -833,7 +836,7 @@ public:
 
 	/**
 	Read the next frame from this video stream, delivered as a @ref VideoFrameRef.  This is the primary
-	method for manually obtaining frames of video data.
+	method for manually obtaining frames of video data.  
 	If no new frame is available, the call will block until one is available.
 	To avoid blocking, use @ref VideoStream::Listener to implement an event driven architecture.  Another
 	alternative is to use @ref OpenNI::waitForAnyStream() to wait for new frames from several streams.
@@ -1322,7 +1325,7 @@ public:
 	by calling @ref OpenNI::enumerateDevices().
 
 	In the case of a DeviceConnected event, the @ref OpenNI::Listener will be provided with a DeviceInfo object
-	as an argument to its @ref OpenNI::Listener::onDeviceConnected "onDeviceConnected()" function.
+	as an argument to its @ref OpenNI::Listener::onDeviceConnected "onDeviceConnected()" function.  
 	The DeviceInfo.getUri() function can then be used to obtain the URI.
 
 	If the application is not using event handlers, then it can also call the static function
@@ -1475,7 +1478,7 @@ public:
 	{
 		return (Status)oniDeviceSetProperty(m_device, propertyId, data, dataSize);
 	}
-
+	
     void setGain(int gain) {
 		oniDeviceSetProperty(m_device, OBEXTENSION_ID_IR_GAIN, &gain, sizeof(gain));
 	}
@@ -1522,8 +1525,8 @@ public:
 	points in space.  Please see the OpenNi 2.0 Programmer's Guide for more information about
 	registration.
 
-	See @ref ImageRegistrationMode for a list of valid settings to pass to this function.
-
+	See @ref ImageRegistrationMode for a list of valid settings to pass to this function. 
+	
 	It is a good practice to first check if the mode is supported by calling @ref isImageRegistrationModeSupported().
 
 	@param [in] mode Desired new value for the image registration mode.
@@ -1701,7 +1704,7 @@ private:
  * of the recording, and query the total size of the recording.
  *
  * Since none of these functions make sense in the context of a physical device, they are
- * split out into a seperate playback control class.  To use, simply create your file device,
+ * split out into a seperate playback control class.  To use, simply create your file device, 
  * create a PlaybackControl, and then attach the PlaybackControl to the file device.
  */
 class PlaybackControl
@@ -1710,7 +1713,7 @@ public:
 
 	/**
 	 * Deconstructor.  Destroys a PlaybackControl class.  The deconstructor presently detaches
-	 * from its recording automatically, but it is considered a best practice for applications to
+	 * from its recording automatically, but it is considered a best practice for applications to 
 	 * manually detach from any stream that was attached to.
 	 */
 	~PlaybackControl()
@@ -1722,18 +1725,18 @@ public:
 	 * Getter function for the current playback speed of this device.
 	 *
 	 * This value is expressed as a multiple of the speed the original
-	 * recording was taken at.  For example, if the original recording was at 30fps, and
+	 * recording was taken at.  For example, if the original recording was at 30fps, and 
 	 * playback speed is set to 0.5, then the recording will play at 15fps.  If playback speed
 	 * is set to 2.0, then the recording would playback at 60fps.
 	 *
 	 * In addition, there are two "special" values.  A playback speed of 0.0 indicates that the
-	 * playback should occur as fast as the system is capable of returning frames.  This is
+	 * playback should occur as fast as the system is capable of returning frames.  This is 
 	 * most useful when testing algorithms on large datasets, as it enables playback to be
 	 * done at a much higher rate than would otherwise be possible.
 	 *
 	 * A value of -1 indicates that speed is "manual".  In this mode, new frames will only
 	 * become available when an application manually reads them.  If used in a polling loop,
-	 * this setting also enables systems to read and process frames limited only by
+	 * this setting also enables systems to read and process frames limited only by 
 	 * available processing speeds.
 	 *
 	 * @returns Current playback speed of the device, measured as ratio of recording speed.
@@ -1753,7 +1756,7 @@ public:
 		return speed;
 	}
 	/**
-	* Setter function for the playback speed of the device.  For a full explanation of
+	* Setter function for the playback speed of the device.  For a full explanation of 
 	* what this value means @see PlaybackControl::getSpeed().
 	*
 	* @param [in] speed Desired new value of playback speed, as ratio of original recording.
@@ -1792,7 +1795,7 @@ public:
 
 	/**
 	* Changes the current repeat mode of the device.  If repeat mode is turned on, then the recording will
-	* begin playback again at the beginning after the last frame is read.  If turned off, no more frames
+	* begin playback again at the beginning after the last frame is read.  If turned off, no more frames 
 	* will become available after last frame is read.
 	*
 	* @param [in] repeat New value for repeat -- true to enable, false to disable
@@ -1809,12 +1812,12 @@ public:
 	}
 
 	/**
-	* Seeks within a VideoStream to a given FrameID.  Note that when this function is called on one
+	* Seeks within a VideoStream to a given FrameID.  Note that when this function is called on one 
 	* stream, all other streams will also be changed to the corresponding place in the recording.  The FrameIDs
 	* of different streams may not match, since FrameIDs may differ for streams that are not synchronized, but
 	* the recording will set all streams to the same moment in time.
 	*
-	* @param [in] stream Stream for which the frameIndex value is valid.
+	* @param [in] stream Stream for which the frameIndex value is valid.  
 	* @param [in] frameIndex Frame index to move playback to
 	* @returns Status code indicating success or failure of this operation
 	*/
@@ -1968,14 +1971,14 @@ private:
 
 
 /**
- * The OpenNI class is a static entry point to the library.  It is used by every OpenNI 2.0
- * application to initialize the SDK and drivers to enable creation of valid device objects.
+ * The OpenNI class is a static entry point to the library.  It is used by every OpenNI 2.0 
+ * application to initialize the SDK and drivers to enable creation of valid device objects.  
  *
- * It also defines a listener class and events that enable for event driven notification of
- * device connection, device disconnection, and device configuration changes.
+ * It also defines a listener class and events that enable for event driven notification of 
+ * device connection, device disconnection, and device configuration changes.  
  *
- * In addition, it gives access to SDK version information and provides a function that allows
- * you to wait for data to become available on any one of a list of streams (as opposed to
+ * In addition, it gives access to SDK version information and provides a function that allows 
+ * you to wait for data to become available on any one of a list of streams (as opposed to 
  * waiting for data on one specific stream with functions provided by the VideoStream class)
  *
 */
@@ -1984,11 +1987,11 @@ class OpenNI
 public:
 
 	/**
-	 * The OpenNI::DeviceConnectedListener class provides a means of registering for, and responding to
+	 * The OpenNI::DeviceConnectedListener class provides a means of registering for, and responding to  
 	 * when a device is connected.
 	 *
 	 * onDeviceConnected is called whenever a new device is connected to the system (ie this event
-	 * would be triggered when a new sensor is manually plugged into the host system running the
+	 * would be triggered when a new sensor is manually plugged into the host system running the 
 	 * application)
 	 *
 	 * To use this class, you should write a new class that inherits from it, and override the
@@ -2008,17 +2011,17 @@ public:
 			m_deviceConnectedCallbacks.deviceStateChanged = NULL;
 			m_deviceConnectedCallbacksHandle = NULL;
 		}
-
+		
 		virtual ~DeviceConnectedListener()
 		{
 		}
-
+		
 		/**
-		* Callback function for the onDeviceConnected event.  This function will be
+		* Callback function for the onDeviceConnected event.  This function will be 
 		* called whenever this event occurs.  When this happens, a pointer to the @ref DeviceInfo
-		* object for the newly connected device will be supplied.  Note that once a
+		* object for the newly connected device will be supplied.  Note that once a 
 		* device is removed, if it was opened by a @ref Device object, that object can no longer be
-	 	* used to access the device, even if it was reconnected. Once a device was reconnected,
+	 	* used to access the device, even if it was reconnected. Once a device was reconnected, 
 	 	* @ref Device::open() should be called again in order to use this device.
 		*
 		* If you wish to open the new device as it is connected, simply query the provided DeviceInfo
@@ -2038,12 +2041,12 @@ public:
 
 	};
 	/**
-	 * The OpenNI::DeviceDisconnectedListener class provides a means of registering for, and responding to
+	 * The OpenNI::DeviceDisconnectedListener class provides a means of registering for, and responding to  
 	 * when a device is disconnected.
 	 *
-	 * onDeviceDisconnected is called when a device is removed from the system.  Note that once a
+	 * onDeviceDisconnected is called when a device is removed from the system.  Note that once a 
 	 * device is removed, if it was opened by a @ref Device object, that object can no longer be
-	 * used to access the device, even if it was reconnected. Once a device was reconnected,
+	 * used to access the device, even if it was reconnected. Once a device was reconnected, 
 	 * @ref Device::open() should be called again in order to use this device.
 	 *
 	 * To use this class, you should write a new class that inherits from it, and override the
@@ -2063,17 +2066,17 @@ public:
 			m_deviceDisconnectedCallbacks.deviceStateChanged = NULL;
 			m_deviceDisconnectedCallbacksHandle = NULL;
 		}
-
+		
 		virtual ~DeviceDisconnectedListener()
 		{
 		}
-
+		
 		/**
 		 * Callback function for the onDeviceDisconnected event. This function will be
 		 * called whenever this event occurs.  When this happens, a pointer to the DeviceInfo
-		 * object for the newly disconnected device will be supplied.  Note that once a
+		 * object for the newly disconnected device will be supplied.  Note that once a 
 		 * device is removed, if it was opened by a @ref Device object, that object can no longer be
-	 	 * used to access the device, even if it was reconnected. Once a device was reconnected,
+	 	 * used to access the device, even if it was reconnected. Once a device was reconnected, 
 	 	 * @ref Device::open() should be called again in order to use this device.
 		*/
 		virtual void onDeviceDisconnected(const DeviceInfo*) = 0;
@@ -2089,7 +2092,7 @@ public:
 		OniCallbackHandle m_deviceDisconnectedCallbacksHandle;
 	};
 	/**
-	 * The OpenNI::DeviceStateChangedListener class provides a means of registering for, and responding to
+	 * The OpenNI::DeviceStateChangedListener class provides a means of registering for, and responding to  
 	 * when a device's state is changed.
 	 *
 	 * onDeviceStateChanged is triggered whenever the state of a connected device is changed.
@@ -2111,15 +2114,15 @@ public:
 			m_deviceStateChangedCallbacks.deviceStateChanged = deviceStateChangedCallback;
 			m_deviceStateChangedCallbacksHandle = NULL;
 		}
-
+		
 		virtual ~DeviceStateChangedListener()
 		{
 		}
-
+		
 		/**
-		* Callback function for the onDeviceStateChanged event.  This function will be
+		* Callback function for the onDeviceStateChanged event.  This function will be 
 		* called whenever this event occurs.  When this happens, a pointer to a DeviceInfo
-		* object for the affected device will be supplied, as well as the new DeviceState
+		* object for the affected device will be supplied, as well as the new DeviceState 
 		* value of that device.
 		*/
 		virtual void onDeviceStateChanged(const DeviceInfo*, DeviceState) = 0;
@@ -2144,7 +2147,7 @@ public:
 	{
 		return (Status)oniInitialize(ONI_API_VERSION); // provide version of API, to make sure proper struct sizes are used
 	}
-
+	
 	/**
 	Stop using the library. Unload all drivers, close all streams and devices.
 	Once @ref shutdown was called, no other calls to OpenNI is allowed.
@@ -2169,7 +2172,7 @@ public:
 	}
 
 	/**
-	* Retrieves the calling thread's last extended error information. The last extended error information is maintained
+	* Retrieves the calling thread's last extended error information. The last extended error information is maintained 
 	* on a per-thread basis. Multiple threads do not overwrite each other's last extended error information.
 	*
 	* The extended error information is cleared on every call to an OpenNI method, so you should call this method
@@ -2230,9 +2233,9 @@ public:
 	}
 
 	/**
-	* Add a listener to the list of objects that receive the event when a device is connected.  See the
+	* Add a listener to the list of objects that receive the event when a device is connected.  See the 
 	* @ref OpenNI::DeviceConnectedListener class for details on utilizing the events provided by OpenNI.
-	*
+	* 
 	* @param pListener Pointer to the Listener to be added to the list
 	* @returns Status code indicating success or failure of this operation.
 	*/
@@ -2245,9 +2248,9 @@ public:
 		return (Status)oniRegisterDeviceCallbacks(&pListener->m_deviceConnectedCallbacks, pListener, &pListener->m_deviceConnectedCallbacksHandle);
 	}
 	/**
-	* Add a listener to the list of objects that receive the event when a device is disconnected.  See the
+	* Add a listener to the list of objects that receive the event when a device is disconnected.  See the 
 	* @ref OpenNI::DeviceDisconnectedListener class for details on utilizing the events provided by OpenNI.
-	*
+	* 
 	* @param pListener Pointer to the Listener to be added to the list
 	* @returns Status code indicating success or failure of this operation.
 	*/
@@ -2260,9 +2263,9 @@ public:
 		return (Status)oniRegisterDeviceCallbacks(&pListener->m_deviceDisconnectedCallbacks, pListener, &pListener->m_deviceDisconnectedCallbacksHandle);
 	}
 	/**
-	* Add a listener to the list of objects that receive the event when a device's state changes.  See the
+	* Add a listener to the list of objects that receive the event when a device's state changes.  See the 
 	* @ref OpenNI::DeviceStateChangedListener class for details on utilizing the events provided by OpenNI.
-	*
+	* 
 	* @param pListener Pointer to the Listener to be added to the list
 	* @returns Status code indicating success or failure of this operation.
 	*/
@@ -2311,9 +2314,9 @@ public:
 		pListener->m_deviceStateChangedCallbacksHandle = NULL;
 	}
 
-	/**
+	/** 
 	 * Change the log output folder
-
+	
 	 * @param	const char * strLogOutputFolder	[in]	log required folder
 	 *
 	 * @retval STATUS_OK Upon successful completion.
@@ -2324,9 +2327,9 @@ public:
 		return (Status)oniSetLogOutputFolder(strLogOutputFolder);
 	}
 
-	/**
+	/** 
 	 * Get current log file name
-
+	
 	 * @param	char * strFileName	[out]	returned file name buffer
 	 * @param	int	nBufferSize	[in]	Buffer size
 	 *
@@ -2338,9 +2341,9 @@ public:
 		return (Status)oniGetLogFileName(strFileName, nBufferSize);
 	}
 
-	/**
+	/** 
 	 * Set minimum severity for log produce
-
+	
 	 * @param	int nMinSeverity	[in]	Logger severity
 	 *
 	 * @retval STATUS_OK Upon successful completion.
@@ -2350,8 +2353,8 @@ public:
 	{
 		return(Status) oniSetLogMinSeverity(nMinSeverity);
 	}
-
-	/**
+	
+	/** 
 	* Configures if log entries will be printed to console.
 
 	* @param	const OniBool bConsoleOutput	[in]	TRUE to print log entries to console, FALSE otherwise.
@@ -2364,7 +2367,7 @@ public:
 		return (Status)oniSetLogConsoleOutput(bConsoleOutput);
 	}
 
-	/**
+	/** 
 	* Configures if log entries will be printed to file.
 
 	* @param	const OniBool bConsoleOutput	[in]	TRUE to print log entries to file, FALSE otherwise.
@@ -2378,7 +2381,7 @@ public:
 	}
 
 	#if ONI_PLATFORM == ONI_PLATFORM_ANDROID_ARM
-	/**
+	/** 
 	 * Configures if log entries will be printed to the Android log.
 
 	 * @param	OniBool bAndroidOutput bAndroidOutput	[in]	TRUE to print log entries to the Android log, FALSE otherwise.
@@ -2386,7 +2389,7 @@ public:
 	 * @retval STATUS_OK Upon successful completion.
 	 * @retval STATUS_ERROR Upon any kind of failure.
 	 */
-
+	
 	static Status setLogAndroidOutput(bool bAndroidOutput)
 	{
 		return (Status)oniSetLogAndroidOutput(bAndroidOutput);
@@ -2399,7 +2402,7 @@ public:
 	}
 
 	#endif
-
+	
 private:
 	OpenNI()
 	{
@@ -2539,15 +2542,15 @@ public:
  * The Recorder class is used to record streams to an ONI file.
  *
  * After a recorder is instantiated, it must be initialized with a specific filename where
- * the recording will be stored.  The recorder is then attached to one or more streams.  Once
+ * the recording will be stored.  The recorder is then attached to one or more streams.  Once 
  * this is complete, the recorder can be told to start recording.  The recorder will store
- * every frame from every stream to the specified file.  Later, this file can be used to
+ * every frame from every stream to the specified file.  Later, this file can be used to 
  * initialize a file Device, and used to play back the same data that was recorded.
  *
  * Opening a file device is done by passing its path as the uri to the @ref Device::open() method.
- *
+ * 
  * @see PlaybackControl for options available to play a reorded file.
- *
+ * 
  */
 class Recorder
 {
@@ -2572,7 +2575,7 @@ public:
      * Initializes a recorder. You can initialize the recorder only once.  Attempts
 	 * to intialize more than once will result in an error code being returned.
 	 *
-	 * Initialization assigns the recorder to an output file that will be used for
+	 * Initialization assigns the recorder to an output file that will be used for 
 	 * recording.  Before use, the @ref attach() function must also be used to assign input
 	 * data to the Recorder.
 	 *
@@ -2622,7 +2625,7 @@ public:
     }
 
     /**
-     * Starts recording.
+     * Starts recording. 
 	 * Once this method is called, the recorder will take all subsequent frames from the attached streams
 	 * and store them in the file.
 	 * You may not attach additional streams once recording was started.

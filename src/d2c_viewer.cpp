@@ -10,7 +10,7 @@
 /*                                                                        */
 /**************************************************************************/
 
-#include "astra_camera/d2c_filter.h"
+#include "astra_camera/d2c_viewer.h"
 
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
@@ -18,18 +18,18 @@
 #include <opencv2/opencv.hpp>
 
 namespace astra_camera {
-D2CFilter::D2CFilter(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
+D2CViewer::D2CViewer(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
     : nh_(nh), nh_private_(nh_private) {
   rgb_sub_.subscribe(nh_, "color/image_raw", 1);
   depth_sub_.subscribe(nh_, "depth/image_raw", 1);
   sync_ = std::make_unique<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(10), rgb_sub_,
                                                                         depth_sub_);
-  sync_->registerCallback(boost::bind(&D2CFilter::messageCallback, this, _1, _2));
+  sync_->registerCallback(boost::bind(&D2CViewer::messageCallback, this, _1, _2));
   d2c_pub_ = nh_.advertise<sensor_msgs::Image>("depth_to_color/image_raw", 1);
 }
-D2CFilter::~D2CFilter() = default;
+D2CViewer::~D2CViewer() = default;
 
-void D2CFilter::messageCallback(const sensor_msgs::ImageConstPtr& rgb_msg,
+void D2CViewer::messageCallback(const sensor_msgs::ImageConstPtr& rgb_msg,
                                 const sensor_msgs::ImageConstPtr& depth_msg) {
   if (rgb_msg->width != depth_msg->width || rgb_msg->height != depth_msg->height) {
     ROS_ERROR("rgb and depth image size not match(%d, %d) vs (%d, %d)", rgb_msg->width,

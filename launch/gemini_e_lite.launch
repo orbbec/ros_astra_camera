@@ -17,7 +17,7 @@
     <arg name="flip_color" default="false"/>
     <arg name="color_format" default="RGB"/>
     <arg name="depth_width" default="640"/>
-    <arg name="depth_height" default="480"/>
+    <arg name="depth_height" default="400"/>
     <arg name="depth_fps" default="30"/>
     <arg name="enable_depth" default="true"/>
     <arg name="flip_depth" default="false"/>
@@ -32,22 +32,7 @@
     <arg name="tf_publish_rate" default="10.0"/>
     <arg name="ir_info_uri" default=""/>
     <arg name="color_info_uri" default=""/>
-    <arg name="color_roi_x" default="-1"/>
-    <arg name="color_roi_y" default="-1"/>
-    <arg name="color_roi_width" default="-1"/>
-    <arg name="color_roi_height" default="-1"/>
-    <arg name="depth_roi_x" default="-1"/>
-    <arg name="depth_roi_y" default="-1"/>
-    <arg name="depth_roi_width" default="-1"/>
-    <arg name="depth_roi_height" default="-1"/>
-    <arg name="depth_scale" default="1"/>
     <arg name="color_depth_synchronization" default="false"/>
-    <arg name="use_uvc_camera" default="false"/>
-    <arg name="uvc_vendor_id" default="0x2bc5"/>
-    <arg name="uvc_product_id" default="0x050f"/>
-    <arg name="uvc_retry_count" default="100"/>
-    <arg name="uvc_camera_format" default="mjpeg"/>
-    <arg name="uvc_flip" default="false"/>
     <arg name="oni_log_level" default="verbose"/>
     <arg name="oni_log_to_console" default="false"/>
     <arg name="oni_log_to_file" default="false"/>
@@ -85,15 +70,6 @@
             <param name="tf_publish_rate" value="$(arg tf_publish_rate)"/>
             <param name="ir_info_uri" value="$(arg ir_info_uri)"/>
             <param name="color_info_uri" value="$(arg color_info_uri)"/>
-            <param name="color_roi_x" value="$(arg color_roi_x)"/>
-            <param name="color_roi_y" value="$(arg color_roi_y)"/>
-            <param name="color_roi_width" value="$(arg color_roi_width)"/>
-            <param name="color_roi_height" value="$(arg color_roi_height)"/>
-            <param name="depth_roi_x" value="$(arg depth_roi_x)"/>
-            <param name="depth_roi_y" value="$(arg depth_roi_y)"/>
-            <param name="depth_roi_width" value="$(arg depth_roi_width)"/>
-            <param name="depth_roi_height" value="$(arg depth_roi_height)"/>
-            <param name="depth_scale" value="$(arg depth_scale)"/>
             <param name="color_depth_synchronization" value="$(arg color_depth_synchronization)"/>
             <param name="use_uvc_camera" value="$(arg use_uvc_camera)"/>
             <param name="uvc_vendor_id" value="$(arg uvc_vendor_id)"/>

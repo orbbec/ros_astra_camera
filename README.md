@@ -99,7 +99,8 @@ rostopic echo /camera/extrinsic/depth_to_color
 rosservice call /camera/get_camera_params "{}"
 ```
 
-- Check camera parameter, please refer to the ROS documentation for the meaning of the specific fields of the camera parameter [camera info](http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/CameraInfo.html)
+- Check camera parameter, please refer to the ROS documentation for the meaning of the specific fields of the camera
+  parameter [camera info](http://docs.ros.org/en/melodic/api/sensor_msgs/html/msg/CameraInfo.html)
 
 ```bash
 rostopic echo /camera/depth/camera_info
@@ -182,8 +183,8 @@ rosservice call /camera/set_laser '{data: false}' # Turn off
 - Turn on/off LDP
 
 ```bash
-ros2 service call /camera/set_ldp '{data: true}'
-ros2 service call /camera/set_ldp '{data: false}'
+rosservice call /camera/set_ldp '{data: true}'
+rosservice call /camera/set_ldp '{data: false}'
 ```
 
 - Turn on/off sensors
@@ -226,34 +227,48 @@ NOTE: Point cloud are only available if it is running and saved under ~/.ros/poi
   roslaunch astra_camera list_devices.launch  
   ```
 
-- **Set the parameter `number_of_devices` to the number of cameras**
+- **Set the parameter `device_num` to the number of cameras**
 
-- Go to the `ros_astra_camera/launch/multi_xxx.launch`   and  change the serial number. Currently, different cameras can only be distinguished by the serial number,
+- Go to the `ros_astra_camera/launch/multi_xxx.launch`   and change the serial number. Currently, different cameras can
+  only be distinguished by the serial number,
 
-  ```xml
+```
   <launch>
-      <!-- unique camera name-->
-      <arg name="camera_name" default="camera"/>
-      <!-- Hardware depth registration -->
-      <arg name="3d_sensor" default="astra"/>
-      <!-- stereo_s_u3, astrapro, astra -->
-      <arg name="camera1_prefix" default="01"/>
-      <arg name="camera2_prefix" default="02"/>
-      <arg name="camera1_serila_number" default="AU094930073"/> <-->Change serial number here </-->
-      <arg name="camera2_serila_number" default="AU1D41100NH"/> <-->Change serial number here </-->
-      <include file="$(find astra_camera)/launch/$(arg 3d_sensor).launch">
-          <arg name="camera_name" value="$(arg camera_name)_$(arg camera1_prefix)"/>
-          <arg name="serial_number" value="$(arg camera1_serila_number)"/>
-      </include>
-  
-      <include file="$(find astra_camera)/launch/$(arg 3d_sensor).launch">
-          <arg name="camera_name" value="$(arg camera_name)_$(arg camera2_prefix)"/>
-          <arg name="serial_number" value="$(arg camera2_serila_number)"/>
-      </include>
-      <node pkg="tf2_ros" type="static_transform_publisher" name="camera_tf" args="0 0 0 0 0 0 camera01_link camera02_link"/>
-  </launch>
-  ```
+    <!-- unique camera name-->
+    <arg name="camera_name" default="camera"/>
+    <!-- Hardware depth registration -->
+    <arg name="3d_sensor" default="astra"/>
+    <!-- stereo_s_u3, astrapro, astra -->
+    <arg name="camera1_prefix" default="01"/>
+    <arg name="camera2_prefix" default="02"/>
+    <arg name="camera1_serila_number" default="AALXB1301YW"/>
+    <arg name="camera2_serila_number" default="AD7J7230031"/>
+    <arg name="device_num" default="2"/>
+    <include file="$(find astra_camera)/launch/$(arg 3d_sensor).launch">
+        <arg name="camera_name" value="$(arg camera_name)_$(arg camera1_prefix)"/>
+        <arg name="serial_number" value="$(arg camera1_serila_number)"/>
+        <arg name="device_num" value="$(arg device_num)"/>
+    </include>
 
+    <include file="$(find astra_camera)/launch/$(arg 3d_sensor).launch">
+        <arg name="camera_name" value="$(arg camera_name)_$(arg camera2_prefix)"/>
+        <arg name="serial_number" value="$(arg camera2_serila_number)"/>
+        <arg name="device_num" value="$(arg device_num)"/>
+    </include>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_tf" args="0 0 0 0 0 0 camera01_link camera02_link"/>
+</launch>
+
+```
+
+- astra camera will use semaphore to do process synchronization,
+  if the camera start fails, the semaphore file may be left in the `/dev/shm`, 
+  causing the next start to be stuck.
+  Before launch, please run
+
+```bash
+rosrun astra_camera cleanup_shm_node 
+```
+to clean up `/dev/sh`.
 - Launch
 
 ``` bash
@@ -262,45 +277,64 @@ roslaunch astra_camera multi_astra.launch
 
 ## Launch parameters
 
-**The configuration file is under the `ros_astra_cameraparams/camera_params_template.yaml`, the param parameters in the launch file can override the yaml values**
+**The configuration file is under the `ros_astra_cameraparams/camera_params_template.yaml`, the param parameters in the
+launch file can override the yaml values**
 
-- `reconnection_delay`, The delay time for reopening the device in seconds. Some devices would take longer time to initialize, such as Astra mini, so reopening the device immediately would causes firmware crashes when hot plug.
-- `enable_pointcloud`, Whether to enable point cloud.
-- `enable_pointcloud_xyzrgb`, Whether to enable RGB point cloud.
+- `reconnection_delay`, The delay time for reopening the device in seconds. Some devices would take longer time to
+  initialize, such as Astra mini, so reopening the device immediately would causes firmware crashes when hot plug.
+- `enable_point_cloud`, Whether to enable point cloud.
+- `enable_point_cloud_xyzrgb`, Whether to enable RGB point cloud.
 - `enable_d2c_filter`, Publish D2C overlay image.
-- `number_of_devices`,The number of devices, You need to fill in the number of devices when you need multiple cameras.
-- `enable_reconfigure`,  Whether to enable ROS [dynamic configuration](http://wiki.ros.org/dynamic_reconfigure) changes, set to false `Astra.cfg` configuration will not take effect, recommended for testing purposes only, turn off when in use. .
+- `device_num`,The number of devices, You need to fill in the number of devices when you need multiple cameras.
+- `enable_reconfigure`, Whether to enable ROS [dynamic configuration](http://wiki.ros.org/dynamic_reconfigure) changes,
+  set to false `Astra.cfg` configuration will not take effect, recommended for testing purposes only, turn off when in
+  use. .
 - `color_width`， `color_height`， `color_fps`， color stream resolution and frame rate.
 - `ir_width`， `ir_height`， `ir_fps`，IR stream resolution and frame rate
 - `depth_width`， `depth_height`， `depth_fps` depth stream resolution and frame rate
-- `enable_color`， Whether to enable  RGB camera, this parameter has no effect when the RGB camera is UVC protocol
+- `enable_color`， Whether to enable RGB camera, this parameter has no effect when the RGB camera is UVC protocol
 - `enable_depth` , Whether to enable depth camera
 - `enable_ir`, Whether to enable IR camera
 - `depth_align`, Enables hardware depth to color alignment, requires RGB point cloud to open
 - `depth_scale`, Depth image zoom scale, e.g. set to 2 means aligning depth 320x240 to RGB 640x480
-- `color_roi_x`， `color_roi_y`， `color_roi_width`， `color_roi_height`, Whether to crop RGB images, the default is -1, which is only used when the RGB resolution is greater than the depth resolution and needs to be aligned. For example, if you need to align the depth 640x400 to RGB 640x480, you need to set color_roi_x: 0, color_roi_y: 0, color_roi_width: 640, color_roi_height: 400. roi_height: 400, which will crop the top 400 pixels of the RGB with a corresponding depth ROI.
+- `color_roi_x`， `color_roi_y`， `color_roi_width`， `color_roi_height`, Whether to crop RGB images, the default is -1,
+  which is only used when the RGB resolution is greater than the depth resolution and needs to be aligned. For example,
+  if you need to align the depth 640x400 to RGB 640x480, you need to set color_roi_x: 0, color_roi_y: 0,
+  color_roi_width: 640, color_roi_height: 400. roi_height: 400, which will crop the top 400 pixels of the RGB with a
+  corresponding depth ROI.
 - `color_depth_synchronization`，Enable synchronization of RGB with depth
-- `use_uvc_camera`，if the RGB camera is UVC protocol, setting as true, UVC is the protocol that currently includes dabai, dabai_dcw etc.
+- `use_uvc_camera`，if the RGB camera is UVC protocol, setting as true, UVC is the protocol that currently includes
+  dabai, dabai_dcw etc.
 - `uvc_product_id`，pid of UVC camera
 - `uvc_camera_format`，Image format for uvc camera
-- `uvc_retry_count` sometimes the UVC protocol camera does not reconnect successfully when hot-plug, requiring many times to retry.
+- `uvc_retry_count` sometimes the UVC protocol camera does not reconnect successfully when hot-plug, requiring many
+  times to retry.
 - `oni_log_level`, Log levels for OpenNI verbose/ info /warning/ error /none
 - `oni_log_to_console`, Whether to output OpenNI logs to the console
-- `oni_log_to_file`, Whether to output OpenNI logs to a file, by default it will save in Log folder under the path of the currently running program
+- `oni_log_to_file`, Whether to output OpenNI logs to a file, by default it will save in Log folder under the path of
+  the currently running program
 - For Special customer Required
-  - `keep_alive`, Whether to send heartbeat packets to the firmware, not enabled by default
-  - `keep_alive_interval`, The time interval in seconds between sending heartbeat packets
+    - `keep_alive`, Whether to send heartbeat packets to the firmware, not enabled by default
+    - `keep_alive_interval`, The time interval in seconds between sending heartbeat packets
 
 ## Frequently Asked Questions
 
-- No image when  multiple cameras
-  - Maybe the power supply is not sufficient, consider to connect the camera with a powered USB hub.
-  - Maybe the resolution is too high, lower the resolution to test
+- No image when multiple cameras
+    - Maybe the the power supply is not sufficient, consider to connect the camera with a powered USB hub.
+    - Maybe the the resolution is too high, lower the resolution to test
 - Hot-plug image anomaly
-  - The `reconnection_delay` parameter can be set to bigger, as some devices take longer time to initialize and may not have completed the initialization of the device.
+    - The `reconnection_delay` parameter can be set to bigger, as some devices take longer time to initialize and may
+      not have completed the initialization of the device.
 - No image when hot-plugging
-  - Check if the data cable is plugged in well
-  - Try to connect to a powered usb hub, the ARM development board may have unstable power supply causing the device fail to repoen.
+    - Check if the data cable is plugged in well
+    - Try to connect to a powered usb hub, the ARM development board may have unstable power supply causing the device
+      fail to repoen.
+- launch camera get stuck.
+
+    - It is very likely that the camera failed to start last time, astra camera will use the semaphore
+      to do process synchronization, if it fails to start, the semaphore file may be left in the shm,
+      resulting in the next start stuck, Just run `rosrun astra_camera cleanup_shm_node` problem should be resolved.
+
 - The frame rate of a point cloud is very low, Consideration increased by adding an udp buffer
 
    ```bash
@@ -311,10 +345,13 @@ roslaunch astra_camera multi_astra.launch
 
 Copyright 2022 Orbbec Ltd.
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with the License. You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with
+the License. You may obtain a copy of the License at
 
 [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "
+AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific
+language governing permissions and limitations under the License.
 
 *Other names and brands may be claimed as the property of others*

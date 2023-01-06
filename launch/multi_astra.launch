@@ -8,15 +8,19 @@
     <arg name="camera2_prefix" default="02"/>
     <arg name="camera1_serila_number" default="ADA611300CE"/>
     <arg name="camera2_serila_number" default="sn123456789"/>
-
+    <arg name="device_num" default="2"/>
+    <node name="camera" pkg="astra_camera" type="cleanup_shm_node" output="screen"/>
     <include file="$(find astra_camera)/launch/$(arg 3d_sensor).launch">
         <arg name="camera_name" value="$(arg camera_name)_$(arg camera1_prefix)"/>
         <arg name="serial_number" value="$(arg camera1_serila_number)"/>
+        <arg name="device_num" value="$(arg device_num)"/>
     </include>
 
     <include file="$(find astra_camera)/launch/$(arg 3d_sensor).launch">
         <arg name="camera_name" value="$(arg camera_name)_$(arg camera2_prefix)"/>
         <arg name="serial_number" value="$(arg camera2_serila_number)"/>
+        <arg name="device_num" value="$(arg device_num)"/>
     </include>
-    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_tf" args="0 0 0 0 0 0 camera01_link camera02_link"/>
+    <node pkg="tf2_ros" type="static_transform_publisher" name="camera_tf"
+          args="0 0 0 0 0 0 camera01_link camera02_link"/>
 </launch>

@@ -16,8 +16,8 @@
 #include <cstdlib>
 
 #define OB_ROS_MAJOR_VERSION 1
-#define OB_ROS_MINOR_VERSION 1
-#define OB_ROS_PATCH_VERSION 4
+#define OB_ROS_MINOR_VERSION 2
+#define OB_ROS_PATCH_VERSION 0
 
 #ifndef STRINGIFY
 #define STRINGIFY(arg) #arg
@@ -103,6 +103,9 @@ constexpr static uint32_t DABAI_D1_PID = 0x0658;
 constexpr static uint32_t DABAI_DCW_DEPTH_PID = 0x0659;
 constexpr static uint32_t DABAI_DW_PID = 0x065a;
 constexpr static uint32_t DEEYEA_UVC_PID = 0x050b;
+constexpr static uint32_t GEMIN_E_UVC_PID = 0x055c;
+constexpr static uint32_t GEMINI_E_DEPTH_PID = 0x065c;
+constexpr static uint32_t GEMINI_E_LITE_DEPTH_PID = 0x065d;
 const std::string OB_STEREO_S = "Orbbec Canglong";
 const std::string OB_EMBEDDED_S = "Astra SL1000S_U3";
 const std::string OB_STEREO_S_U3 = "Astra SV1301S_U3";
@@ -115,5 +118,6 @@ const std::string OB_DABAI_PRO = "Orbbec Astra DaBai Pro";
 const std::string OB_DABAI_DCW = "Orbbec DaBai DCW";
 const std::string OB_DABAI_DW = "Orbbec DaBai DW";
 const std::string DEFAULT_SEM_NAME = "astra_device_sem";
+const key_t DEFAULT_SEM_KEY = 0x0401;
 
 }  // namespace astra_camera

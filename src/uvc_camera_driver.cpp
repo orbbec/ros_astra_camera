@@ -95,7 +95,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   if (err != UVC_SUCCESS) {
     uvc_perror(err, "ERROR: uvc_init");
     ROS_ERROR_STREAM("init uvc context failed, exit");
-    exit(err);
+    throw std::runtime_error("init uvc context failed");
   }
   config_.serial_number = serial_number;
   uvc_flip_ = nh_private_.param<bool>("uvc_flip", false);
@@ -115,6 +115,9 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   config_.optical_frame_id = camera_name_ + "_color_optical_frame";
   get_camera_info_client_ = nh_.serviceClient<astra_camera::GetCameraInfo>("get_camera_info");
   camera_info_publisher_ = nh_.advertise<sensor_msgs::CameraInfo>("color/camera_info", 10);
+  color_info_uri_ = nh_private.param<std::string>("color_info_uri", "");
+  color_info_manager_ =
+      std::make_shared<camera_info_manager::CameraInfoManager>(nh_, "rgb_camera", color_info_uri_);
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   image_publisher_ = nh_.advertise<sensor_msgs::Image>(
       "color/image_raw", 10, boost::bind(&UVCCameraDriver::imageSubscribedCallback, this),
@@ -157,9 +160,11 @@ void UVCCameraDriver::openCamera() {
   }
   ROS_INFO_STREAM("uvc config: " << config_);
   if (err != UVC_SUCCESS) {
-    ROS_ERROR_STREAM("Find device error " << uvc_strerror(err) << " process will be exit");
+    std::stringstream ss;
+    ss << "Find device error " << uvc_strerror(err) << " process will be exit";
+    ROS_ERROR_STREAM(ss.str());
     uvc_unref_device(device_);
-    exit(-1);
+    throw std::runtime_error(ss.str());
   }
   CHECK(device_handle_ == nullptr);
   err = uvc_open(device_, &device_handle_);
@@ -355,14 +360,18 @@ void UVCCameraDriver::setupCameraControlService() {
 }
 
 void UVCCameraDriver::getCameraInfo() {
-  astra_camera::GetCameraInfo get_camera_info_srv;
-  while (!get_camera_info_client_.waitForExistence(ros::Duration(1))) {
-    ROS_INFO_STREAM("wait for camera info service is available");
-  }
-  if (get_camera_info_client_.call(get_camera_info_srv)) {
-    camera_info_ = get_camera_info_srv.response.info;
+  if (color_info_manager_ && color_info_manager_->isCalibrated()) {
+    camera_info_ = color_info_manager_->getCameraInfo();
   } else {
-    ROS_ERROR_STREAM("Failed to get camera info " << get_camera_info_srv.response.message);
+    astra_camera::GetCameraInfo get_camera_info_srv;
+    while (!get_camera_info_client_.waitForExistence(ros::Duration(1))) {
+      ROS_INFO_STREAM("wait for camera info service is available");
+    }
+    if (get_camera_info_client_.call(get_camera_info_srv)) {
+      camera_info_ = get_camera_info_srv.response.info;
+    } else {
+      ROS_ERROR_STREAM("Failed to get camera info " << get_camera_info_srv.response.message);
+    }
   }
 }
 
