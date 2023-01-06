@@ -11,7 +11,7 @@
 /**************************************************************************/
 #include <ros/ros.h>
 
-#include "astra_camera/device_listener.h"
+#include "astra_camera/ob_context.h"
 
 void DeviceConnectedCallback(const openni::DeviceInfo* device_info) {
   std::cout << "Device connected: " << device_info->getName() << std::endl;
@@ -28,14 +28,14 @@ void DeviceConnectedCallback(const openni::DeviceInfo* device_info) {
 
 int main() {
   openni::OpenNI::initialize();
-  auto connected_cb = [](const openni::DeviceInfo* device_info) {
-    DeviceConnectedCallback(device_info);
-  };
   auto disconnected_cb = [](const openni::DeviceInfo* device_info) {
     std::cout << "device " << device_info->getUri() << " disconnected" << std::endl;
   };
-  auto device_listener_ =
-      std::make_unique<astra_camera::DeviceListener>(connected_cb, disconnected_cb);
+  auto context = std::make_unique<astra_camera::Context>(disconnected_cb);
+  auto device_list = context->queryDeviceList();
+  for (auto& device_info : device_list) {
+    DeviceConnectedCallback(&device_info);
+  }
   openni::OpenNI::shutdown();
   return 0;
 }

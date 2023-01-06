@@ -23,13 +23,13 @@
 
 #include "OniCTypes.h"
 
-/** The maximum permitted Xiron device name string length. */
+/** The maximum permitted Xiron device name string length. */ 
 #define XN_DEVICE_MAX_STRING_LENGTH 200
 
-/*
+/* 
  * private properties of PS1080 devices.
  *
- * @remarks
+ * @remarks 
  * properties structure is 0x1080XXYY where XX is range and YY is code.
  * range values:
  * F0 - device properties
@@ -196,7 +196,7 @@ enum
 	XN_MODULE_PROPERTY_LDP_NOIST_VALUE = 0x1080FFFD,    //ldp noise value
 	XN_MODULE_PROPERTY_LDP_PS_DATA = 0x10810023,		//ldp PS data
 
-	//Device QN read/write
+	//Device QN read/write 
 	XN_MODULE_PROPERTY_QN_INFO = 0x1080FFC2,
 	XN_MODULE_PROPERTY_QN_VERIFY = 0x1080FFC3,
 
@@ -322,14 +322,15 @@ enum
 	XN_MODULE_MOTHERBOARD_TEMP_COMP = 0x10810022,
 	//For third customer platform read/write SN
 	XN_MODULE_PROPERTY_DEVICE_SN = 0x10810024,
-
+	//PublicBoard
+	XN_MODULE_PROPERTY_PUBLIC_BOARD_SENSOR_POWER = 0x10810025,
 
 
 	/*******************************************************************/
 	/* Common stream properties                                        */
 	/*******************************************************************/
 
-	/** unsigned long long */
+	/** unsigned long long */ 
 	XN_STREAM_PROPERTY_INPUT_FORMAT = 0x10800001, // "InputFormat"
 	/** unsigned long long (XnCroppingMode) */
 	XN_STREAM_PROPERTY_CROPPING_MODE = 0x10800002, // "CroppingMode"
@@ -350,39 +351,39 @@ enum
 	XN_STREAM_PROPERTY_PIXEL_D2C_REGISTRATION = 0x20801002, // "PixelRegistration"
 	/** unsigned long long */
 	XN_STREAM_PROPERTY_WHITE_BALANCE_ENABLED = 0x10801002, // "WhiteBalancedEnabled"
-	/** unsigned long long */
+	/** unsigned long long */ 
 	XN_STREAM_PROPERTY_GAIN = 0x10801003, // "Gain"
-	/** unsigned long long */
+	/** unsigned long long */ 
 	XN_STREAM_PROPERTY_HOLE_FILTER = 0x10801004, // "HoleFilter"
-	/** unsigned long long (XnProcessingType) */
+	/** unsigned long long (XnProcessingType) */ 
 	XN_STREAM_PROPERTY_REGISTRATION_TYPE = 0x10801005, // "RegistrationType"
 	/** XnDepthAGCBin* */
 	XN_STREAM_PROPERTY_AGC_BIN = 0x10801006, // "AGCBin"
-	/** unsigned long long, get only */
+	/** unsigned long long, get only */ 
 	XN_STREAM_PROPERTY_CONST_SHIFT = 0x10801007, // "ConstShift"
-	/** unsigned long long, get only */
+	/** unsigned long long, get only */ 
 	XN_STREAM_PROPERTY_PIXEL_SIZE_FACTOR = 0x10801008, // "PixelSizeFactor"
-	/** unsigned long long, get only */
+	/** unsigned long long, get only */ 
 	XN_STREAM_PROPERTY_MAX_SHIFT = 0x10801009, // "MaxShift"
-	/** unsigned long long, get only */
+	/** unsigned long long, get only */ 
 	XN_STREAM_PROPERTY_PARAM_COEFF = 0x1080100A, // "ParamCoeff"
-	/** unsigned long long, get only */
+	/** unsigned long long, get only */ 
 	XN_STREAM_PROPERTY_SHIFT_SCALE = 0x1080100B, // "ShiftScale"
-	/** unsigned long long, get only */
+	/** unsigned long long, get only */ 
 	XN_STREAM_PROPERTY_ZERO_PLANE_DISTANCE = 0x1080100C, // "ZPD"
-	/** double, get only */
+	/** double, get only */ 
 	XN_STREAM_PROPERTY_ZERO_PLANE_PIXEL_SIZE = 0x1080100D, // "ZPPS"
-	/** double, get only */
+	/** double, get only */ 
 	XN_STREAM_PROPERTY_EMITTER_DCMOS_DISTANCE = 0x1080100E, // "LDDIS"
-	/** double, get only */
+	/** double, get only */ 
 	XN_STREAM_PROPERTY_DCMOS_RCMOS_DISTANCE = 0x1080100F, // "DCRCDIS"
 	/*dual sensor */
 	XN_STREAM_PROPERTY_DUAL_FOCALL_LENGTH = 0x06010011, // "DCRCDIS"
 	/*dual sensor */
 	XN_STREAM_PROPERTY_DUAL_COEFF_DISPARITY = 0x06010012, // "DCRCDIS"
-	/** OniDepthPixel[], get only */
+	/** OniDepthPixel[], get only */ 
 	XN_STREAM_PROPERTY_S2D_TABLE = 0x10801112, // "S2D"
-	/** unsigned short[], get only */
+	/** unsigned short[], get only */ 
 	XN_STREAM_PROPERTY_D2S_TABLE = 0x10801113, // "D2S"
 	/** get only */
 	XN_STREAM_PROPERTY_DEPTH_SENSOR_CALIBRATION_INFO = 0x10801012,
@@ -411,11 +412,11 @@ enum
 	/*******************************************************************/
 	/* Color stream properties                                         */
 	/*******************************************************************/
-	/** Integer */
+	/** Integer */ 
 	XN_STREAM_PROPERTY_FLICKER = 0x10802001, // "Flicker"
 };
 
-typedef enum
+typedef enum 
 {
 	XN_SENSOR_FW_VER_UNKNOWN = 0,
 	XN_SENSOR_FW_VER_0_17 = 1,
@@ -451,7 +452,7 @@ typedef enum {
 	XN_SENSOR_HW_VER_RD_5  = 4,
 	XN_SENSOR_HW_VER_RD1081  = 5,
 	XN_SENSOR_HW_VER_RD1082  = 6,
-	XN_SENSOR_HW_VER_RD109  = 7
+	XN_SENSOR_HW_VER_RD109  = 7	
 } XnHWVer;
 
 typedef enum {
@@ -750,7 +751,7 @@ typedef struct
 	unsigned short nValue;
 } XnInnerParamData;
 
-typedef struct XnDepthAGCBin
+typedef struct XnDepthAGCBin 
 {
 	unsigned short nBin;
 	unsigned short nMin;
@@ -894,7 +895,7 @@ typedef struct  {
 	uint16_t nReserve;
 } XnFlashFile;
 
-typedef struct
+typedef struct  
 {
 	XnFlashFile* pFiles;
 	uint16_t nFiles;
@@ -1023,17 +1024,17 @@ typedef struct OBPdThreshold
 enum AEOPTIONPARAMES
 {
 	EXPTIME = 0,
-	AGAIN,
-	LASERCURRENT,
+	AGAIN, 
+	LASERCURRENT, 
 	TARGETBRIGHTNESS,
 	TARGETTHD,
 	CENTERWEIGHT,
-	SKIPFRAME,
+	SKIPFRAME, 
 	SMOOTHSTEPS,
 	DELAYMS,
 	METERMETHOD,
-	EXPTIMEADJ,
-	AGAINADJ,
+	EXPTIMEADJ, 
+	AGAINADJ, 
 	LASERCURRENTADJ,
 };
 
@@ -1171,7 +1172,7 @@ typedef enum
 typedef struct
 {
 	uint32_t nEnable;  //1:enable ir faceAE;0: disable ir faceAE
-	uint16_t nLeft;
+	uint16_t nLeft;	   
 	uint16_t nTop;
 	uint16_t nWidth;
 	uint16_t nHeight;

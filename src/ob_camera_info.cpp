@@ -18,7 +18,8 @@ OBCameraParams OBCameraNode::getCameraParams() {
     return camera_params_.value();
   }
   auto pid = device_info_.getUsbProductId();
-  if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID) {
+  if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID && pid != GEMINI_E_DEPTH_PID &&
+      pid != GEMINI_E_LITE_DEPTH_PID) {
     OBCameraParams params;
     int data_size = sizeof(OBCameraParams);
     device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS, (uint8_t*)&params, &data_size);
@@ -66,11 +67,11 @@ OBCameraParams OBCameraNode::getCameraParams() {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_240_180;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_DEFAULT;
     } else if (video_mode.getResolutionX() == 640 && video_mode.getResolutionY() == 360 &&
-               pid == DABAI_DCW_DEPTH_PID) {
+               (pid == DABAI_DCW_DEPTH_PID || pid == GEMINI_E_DEPTH_PID)) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_640_360;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_640_360;
     } else if (video_mode.getResolutionX() == 320 && video_mode.getResolutionY() == 180 &&
-               pid == DABAI_DCW_DEPTH_PID) {
+               (pid == DABAI_DCW_DEPTH_PID || pid == GEMINI_E_DEPTH_PID)) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_320_180;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_320_180;
     } else {
@@ -134,12 +135,14 @@ sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo() {
   int width = width_[INFRA1];
   int height = height_[INFRA1];
 
-  if (ir_camera_info_->isCalibrated()) {
-    auto camera_info = ir_camera_info_->getCameraInfo();
-    if (camera_info.width != static_cast<uint32_t>(width) || static_cast<uint32_t>(height)) {
+  if (ir_info_manager_->isCalibrated()) {
+    auto camera_info = ir_info_manager_->getCameraInfo();
+    if (camera_info.width != static_cast<uint32_t>(width) ||
+        camera_info.height != static_cast<uint32_t>(height)) {
       ROS_WARN_ONCE(
-          "Image resolution doesn't match calibration of the RGB camera. Using default "
+          "Image resolution doesn't match calibration of the IR camera. Using default "
           "parameters.");
+      ROS_INFO("camera info width = %d, height = %d", camera_info.width, camera_info.height);
       double depth_focal_length = getFocalLength(DEPTH, height);
       return getDefaultCameraInfo(width, height, depth_focal_length);
     } else {
@@ -225,9 +228,9 @@ sensor_msgs::CameraInfo OBCameraNode::getDepthCameraInfo() {
 sensor_msgs::CameraInfo OBCameraNode::getColorCameraInfo() {
   int width = width_[COLOR];
   int height = height_[COLOR];
-  if (color_camera_info_->isCalibrated()) {
-    auto camera_info = color_camera_info_->getCameraInfo();
-    if (camera_info.width != static_cast<uint32_t>(width) || static_cast<uint32_t>(height)) {
+  if (color_info_manager_->isCalibrated()) {
+    auto camera_info = color_info_manager_->getCameraInfo();
+    if (camera_info.width != static_cast<uint32_t>(width) || camera_info.height != static_cast<uint32_t>(height)) {
       ROS_WARN_ONCE(
           "Image resolution doesn't match calibration of the RGB camera. Using default "
           "parameters.");
@@ -258,7 +261,8 @@ sensor_msgs::CameraInfo OBCameraNode::getColorCameraInfo() {
     for (int i = 0; i < 12; i++) {
       camera_info.P[i] = default_camera_info.P[i];
     }
-    if (device_info_.getUsbProductId() != DABAI_DCW_DEPTH_PID) {
+    auto pid = device_info_.getUsbProductId();
+    if (pid != DABAI_DCW_DEPTH_PID && pid != GEMINI_E_DEPTH_PID) {
       /*02112020 color camera param change according to resolution */
       double scaling = (double)width / 640;
       camera_info.K[0] *= scaling;  // fx

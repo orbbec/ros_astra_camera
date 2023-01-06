@@ -21,10 +21,10 @@
 #include "utils.h"
 
 namespace astra_camera {
-class D2CFilter {
+class D2CViewer {
  public:
-  D2CFilter(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
-  ~D2CFilter();
+  D2CViewer(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
+  ~D2CViewer();
 
   void messageCallback(const sensor_msgs::ImageConstPtr& rgb_msg,
                        const sensor_msgs::ImageConstPtr& depth_msg);

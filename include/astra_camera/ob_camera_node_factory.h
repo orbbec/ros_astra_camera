@@ -22,10 +22,10 @@
 #include <cerrno>
 #include <thread>
 
-#include "device_listener.h"
 #include "ob_camera_node.h"
-#include "uvc_camera_driver.h"
+#include "ob_context.h"
 #include "std_msgs/Empty.h"
+#include "uvc_camera_driver.h"
 
 namespace astra_camera {
 class OBCameraNodeFactory {
@@ -34,14 +34,13 @@ class OBCameraNodeFactory {
 
   ~OBCameraNodeFactory();
 
+  static void cleanUpSharedMemory();
+
  private:
   void init();
 
-  void startDevice();
-
-  void initOpenNI();
-
-  void initDeviceListener();
+  void startDevice(const std::shared_ptr<openni::Device>& device,
+                   const openni::DeviceInfo* device_info);
 
   void onDeviceConnected(const openni::DeviceInfo* device_info);
 
@@ -49,10 +48,9 @@ class OBCameraNodeFactory {
 
   void checkConnectionTimer();
 
-  void resetDeviceCallback(std_msgs::Empty::ConstPtr msg);
-
-
   static OniLogSeverity getLogLevelFromString(const std::string& level);
+
+  void queryDevice();
 
  private:
   ros::NodeHandle nh_;
@@ -65,19 +63,18 @@ class OBCameraNodeFactory {
   std::unique_ptr<dynamic_reconfigure::Reconfigure> reconfigure_ = nullptr;
   bool use_uvc_camera_ = false;
   UVCCameraConfig uvc_config_;
-  std::unique_ptr<DeviceListener> device_listener_ = nullptr;
+  std::unique_ptr<Context> context_ = nullptr;
   std::string serial_number_;
   std::string device_type_;
   std::string device_uri_;
   ros::WallTimer check_connection_timer_;
   std::atomic_bool device_connected_{false};
-  size_t number_of_devices_ = 1;
-  std::unordered_map<std::string, openni::DeviceInfo> connected_devices_;
-  long reconnection_delay_ = 0;
-  std::shared_ptr<std::thread> device_listener_thread_ = nullptr;
+  size_t device_num_ = 1;
+  long connection_delay_ = 100;
   std::string oni_log_level_str_ = "none";
   bool oni_log_to_console_ = false;
   bool oni_log_to_file_ = false;
-  ros::Subscriber reset_device_sub_;
+  std::recursive_mutex device_lock_;
+  std::unique_ptr<std::thread> query_device_thread_ = nullptr;
 };
 }  // namespace astra_camera
