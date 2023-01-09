@@ -8,7 +8,7 @@
     <arg name="vendor_id" default="0x2bc5"/>
     <arg name="product_id" default=""/>
     <arg name="enable_point_cloud" default="true"/>
-    <arg name="connection_delay" default="1.0"/>
+    <arg name="connection_delay" default="100"/>
     <arg name="depth_width" default="640"/>
     <arg name="depth_height" default="400"/>
     <arg name="depth_fps" default="30"/>

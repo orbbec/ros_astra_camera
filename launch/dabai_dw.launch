@@ -6,7 +6,7 @@
     <arg name="vendor_id" default="0x2bc5"/>
     <arg name="product_id" default=""/>
     <arg name="enable_point_cloud" default="true"/>
-    <arg name="connection_delay" default="1.0"/>
+    <arg name="connection_delay" default="100"/>
     <arg name="depth_width" default="640"/>
     <arg name="depth_height" default="480"/>
     <arg name="depth_fps" default="30"/>
@@ -25,7 +25,6 @@
     <arg name="oni_log_level" default="verbose"/>
     <arg name="oni_log_to_console" default="false"/>
     <arg name="oni_log_to_file" default="false"/>
-    <arg name="enable_d2c_viewer" default="false"/>
     <group ns="$(arg camera_name)">
         <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
             <param name="camera_name" value="$(arg camera_name)"/>
@@ -53,8 +52,6 @@
             <param name="oni_log_level" value="$(arg oni_log_level)"/>
             <param name="oni_log_to_console" value="$(arg oni_log_to_console)"/>
             <param name="oni_log_to_file" value="$(arg oni_log_to_file)"/>
-            <param name="enable_d2c_viewer" value="$(arg enable_d2c_viewer)"/>
-            <remap from="/$(arg camera_name)/depth/color/points" to="/$(arg camera_name)/depth_registered/points"/>
         </node>
     </group>
 </launch>

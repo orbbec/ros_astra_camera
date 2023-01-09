@@ -9,7 +9,7 @@
     <arg name="product_id" default="0"/>
     <arg name="enable_point_cloud" default="true"/>
     <arg name="enable_point_cloud_xyzrgb" default="false"/>
-    <arg name="connection_delay" default="1.0"/>
+    <arg name="connection_delay" default="100"/>
     <arg name="color_width" default="640"/>
     <arg name="color_height" default="480"/>
     <arg name="color_fps" default="30"/>

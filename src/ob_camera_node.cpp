@@ -73,8 +73,6 @@ void OBCameraNode::clean() {
 void OBCameraNode::init() {
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   is_running_.store(true);
-  static_tf_broadcaster_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>();
-  dynamic_tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>();
   setupConfig();
   setupTopics();
   for (const auto& stream_index : IMAGE_STREAMS) {
@@ -144,15 +142,15 @@ void OBCameraNode::setupConfig() {
 
   stream_name_[INFRA1] = "ir";
   unit_step_size_[INFRA1] = sizeof(uint8_t);
-  format_[INFRA1] = openni::PIXEL_FORMAT_GRAY16;
-  image_format_[INFRA1] = CV_16UC1;
-  encoding_[INFRA1] = sensor_msgs::image_encodings::MONO16;
+  format_[INFRA1] = openni::PIXEL_FORMAT_GRAY8;
+  image_format_[INFRA1] = CV_8UC1;
+  encoding_[INFRA1] = sensor_msgs::image_encodings::MONO8;
 
   stream_name_[INFRA2] = "ir2";
   unit_step_size_[INFRA2] = sizeof(uint8_t);
-  format_[INFRA2] = openni::PIXEL_FORMAT_GRAY16;
-  image_format_[INFRA2] = CV_16UC1;
-  encoding_[INFRA2] = sensor_msgs::image_encodings::MONO16;
+  format_[INFRA2] = openni::PIXEL_FORMAT_GRAY8;
+  image_format_[INFRA2] = CV_8UC1;
+  encoding_[INFRA2] = sensor_msgs::image_encodings::MONO8;
 }
 
 void OBCameraNode::setupDevices() {
@@ -535,6 +533,8 @@ void OBCameraNode::publishStaticTransforms() {
   if (!publish_tf_) {
     return;
   }
+  static_tf_broadcaster_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>();
+  dynamic_tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>();
   calcAndPublishStaticTransform();
   if (tf_publish_rate_ > 0) {
     CHECK(tf_thread_ == nullptr);
@@ -632,7 +632,7 @@ void OBCameraNode::setDepthColorSync(bool data) {
 
 void OBCameraNode::setDepthToColorResolution(int width, int height) {
   const auto pid = device_info_.getUsbProductId();
-  if (pid != DABAI_DCW_DEPTH_PID && pid != GEMINI_E_DEPTH_PID) {
+  if (pid != DABAI_DCW_DEPTH_PID && pid != GEMINI_E_DEPTH_PID && pid != DABAI_MAX_PID) {
     return;
   }
   if (!depth_align_) {

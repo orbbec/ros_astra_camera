@@ -274,7 +274,42 @@ to clean up `/dev/sh`.
 ``` bash
 roslaunch astra_camera multi_astra.launch
 ```
+## Use calibration camera parameter
+- Set camera info uri, Go to `xxx.launch` 
+```xml
 
+<launch>
+    <!--...-->
+    <arg name="ir_info_uri" default="file:///you_ir_camera_calib_path/depth_camera.yaml"/>
+    <arg name="color_info_uri" default="file:///you_depth_camera_calib_path/rgb_camera.yaml"/>
+    <!--...-->
+</launch>
+```
+- calibration file should like
+```yaml
+image_width: 640
+image_height: 480
+# The camera name is fixed. The color camera is rgb_camera, the depth/IR camera is depth_camera
+camera_name: astra_rgb
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [517.301, 0, 326.785, 0, 519.291, 244.563, 0, 0, 1]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [-0.41527, 0.31874, -0.00197, 0.00071, 0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [0.999973, 0.00612598, -0.00406652, -0.00610201, 0.999964, 0.00588094, 0.0041024, -0.00585596, 0.999974 ]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [517.301, 0, 326.785, -25.3167, 0, 519.291, 244.563, 0.282065, 0, 0, 1, 0.0777703]
+
+```
 ## Launch parameters
 
 **The configuration file is under the `ros_astra_cameraparams/camera_params_template.yaml`, the param parameters in the

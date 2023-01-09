@@ -77,6 +77,7 @@ void OBCameraNodeFactory::init() {
   context_ = std::make_unique<Context>(disconnected_cb);
   check_connection_timer_ = nh_.createWallTimer(
       ros::WallDuration(1.0), [this](const ros::WallTimerEvent&) { this->checkConnectionTimer(); });
+  CHECK(check_connection_timer_.isValid());
   query_device_thread_ = std::make_unique<std::thread>([this] { this->queryDevice(); });
   ROS_INFO_STREAM("init Done");
 }
@@ -114,9 +115,9 @@ void OBCameraNodeFactory::onDeviceConnected(const openni::DeviceInfo* device_inf
   }
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   size_t connected_device_num = 0;
-  sem_t* device_sem = NULL;
+  sem_t* device_sem = nullptr;
   std::shared_ptr<int> sem_guard(nullptr, [&](int*) {
-    if (device_num_ > 1 && device_sem != NULL) {
+    if (device_num_ > 1 && device_sem != nullptr) {
       ROS_INFO_STREAM("Unlock device");
       sem_post(device_sem);
       if (connected_device_num >= device_num_) {
