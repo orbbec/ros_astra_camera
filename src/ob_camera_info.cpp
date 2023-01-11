@@ -26,8 +26,8 @@ OBCameraParams OBCameraNode::getCameraParams() {
     camera_params_ = params;
     return params;
   } else if (pid == DABAI_MAX_PID) {
-      ROS_ERROR_STREAM("current SDK not support dabai max camera");
-      throw std::runtime_error("current SDK not support dabai max camera");
+    ROS_ERROR_STREAM("current SDK not support dabai max camera");
+    throw std::runtime_error("current SDK not support dabai max camera");
   } else {
     OBCameraParamsData camera_params_data;
     int data_size = sizeof(camera_params_data);
@@ -231,7 +231,7 @@ sensor_msgs::CameraInfo OBCameraNode::getDepthCameraInfo() {
 sensor_msgs::CameraInfo OBCameraNode::getColorCameraInfo() {
   int width = width_[COLOR];
   int height = height_[COLOR];
-  if (color_info_manager_->isCalibrated()) {
+  if (color_info_manager_ && color_info_manager_->isCalibrated()) {
     auto camera_info = color_info_manager_->getCameraInfo();
     if (camera_info.width != static_cast<uint32_t>(width) ||
         camera_info.height != static_cast<uint32_t>(height)) {

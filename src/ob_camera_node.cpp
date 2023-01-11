@@ -94,8 +94,10 @@ void OBCameraNode::init() {
   auto serial_number = getSerialNumber();
   ir_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
       nh_private_, "ir_camera", ir_info_uri_);
-  color_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
-      nh_private_, "rgb_camera", color_info_uri_);
+  if(device_->hasSensor(openni::SENSOR_COLOR)) {
+    color_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
+        nh_, "rgb_camera", color_info_uri_);
+  }
   if (keep_alive_) {
     keep_alive_timer_ =
         nh_.createTimer(ros::Duration(keep_alive_interval_), &OBCameraNode::sendKeepAlive, this);
