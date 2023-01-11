@@ -200,17 +200,17 @@ target_link_libraries(list_devices_node
   ${LIBUVC_LIBRARIES}
   )
 
-add_executable(astra_cleanup_shm_node
+add_executable(cleanup_shm_node
   src/astra_cleanup_shm_node.cpp
   )
 
-target_include_directories(astra_cleanup_shm_node PUBLIC
+target_include_directories(cleanup_shm_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${catkin_INCLUDE_DIRS}
   )
-target_link_libraries(astra_cleanup_shm_node
+target_link_libraries(cleanup_shm_node
   Threads::Threads
   ${catkin_LIBRARIES}
   )
@@ -218,7 +218,7 @@ target_link_libraries(astra_cleanup_shm_node
 install(TARGETS ${PROJECT_NAME}
   ${PROJECT_NAME}_node
   list_devices_node
-  astra_cleanup_shm_node
+  cleanup_shm_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
