@@ -25,7 +25,7 @@
     <arg name="ir_width" default="640"/>
     <arg name="ir_height" default="480"/>
     <arg name="ir_fps" default="30"/>
-    <arg name="enable_ir" default="false"/>
+    <arg name="enable_ir" default="true"/>
     <arg name="ir_format" default="Y10"/>
     <arg name="flip_ir" default="false"/>
     <arg name="publish_tf" default="true"/>
@@ -42,7 +42,7 @@
     <arg name="depth_roi_height" default="-1"/>
     <arg name="depth_scale" default="1"/>
     <arg name="color_depth_synchronization" default="false"/>
-    <arg name="use_uvc_camera" default="false"/>
+    <arg name="use_uvc_camera" default="true"/>
     <arg name="uvc_vendor_id" default="0x2bc5"/>
     <arg name="uvc_product_id" default="0x050f"/>
     <arg name="uvc_retry_count" default="100"/>
