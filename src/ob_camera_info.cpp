@@ -26,58 +26,8 @@ OBCameraParams OBCameraNode::getCameraParams() {
     camera_params_ = params;
     return params;
   } else if (pid == DABAI_MAX_PID) {
-    OBCameraParamList cameraParamList;
-    int data_size = sizeof(OBCameraParamList);
-    OBCameraParam cameraParams[3], depthParams;
-    OBCameraParams params;
-    cameraParamList.pCameraParams = (OBCameraParam*)cameraParams;
-    cameraParamList.nParamSize = 3;
-
-    openni::Status rc = device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS,
-                                             (uint8_t*)&cameraParamList, &data_size);
-    if (rc != openni::STATUS_OK) {
-      ROS_ERROR("Failed to get camera params");
-      return {};
-    }
-    bool matched = false;
-    for (int i = 0; i < cameraParamList.nParamSize; i++) {
-      if (width_[DEPTH] == cameraParamList.pCameraParams[i].depthIntrinsic.width &&
-          height_[DEPTH] == cameraParamList.pCameraParams[i].depthIntrinsic.height) {
-        depthParams = cameraParamList.pCameraParams[i];
-        matched = true;
-        break;
-      }
-    }
-    if (!matched) {
-      ROS_ERROR("Failed to get camera params");
-      depthParams = cameraParamList.pCameraParams[0];
-    }
-    params.l_intr_p[0] = depthParams.depthIntrinsic.fx;
-    params.l_intr_p[1] = depthParams.depthIntrinsic.fy;
-    params.l_intr_p[2] = depthParams.depthIntrinsic.cx;
-    params.l_intr_p[3] = depthParams.depthIntrinsic.cy;
-    params.r_intr_p[0] = depthParams.rgbIntrinsic.fx;
-    params.r_intr_p[1] = depthParams.rgbIntrinsic.fy;
-    params.r_intr_p[2] = depthParams.rgbIntrinsic.cx;
-    params.r_intr_p[3] = depthParams.rgbIntrinsic.cy;
-    params.l_k[0] = depthParams.depthDistortion.k1;
-    params.l_k[1] = depthParams.depthDistortion.k2;
-    params.l_k[2] = depthParams.depthDistortion.k3;
-    params.l_k[3] = depthParams.depthDistortion.p1;
-    params.l_k[4] = depthParams.depthDistortion.p2;
-    params.r_k[0] = depthParams.rgbDistortion.k1;
-    params.r_k[1] = depthParams.rgbDistortion.k2;
-    params.r_k[2] = depthParams.rgbDistortion.k3;
-    params.r_k[3] = depthParams.rgbDistortion.p1;
-    params.r_k[4] = depthParams.rgbDistortion.p2;
-    for (int i = 0; i < 9; i++) {
-      if (i < 3) {
-        params.r2l_t[i] = depthParams.transform.trans[i];
-      }
-      params.r2l_r[i] = depthParams.transform.rot[i];
-    }
-    camera_params_ = params;
-    return params;
+      ROS_ERROR_STREAM("current SDK not support dabai max camera");
+      throw std::runtime_error("current SDK not support dabai max camera");
   } else {
     OBCameraParamsData camera_params_data;
     int data_size = sizeof(camera_params_data);
