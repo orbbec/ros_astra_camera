@@ -99,6 +99,13 @@ void OBCameraNode::setupCameraCtrlServices() {
         response.success = this->setLdpEnableCallback(request, response);
         return response.success;
       });
+
+  get_ldp_status_srv_ = nh_.advertiseService<GetBoolRequest, GetBoolResponse>(
+      "get_ldp_status", [this](auto&& request, auto&& response) {
+        response.success = this->getLdpStatusCallback(request, response);
+        return response.success;
+      });
+
   get_device_srv_ = nh_.advertiseService<GetDeviceInfoRequest, GetDeviceInfoResponse>(
       "get_device_info", [this](auto&& request, auto&& response) {
         response.success = this->getDeviceInfoCallback(request, response);
@@ -606,6 +613,16 @@ bool OBCameraNode::getSupportedVideoModesCallback(GetStringRequest& request,
     response.data = data.dump(2);
     return true;
   }
+}
+
+bool OBCameraNode::getLdpStatusCallback(GetBoolRequest& request, GetBoolResponse& response) {
+  (void)request;
+  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
+  int data = 0;
+  int data_size = 4;
+  device_->getProperty(XN_MODULE_PROPERTY_LDP_ENABLE, (uint8_t*)&data, &data_size);
+  response.data = data;
+  return true;
 }
 
 bool OBCameraNode::resetIRGainCallback(std_srvs::EmptyRequest& request,

@@ -59,7 +59,7 @@
             <param name="serial_number" type="string" value="$(arg serial_number)"/>
             <param name="device_num" value="$(arg device_num)"/>
             <param name="vendor_id" value="$(arg vendor_id)"/>
-            <param name="product_id" value="$arg product_id)"/>
+            <param name="product_id" value="$(arg product_id)"/>
             <param name="enable_point_cloud" value="$(arg enable_point_cloud)"/>
             <param name="enable_point_cloud_xyzrgb" value="$(arg enable_point_cloud_xyzrgb)"/>
             <param name="connection_delay" value="$(arg connection_delay)"/>

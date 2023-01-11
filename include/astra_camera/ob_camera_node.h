@@ -169,6 +169,8 @@ class OBCameraNode {
   bool getSupportedVideoModesCallback(GetStringRequest& request, GetStringResponse& response,
                                       const stream_index_pair& stream_index);
 
+  bool getLdpStatusCallback(GetBoolRequest& request, GetBoolResponse& response);
+
   bool toggleSensor(const stream_index_pair& stream_index, bool enabled, std::string& msg);
 
   void onNewFrameCallback(const openni::VideoFrameRef& frame,
@@ -260,6 +262,7 @@ class OBCameraNode {
   ros::ServiceServer reset_ir_gain_srv_;
   ros::ServiceServer reset_ir_exposure_srv_;
   ros::ServiceServer set_ir_flood_srv_;
+  ros::ServiceServer get_ldp_status_srv_;
 
   bool publish_tf_ = true;
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_;
