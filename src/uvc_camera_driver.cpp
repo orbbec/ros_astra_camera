@@ -114,7 +114,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   config_.frame_id = camera_name_ + "_color_frame";
   config_.optical_frame_id = camera_name_ + "_color_optical_frame";
   get_camera_info_client_ = nh_.serviceClient<astra_camera::GetCameraInfo>("get_camera_info");
-  camera_info_publisher_ = nh_.advertise<sensor_msgs::CameraInfo>("color/camera_info", 10);
+  camera_info_publisher_ = nh_.advertise<sensor_msgs::CameraInfo>("color/camera_info", 10, true);
   color_info_uri_ = nh_private.param<std::string>("color_info_uri", "");
   color_info_manager_ =
       std::make_shared<camera_info_manager::CameraInfoManager>(nh_, "rgb_camera", color_info_uri_);

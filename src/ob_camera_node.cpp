@@ -94,7 +94,7 @@ void OBCameraNode::init() {
   auto serial_number = getSerialNumber();
   ir_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
       nh_private_, "ir_camera", ir_info_uri_);
-  if (device_->hasSensor(openni::SENSOR_COLOR)) {
+  if (!use_uvc_camera_ && device_->hasSensor(openni::SENSOR_COLOR)) {
     color_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
         nh_, "rgb_camera", color_info_uri_);
   }
@@ -781,7 +781,6 @@ void OBCameraNode::pollFrame() {
     auto status =
         openni::OpenNI::waitForAnyStream(streams, stream_count, &ready_stream, timeout_ms);
     if (status != openni::STATUS_OK) {
-      ROS_WARN_STREAM_THROTTLE(5, "wait stream timeout " << openni::OpenNI::getExtendedError());
       continue;
     }
     CHECK(ready_stream != -1);
