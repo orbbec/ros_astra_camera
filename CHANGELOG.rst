@@ -1,6 +1,14 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package astra_camera
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1.2.1 (2023-01-12)
+------------
+
+* Migration of all parameters to the launch file.
+* Optimized multi-camera.
+* Fixed reading calibration parameters.
+* Fix the deadlock bug of the subscription when disconnected
 1.0.9(2022-07-25)
 ------------
 * Support Dabai DCW/Dabai DW
