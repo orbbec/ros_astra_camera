@@ -94,7 +94,7 @@ void OBCameraNode::init() {
   auto serial_number = getSerialNumber();
   ir_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
       nh_private_, "ir_camera", ir_info_uri_);
-  if(device_->hasSensor(openni::SENSOR_COLOR)) {
+  if (device_->hasSensor(openni::SENSOR_COLOR)) {
     color_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
         nh_, "rgb_camera", color_info_uri_);
   }
@@ -113,9 +113,6 @@ void OBCameraNode::init() {
   initialized_ = true;
 
   for (const auto& stream_index : IMAGE_STREAMS) {
-    if (!enable_[stream_index]) {
-      continue;
-    }
     sensor_msgs::CameraInfo camera_info;
     if (stream_index == COLOR) {
       camera_info = getColorCameraInfo();
@@ -439,16 +436,16 @@ void OBCameraNode::imageUnsubscribedCallback(const stream_index_pair& stream_ind
 
 void OBCameraNode::setupPublishers() {
   for (const auto& stream_index : IMAGE_STREAMS) {
+    std::string name = stream_name_[stream_index];
+    camera_info_publishers_[stream_index] =
+        nh_.advertise<sensor_msgs::CameraInfo>(name + "/camera_info", 1, true);
     if (enable_[stream_index] && device_->hasSensor(stream_index.first)) {
-      std::string name = stream_name_[stream_index];
       ros::SubscriberStatusCallback image_subscribed_cb =
           boost::bind(&OBCameraNode::imageSubscribedCallback, this, stream_index);
       ros::SubscriberStatusCallback image_unsubscribed_cb =
           boost::bind(&OBCameraNode::imageUnsubscribedCallback, this, stream_index);
       image_publishers_[stream_index] = nh_.advertise<sensor_msgs::Image>(
           name + "/image_raw", 1, image_subscribed_cb, image_unsubscribed_cb);
-      camera_info_publishers_[stream_index] =
-          nh_.advertise<sensor_msgs::CameraInfo>(name + "/camera_info", 1, true);
     }
   }
   extrinsics_publisher_ = nh_.advertise<Extrinsics>("extrinsic/depth_to_color", 1, true);
