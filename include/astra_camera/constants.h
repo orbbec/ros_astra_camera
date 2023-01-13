@@ -107,6 +107,7 @@ constexpr static uint32_t GEMIN_E_UVC_PID = 0x055c;
 constexpr static uint32_t GEMINI_E_DEPTH_PID = 0x065c;
 constexpr static uint32_t GEMINI_E_LITE_DEPTH_PID = 0x065d;
 constexpr static uint32_t DABAI_MAX_PID = 0x069a;
+constexpr static uint32_t ASTRA_PRO_DEPTH_PID = 0x0403;
 const std::string OB_STEREO_S = "Orbbec Canglong";
 const std::string OB_EMBEDDED_S = "Astra SL1000S_U3";
 const std::string OB_STEREO_S_U3 = "Astra SV1301S_U3";

@@ -73,6 +73,7 @@ void OBCameraNode::clean() {
 void OBCameraNode::init() {
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   is_running_.store(true);
+  device_info_ = device_->getDeviceInfo();
   setupConfig();
   setupTopics();
   for (const auto& stream_index : IMAGE_STREAMS) {
@@ -173,7 +174,6 @@ void OBCameraNode::setupDevices() {
       enable_[stream_index] = false;
     }
   }
-  device_info_ = device_->getDeviceInfo();
 }
 
 void OBCameraNode::setupFrameCallback() {
@@ -394,6 +394,9 @@ void OBCameraNode::getParameters() {
   if (depth_align_ && !device_->hasSensor(openni::SENSOR_COLOR) && !use_uvc_camera_) {
     ROS_WARN("No color sensor found, depth align will be disabled");
     depth_align_ = false;
+  }
+  if (enable_pointcloud_xyzrgb_) {
+    depth_align_ = true;
   }
 }
 
