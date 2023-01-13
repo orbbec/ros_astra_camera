@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>astra_camera</name>
-  <version>1.2.1</version>
+  <version>1.2.2</version>
   <description>Drivers for Orbbec Astra Devices. </description>
   <license>Apache License 2.0</license>
   <maintainer email="mocun@orbbec.com">Mo Cun</maintainer>
