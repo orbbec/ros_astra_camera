@@ -189,7 +189,8 @@ void OBCameraNode::setupFrameCallback() {
 }
 
 void OBCameraNode::setupVideoMode() {
-  if (enable_[INFRA1] && enable_[COLOR]) {
+  auto pid = device_->getDeviceInfo().getUsbProductId();
+  if (pid != ASTRA_PRO_DEPTH_PID && enable_[INFRA1] && enable_[COLOR]) {
     ROS_WARN_STREAM(
         "Infrared and Color streams are enabled. "
         "Infrared stream will be disabled.");
