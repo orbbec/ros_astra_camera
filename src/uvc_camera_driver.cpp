@@ -279,7 +279,7 @@ void UVCCameraDriver::stopStreaming() noexcept {
     ROS_WARN_STREAM("streaming is already stopped");
     return;
   }
-  ROS_WARN_STREAM("stop uvc streaming");
+  ROS_INFO_STREAM("stop uvc streaming");
   uvc_stop_streaming(device_handle_);
   if (frame_buffer_) {
     uvc_free_frame(frame_buffer_);

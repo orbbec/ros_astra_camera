@@ -199,6 +199,9 @@ void OBCameraNode::setupVideoMode() {
   for (const auto& stream_index : IMAGE_STREAMS) {
     supported_video_modes_[stream_index] = std::vector<openni::VideoMode>();
     if (device_->hasSensor(stream_index.first) && enable_[stream_index]) {
+      if (pid == ASTRA_PRO_DEPTH_PID && stream_index == COLOR) {
+        continue;
+      }
       auto stream = streams_[stream_index];
       const auto& sensor_info = stream->getSensorInfo();
       const auto& supported_video_modes = sensor_info.getSupportedVideoModes();
@@ -284,6 +287,10 @@ void OBCameraNode::startStream(const stream_index_pair& stream_index) {
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   if (!enable_[stream_index]) {
     ROS_WARN_STREAM("Stream " << stream_name_[stream_index] << " is not enabled.");
+    return;
+  }
+  auto pid = device_->getDeviceInfo().getUsbProductId();
+  if (pid == ASTRA_PRO_DEPTH_PID && stream_index == COLOR) {
     return;
   }
   if (stream_started_[stream_index]) {
