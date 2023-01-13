@@ -1,0 +1,151 @@
+configurable_parameters:
+  - name: "camera_name"
+    default: "camera"
+    description: "camera unique name"
+  - name: "depth_align"
+    default: false
+    description: ""
+  - name: "log_level"
+    default: "verbose"
+    description: ""
+  - name: "log_to_console"
+    default: false
+    description: ""
+  - name: "log_to_file"
+    default: false
+    description: ""
+  - name: "depth_info_url"
+    default: ""
+    description: ""
+  - name: "color_info_url"
+    default: ""
+    description: ""
+  - name: "enable_d2c_viewer"
+    default: false
+    description: ""
+  - name: "serial_number"
+    default: ""
+    description: "camera unique serial number"
+  - name: "depth_align.enable"
+    default: false
+    description: ""
+  - name: "device_num"
+    default: 1
+    description: "number of device need to open"
+  - name: "vendor_id"
+    default: 0x2bc5
+    description: ""
+  - name: "product_id"
+    default: 0
+    description: ""
+  - name: "enable_point_cloud"
+    default: true
+    description: "enable depth point cloud"
+  - name: "enable_colored_point_cloud"
+    default: false
+    description: "enable point cloud with RGB"
+  - name: "connection_delay"
+    default: 100
+    description: "delay time ms before open device"
+  - name: "enable_color"
+    default: true
+    description: "enable color stream"
+  - name: "color_width"
+    default: 640
+    description: ""
+  - name: "color_height"
+    default: 480
+    description: ""
+  - name: "color_fps"
+    default: 30
+    description: ""
+  - name: "color_format"
+    default: "RGB"
+    description: ""
+  - name: "flip_color"
+    default: false
+    description: ""
+  - name: "enable_depth"
+    default: true
+    description: "enable depth stream"
+  - name: "depth_width"
+    default: 640
+    description: ""
+  - name: "depth_height"
+    default: 480
+    description: ""
+  - name: "depth_fps"
+    default: 30
+    description: ""
+  - name: "depth_format"
+    default: "Y16"
+    description: ""
+  - name: "flip_depth"
+    default: false
+    description: ""
+  - name: "enable_infra"
+    default: true
+    description: "enable infra stream"
+  - name: "infra_width"
+    default: 640
+    description: ""
+  - name: "infra_height"
+    default: 480
+    description: ""
+  - name: "infra_fps"
+    default: 30
+    description: ""
+  - name: "infra_format"
+    default: "Y8"
+    description: ""
+  - name: "flip_infra"
+    default: false
+    description: ""
+  - name: "color_roi.x"
+    default: -1
+    description: ""
+  - name: "color_roi.y"
+    default: -1
+    description: ""
+  - name: "color_roi.width"
+    default: -1
+    description: ""
+  - name: "color_roi.height"
+    default: -1
+    description: ""
+  - name: "depth_roi.x"
+    default: -1
+    description: ""
+  - name: "depth_roi.y"
+    default: -1
+    description: ""
+  - name: "depth_roi.width"
+    default: -1
+    description: ""
+  - name: "depth_roi.height"
+    default: -1
+    description: ""
+  - name: "depth_scale"
+    default: -1
+    description: ""
+  - name: "uvc_camera.enable"
+    default: false
+    description: ""
+  - name: "uvc_camera.vendor_id"
+    default: 0x2bc5
+    description: ""
+  - name: "uvc_camera.product_id"
+    default: 0x2bc5
+    description: ""
+  - name: "uvc_camera.retry_open_count"
+    default: 100
+    description: ""
+  - name: "image_qos"
+    default: "service_default"
+    description: "image message QoS "
+  - name: "point_cloud_qos"
+    default: "service_default"
+    description: "Point cloud message QoS"
+  - name: "camera_info_qos"
+    default: "service_default"
+    description: "camera info message QoS"
