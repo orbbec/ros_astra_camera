@@ -477,7 +477,6 @@ void OBCameraNode::setupPublishers() {
           name + "/image_raw", 1, image_subscribed_cb, image_unsubscribed_cb);
     }
   }
-  extrinsics_publisher_ = nh_.advertise<Extrinsics>("extrinsic/depth_to_color", 1, true);
 }
 
 void OBCameraNode::publishStaticTF(const ros::Time& t, const std::vector<float>& trans,
@@ -503,6 +502,7 @@ void OBCameraNode::calcAndPublishStaticTransform() {
   quaternion_optical.setRPY(-M_PI / 2, 0.0, -M_PI / 2);
   std::vector<float> zero_trans = {0, 0, 0};
   std::vector<float> rotation, transition;
+  bool rotation_valid = true, transition_valid = true;
   for (float& i : camera_params_->r2l_r) {
     rotation.emplace_back(i);
   }
@@ -513,30 +513,39 @@ void OBCameraNode::calcAndPublishStaticTransform() {
   for (int i = 0; i < 9; i++) {
     if (std::isnan(rotation[i])) {
       Q.setRPY(0, 0, 0);
+      rotation_valid = false;
       break;
     }
   }
-  if (!device_->hasSensor(openni::SENSOR_COLOR)) {
+  if (!use_uvc_camera_ && !device_->hasSensor(openni::SENSOR_COLOR)) {
     Q.setRPY(0, 0, 0);
   }
   Q = quaternion_optical * Q * quaternion_optical.inverse();
   std::vector<float> trans = {transition[0], transition[1], transition[2]};
-  if (!device_->hasSensor(openni::SENSOR_COLOR) || std::isnan(transition[0]) ||
-      std::isnan(transition[1]) || std::isnan(transition[2])) {
+  if ((!use_uvc_camera_ && !device_->hasSensor(openni::SENSOR_COLOR)) ||
+      std::isnan(transition[0]) || std::isnan(transition[1]) || std::isnan(transition[2])) {
     trans[0] = 0;
     trans[1] = 0;
     trans[2] = 0;
+    transition_valid = false;
+  }
+  if (!transition_valid || !rotation_valid) {
+    ROS_WARN_STREAM("invalid camera params");
   }
   auto tf_timestamp = ros::Time::now();
-  publishStaticTF(tf_timestamp, trans, Q, frame_id_[DEPTH], frame_id_[COLOR]);
   publishStaticTF(tf_timestamp, zero_trans, quaternion_optical, frame_id_[COLOR],
                   optical_frame_id_[COLOR]);
   publishStaticTF(tf_timestamp, zero_trans, quaternion_optical, frame_id_[DEPTH],
                   optical_frame_id_[DEPTH]);
   publishStaticTF(tf_timestamp, zero_trans, zero_rot, base_frame_id_, frame_id_[DEPTH]);
-  auto ex_msg = obExtrinsicsToMsg(rotation, transition, "depth_to_color_extrinsics");
-  ex_msg.header.stamp = ros::Time::now();
-  extrinsics_publisher_.publish(ex_msg);
+  publishStaticTF(tf_timestamp, zero_trans, zero_rot, base_frame_id_, frame_id_[INFRA1]);
+  publishStaticTF(tf_timestamp, trans, Q, base_frame_id_, frame_id_[COLOR]);
+  if (transition_valid && rotation_valid) {
+    extrinsics_publisher_ = nh_.advertise<Extrinsics>("extrinsic/depth_to_color", 1, true);
+    auto ex_msg = obExtrinsicsToMsg(rotation, transition, "depth_to_color");
+    ex_msg.header.stamp = ros::Time::now();
+    extrinsics_publisher_.publish(ex_msg);
+  }
 }
 
 void OBCameraNode::publishDynamicTransforms() {
