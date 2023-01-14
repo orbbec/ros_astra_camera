@@ -142,10 +142,10 @@ sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo(int width, int height, dou
     camera_info.K.fill(0.0);
 
     camera_info.K.fill(0.0);
-    camera_info.K[0] = camera_params.r_intr_p[0];
-    camera_info.K[2] = camera_params.r_intr_p[2];
-    camera_info.K[4] = camera_params.r_intr_p[1];
-    camera_info.K[5] = camera_params.r_intr_p[3];
+    camera_info.K[0] = camera_params.l_intr_p[0];
+    camera_info.K[2] = camera_params.l_intr_p[2];
+    camera_info.K[4] = camera_params.l_intr_p[1];
+    camera_info.K[5] = camera_params.l_intr_p[3];
     camera_info.K[8] = 1.0;
     camera_info.R.fill(0.0);
     camera_info.R[0] = 1.0;
