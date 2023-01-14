@@ -92,15 +92,7 @@ void OBCameraNodeFactory::startDevice(const std::shared_ptr<openni::Device>& dev
     ob_camera_node_.reset();
   }
   CHECK_NOTNULL(device_.get());
-  if (use_uvc_camera_) {
-    if (uvc_camera_driver_) {
-      uvc_camera_driver_.reset();
-    }
-    uvc_camera_driver_ = std::make_shared<UVCCameraDriver>(nh_, nh_private_, serial_number_);
-    ob_camera_node_ = std::make_unique<OBCameraNode>(nh_, nh_private_, device_, uvc_camera_driver_);
-  } else {
-    ob_camera_node_ = std::make_unique<OBCameraNode>(nh_, nh_private_, device_);
-  }
+  ob_camera_node_ = std::make_unique<OBCameraNode>(nh_, nh_private_, device_, use_uvc_camera_);
   device_connected_ = true;
   ROS_INFO_STREAM("Start device " << serial_number_ << " done");
 }
@@ -225,9 +217,6 @@ void OBCameraNodeFactory::onDeviceDisconnected(const openni::DeviceInfo* device_
       device_->close();
       ROS_INFO("Close device done...");
       device_.reset();
-    }
-    if (uvc_camera_driver_) {
-      uvc_camera_driver_.reset();
     }
     ROS_INFO_STREAM("Device disconnected: " << device_info->getUri());
     device_connected_ = false;

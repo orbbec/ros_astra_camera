@@ -19,19 +19,11 @@
 
 namespace astra_camera {
 OBCameraNode::OBCameraNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
-                           std::shared_ptr<openni::Device> device)
-    : nh_(nh), nh_private_(nh_private), device_(std::move(device)), use_uvc_camera_(false) {
-  init();
-}
-
-OBCameraNode::OBCameraNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
-                           std::shared_ptr<openni::Device> device,
-                           std::shared_ptr<UVCCameraDriver> uvc_camera_driver)
+                           std::shared_ptr<openni::Device> device, bool use_uvc_camera)
     : nh_(nh),
       nh_private_(nh_private),
       device_(std::move(device)),
-      uvc_camera_driver_(std::move(uvc_camera_driver)),
-      use_uvc_camera_(true) {
+      use_uvc_camera_(use_uvc_camera) {
   init();
 }
 
@@ -62,6 +54,12 @@ void OBCameraNode::clean() {
       streams_[stream_index].reset();
     }
   }
+  ROS_INFO_STREAM("OBCameraNode::clean stop streams done.");
+  if (uvc_camera_driver_ != nullptr) {
+    ROS_INFO_STREAM("OBCameraNode::stop uvc camera.");
+    uvc_camera_driver_.reset();
+    ROS_INFO_STREAM("OBCameraNode::stop uvc camera done.");
+  }
   if (device_ && device_->isValid()) {
     ROS_INFO_STREAM("OBCameraNode::clean close device");
     device_->close();
@@ -76,6 +74,7 @@ void OBCameraNode::init() {
   device_info_ = device_->getDeviceInfo();
   setupConfig();
   setupTopics();
+  setupUVCCamera();
   for (const auto& stream_index : IMAGE_STREAMS) {
     if (streams_[stream_index]) {
       save_images_[stream_index] = false;
@@ -114,14 +113,21 @@ void OBCameraNode::init() {
   initialized_ = true;
 
   for (const auto& stream_index : IMAGE_STREAMS) {
+    if (!enable_[stream_index]) {
+      continue;
+    }
     sensor_msgs::CameraInfo camera_info;
     if (stream_index == COLOR) {
       camera_info = getColorCameraInfo();
     } else if (stream_index == DEPTH) {
       camera_info = getDepthCameraInfo();
     } else {
-      camera_info = getIRCameraInfo();
+      int width = width_[stream_index];
+      int height = height_[stream_index];
+      double f = getFocalLength(stream_index, width);
+      camera_info = getIRCameraInfo(width, height, f);
     }
+    camera_info.header.stamp = ros::Time::now();
     camera_info_publishers_.at(stream_index).publish(camera_info);
   }
   ROS_INFO_STREAM("OBCameraNode initialized");
@@ -420,6 +426,18 @@ void OBCameraNode::setupTopics() {
   publishStaticTransforms();
 }
 
+void OBCameraNode::setupUVCCamera() {
+  if (use_uvc_camera_) {
+    ROS_INFO("OBCameraNode::setupUVCCamera");
+    auto color_camera_info = getColorCameraInfo();
+    auto serial_number = getSerialNumber();
+    uvc_camera_driver_ =
+        std::make_shared<UVCCameraDriver>(nh_, nh_private_, color_camera_info, serial_number);
+  } else {
+    uvc_camera_driver_ = nullptr;
+  }
+}
+
 void OBCameraNode::imageSubscribedCallback(const stream_index_pair& stream_index) {
   ROS_INFO_STREAM("Image stream " << stream_name_[stream_index] << " subscribed");
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
@@ -598,12 +616,13 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef& frame,
   image_publisher.publish(image_msg);
   sensor_msgs::CameraInfo camera_info;
   if (stream_index == DEPTH) {
-    camera_info = getDepthCameraInfo();
+    camera_info = depth_align_ ? getColorCameraInfo() : getDepthCameraInfo();
 
   } else if (stream_index == COLOR) {
     camera_info = getColorCameraInfo();
-  } else {
-    camera_info = getIRCameraInfo();
+  } else if (stream_index == INFRA1 || stream_index == INFRA2) {
+    double f = getFocalLength(stream_index, width);
+    camera_info = getIRCameraInfo(width, height, f);
   }
 
   camera_info.header.stamp = timestamp;

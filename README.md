@@ -289,8 +289,8 @@ roslaunch astra_camera multi_astra.launch
 ```yaml
 image_width: 640
 image_height: 480
-# The camera name is fixed. The color camera is rgb_camera, the depth/IR camera is depth_camera
-camera_name: astra_rgb
+# The camera name is fixed. The color camera is rgb_camera, the depth/IR camera is ir_camera
+camera_name: rgb_camera
 camera_matrix:
   rows: 3
   cols: 3

@@ -58,7 +58,6 @@ class OBCameraNodeFactory {
   std::atomic_bool is_alive_{false};
   std::unique_ptr<OBCameraNode> ob_camera_node_ = nullptr;
   std::shared_ptr<openni::Device> device_ = nullptr;
-  std::shared_ptr<UVCCameraDriver> uvc_camera_driver_ = nullptr;
   std::shared_ptr<openni::DeviceInfo> device_info_ = nullptr;
   std::unique_ptr<dynamic_reconfigure::Reconfigure> reconfigure_ = nullptr;
   bool use_uvc_camera_ = false;

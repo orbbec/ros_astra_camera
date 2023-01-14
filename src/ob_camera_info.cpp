@@ -32,54 +32,41 @@ OBCameraParams OBCameraNode::getCameraParams() {
     OBCameraParamsData camera_params_data;
     int data_size = sizeof(camera_params_data);
     memset(&camera_params_data, 0, data_size);
-    openni::VideoMode video_mode;
-    if (stream_video_mode_.count(DEPTH)) {
-      video_mode = stream_video_mode_[DEPTH];
-    } else if (stream_video_mode_.count(COLOR)) {
-      video_mode = stream_video_mode_[COLOR];
-    } else if (stream_video_mode_.count(INFRA1)) {
-      video_mode = stream_video_mode_[INFRA1];
-    } else {
-      ROS_ERROR_STREAM(
-          "Have not found property video mode,read default avoid crash, but still have problem");
-      OBCameraParams params;
-      data_size = sizeof(OBCameraParams);
-      device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS, (uint8_t*)&params, &data_size);
-      camera_params_ = params;
-      return params;
-    }
-    if (video_mode.getResolutionX() == 1024 && video_mode.getResolutionY() == 768) {
+    auto depth_width = width_[DEPTH];
+    auto depth_height = height_[DEPTH];
+    auto color_width = width_[COLOR];
+    auto color_height = height_[COLOR];
+    if (depth_width == 1024 && depth_height == 768) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_1024_768;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_DEFAULT;
-    } else if (video_mode.getResolutionX() == 512 && video_mode.getResolutionY() == 384) {
+    } else if (depth_width == 512 && depth_height == 384) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_512_384;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_DEFAULT;
-    } else if (video_mode.getResolutionX() == 640 && video_mode.getResolutionY() == 480) {
+    } else if (depth_width == 640 && depth_height == 480) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_640_480;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_DEFAULT;
-    } else if (video_mode.getResolutionX() == 320 && video_mode.getResolutionY() == 240) {
+    } else if (depth_width == 320 && depth_height == 240) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_320_240;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_DEFAULT;
-    } else if (video_mode.getResolutionX() == 160 && video_mode.getResolutionY() == 120) {
+    } else if (depth_width == 160 && depth_height == 120) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_160_120;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_DEFAULT;
-    } else if (video_mode.getResolutionX() == 480 && video_mode.getResolutionY() == 360) {
+    } else if (depth_width == 480 && depth_height == 360) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_480_360;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_DEFAULT;
-    } else if (video_mode.getResolutionX() == 240 && video_mode.getResolutionY() == 180) {
+    } else if (depth_width == 240 && depth_height == 180) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_240_180;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_DEFAULT;
-    } else if (video_mode.getResolutionX() == 640 && video_mode.getResolutionY() == 360 &&
-               (pid == DABAI_DCW_DEPTH_PID || pid == GEMINI_E_DEPTH_PID)) {
+    } else if (depth_width == 640 && depth_height == 360 && color_width == 640 &&
+               color_height == 360 && (pid == DABAI_DCW_DEPTH_PID || pid == GEMINI_E_DEPTH_PID)) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_640_360;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_640_360;
-    } else if (video_mode.getResolutionX() == 320 && video_mode.getResolutionY() == 180 &&
-               (pid == DABAI_DCW_DEPTH_PID || pid == GEMINI_E_DEPTH_PID)) {
+    } else if (depth_width == 320 && depth_height == 180 && color_width == 320 &&
+               color_height == 180 && (pid == DABAI_DCW_DEPTH_PID || pid == GEMINI_E_DEPTH_PID)) {
       camera_params_data.depthRes = XN_CAMERA_PARAMS_DEPTH_RES_320_180;
       camera_params_data.colorRes = XN_CAMERA_PARAMS_COLOR_RES_320_180;
     } else {
-      ROS_WARN_STREAM("dose not match  resolution: " << video_mode.getResolutionX() << "x"
-                                                     << video_mode.getResolutionY());
+      ROS_WARN_STREAM("dose not match  resolution: " << depth_width << "x" << depth_height);
       OBCameraParams params;
       data_size = sizeof(OBCameraParams);
       device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS, (uint8_t*)&params, &data_size);
@@ -134,11 +121,8 @@ double OBCameraNode::getFocalLength(const stream_index_pair& stream_index, int y
   return static_cast<double>(y_resolution) / (2 * tan(stream->getVerticalFieldOfView() / 2));
 }
 
-sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo() {
-  int width = width_[INFRA1];
-  int height = height_[INFRA1];
-
-  if (ir_info_manager_->isCalibrated()) {
+sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo(int width, int height, double f) {
+  if (ir_info_manager_ && ir_info_manager_->isCalibrated()) {
     auto camera_info = ir_info_manager_->getCameraInfo();
     if (camera_info.width != static_cast<uint32_t>(width) ||
         camera_info.height != static_cast<uint32_t>(height)) {
@@ -146,15 +130,13 @@ sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo() {
           "Image resolution doesn't match calibration of the IR camera. Using default "
           "parameters.");
       ROS_INFO("camera info width = %d, height = %d", camera_info.width, camera_info.height);
-      double depth_focal_length = getFocalLength(DEPTH, height);
-      return getDefaultCameraInfo(width, height, depth_focal_length);
+      return getDefaultCameraInfo(width, height, f);
     } else {
       return camera_info;
     }
   }
 
-  double depth_focal_length = getFocalLength(DEPTH, height);
-  auto camera_info = getDefaultCameraInfo(width, height, depth_focal_length);
+  auto camera_info = getDefaultCameraInfo(width, height, f);
   auto camera_params = getCameraParams();
   if (isValidCameraParams(camera_params)) {
     camera_info.K.fill(0.0);
@@ -165,23 +147,6 @@ sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo() {
     camera_info.K[4] = camera_params.r_intr_p[1];
     camera_info.K[5] = camera_params.r_intr_p[3];
     camera_info.K[8] = 1.0;
-    // left camera is depth camera, right is rgb camera
-    auto pid = device_info_.getUsbProductId();
-    if (!depth_align_ && pid != DABAI_MAX_PID) {
-      // if depth is not registered, then rgb is registered to depth
-      camera_info.K[0] = camera_params.l_intr_p[0];
-      camera_info.K[2] = camera_params.l_intr_p[2];
-      camera_info.K[4] = camera_params.l_intr_p[1];
-      camera_info.K[5] = camera_params.l_intr_p[3];
-      camera_info.K[8] = 1.0;
-    } else {
-      camera_info.K[0] = camera_params.r_intr_p[0];
-      camera_info.K[2] = camera_params.r_intr_p[2];
-      camera_info.K[4] = camera_params.r_intr_p[1];
-      camera_info.K[5] = camera_params.r_intr_p[3];
-      camera_info.K[8] = 1.0;
-    }
-
     camera_info.R.fill(0.0);
     camera_info.R[0] = 1.0;
     camera_info.R[4] = 1.0;
@@ -193,6 +158,7 @@ sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo() {
     camera_info.P[5] = camera_info.K[4];
     camera_info.P[6] = camera_info.K[5];
     camera_info.P[10] = 1.0;
+    auto pid = device_info_.getUsbProductId();
     if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID && pid != DABAI_MAX_PID) {
       /* 02122020 Scale IR Params */
       double scaling = static_cast<double>(width) / 640;
@@ -217,8 +183,10 @@ sensor_msgs::CameraInfo OBCameraNode::getDepthCameraInfo() {
   // (probably 9x9 or 9x7 in 640x480 mode). See
   // http://www.ros.org/wiki/kinect_calibration/technical
   int width = width_[DEPTH];
+  int height = height_[DEPTH];
+  double f = getFocalLength(DEPTH, height);
   double scaling = (double)width / 640;
-  auto camera_info = getIRCameraInfo();
+  auto camera_info = getIRCameraInfo(width, height, f);
   camera_info.K[2] -= depth_ir_x_offset_ * scaling;
   camera_info.K[5] -= depth_ir_y_offset_ * scaling;
   camera_info.K[2] -= depth_ir_x_offset_ * scaling;

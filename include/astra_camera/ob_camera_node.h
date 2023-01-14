@@ -47,11 +47,7 @@ using ReconfigureServer = dynamic_reconfigure::Server<AstraConfig>;
 class OBCameraNode {
  public:
   OBCameraNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
-               std::shared_ptr<openni::Device> device);
-
-  OBCameraNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
-               std::shared_ptr<openni::Device> device,
-               std::shared_ptr<UVCCameraDriver> uvc_camera_driver);
+               std::shared_ptr<openni::Device> device, bool use_uvc_camera = false);
 
   ~OBCameraNode();
 
@@ -83,6 +79,8 @@ class OBCameraNode {
   void getParameters();
 
   void setupTopics();
+
+  void setupUVCCamera();
 
   void imageSubscribedCallback(const stream_index_pair& stream_index);
 
@@ -186,7 +184,7 @@ class OBCameraNode {
 
   double getFocalLength(const stream_index_pair& stream_index, int y_resolution);
 
-  sensor_msgs::CameraInfo getIRCameraInfo();
+  sensor_msgs::CameraInfo getIRCameraInfo(int width, int height, double f);
 
   sensor_msgs::CameraInfo getDepthCameraInfo();
 

@@ -89,8 +89,9 @@ std::ostream& operator<<(std::ostream& os, const UVCCameraConfig& config) {
 }
 
 UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
+                                 const sensor_msgs::CameraInfo& camera_info,
                                  const std::string& serial_number)
-    : nh_(nh), nh_private_(nh_private) {
+    : nh_(nh), nh_private_(nh_private), camera_info_(camera_info) {
   auto err = uvc_init(&ctx_, nullptr);
   if (err != UVC_SUCCESS) {
     uvc_perror(err, "ERROR: uvc_init");
@@ -98,6 +99,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
     throw std::runtime_error("init uvc context failed");
   }
   config_.serial_number = serial_number;
+  device_num_ = nh_private_.param<int>("device_num", 1);
   uvc_flip_ = nh_private_.param<bool>("uvc_flip", false);
   config_.vendor_id = nh_private_.param<int>("uvc_vendor_id", 0x0);
   config_.product_id = nh_private_.param<int>("uvc_product_id", 0x0);
@@ -113,8 +115,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   camera_name_ = nh_private.param<std::string>("camera_name", "camera");
   config_.frame_id = camera_name_ + "_color_frame";
   config_.optical_frame_id = camera_name_ + "_color_optical_frame";
-  get_camera_info_client_ = nh_.serviceClient<astra_camera::GetCameraInfo>("get_camera_info");
-  camera_info_publisher_ = nh_.advertise<sensor_msgs::CameraInfo>("color/camera_info", 10, true);
+  camera_info_publisher_ = nh_.advertise<sensor_msgs::CameraInfo>("color/camera_info", 1, true);
   color_info_uri_ = nh_private.param<std::string>("color_info_uri", "");
   color_info_manager_ =
       std::make_shared<camera_info_manager::CameraInfoManager>(nh_, "rgb_camera", color_info_uri_);
@@ -124,6 +125,8 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
       boost::bind(&UVCCameraDriver::imageUnsubscribedCallback, this));
   setupCameraControlService();
   openCamera();
+  auto info = getCameraInfo();
+  camera_info_publisher_.publish(info);
 }
 
 UVCCameraDriver::~UVCCameraDriver() {
@@ -147,6 +150,10 @@ void UVCCameraDriver::openCamera() {
   CHECK(device_ == nullptr);
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   err = uvc_find_device(ctx_, &device_, config_.vendor_id, config_.product_id, serial_number);
+  if (err != UVC_SUCCESS && device_num_ == 1) {
+    // retry serial number == nullptr
+    err = uvc_find_device(ctx_, &device_, config_.vendor_id, config_.product_id, nullptr);
+  }
   if (err != UVC_SUCCESS) {
     uvc_perror(err, "ERROR: uvc_find_device");
     ROS_ERROR_STREAM("find uvc device failed, retry " << config_.retry_count << " times");
@@ -359,19 +366,16 @@ void UVCCameraDriver::setupCameraControlService() {
       });
 }
 
-void UVCCameraDriver::getCameraInfo() {
+sensor_msgs::CameraInfo UVCCameraDriver::getCameraInfo() {
   if (color_info_manager_ && color_info_manager_->isCalibrated()) {
-    camera_info_ = color_info_manager_->getCameraInfo();
+    auto camera_info = color_info_manager_->getCameraInfo();
+    camera_info.header.frame_id = config_.optical_frame_id;
+    camera_info.header.stamp = ros::Time::now();
+    return camera_info;
   } else {
-    astra_camera::GetCameraInfo get_camera_info_srv;
-    while (!get_camera_info_client_.waitForExistence(ros::Duration(1))) {
-      ROS_INFO_STREAM("wait for camera info service is available");
-    }
-    if (get_camera_info_client_.call(get_camera_info_srv)) {
-      camera_info_ = get_camera_info_srv.response.info;
-    } else {
-      ROS_ERROR_STREAM("Failed to get camera info " << get_camera_info_srv.response.message);
-    }
+    camera_info_.header.frame_id = config_.optical_frame_id;
+    camera_info_.header.stamp = ros::Time::now();
+    return camera_info_;
   }
 }
 
@@ -454,9 +458,7 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
     image.encoding = "bgr8";
     memcpy(&(image.data[0]), frame_buffer_->data, frame_buffer_->data_bytes);
   }
-  if (!camera_info_) {
-    getCameraInfo();
-  }
+
   if (roi_.x != -1 && roi_.y != -1 && roi_.width != -1 && roi_.height != -1) {
     auto cv_image_ptr = cv_bridge::toCvCopy(image);
     auto cv_img = cv_image_ptr->image;
@@ -472,11 +474,8 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
     cv_image_ptr->image = cv_img;
     image = *(cv_image_ptr->toImageMsg());
   }
-  if (camera_info_) {
-    camera_info_->header.stamp = ros::Time::now();
-    camera_info_->header.frame_id = config_.optical_frame_id;
-    camera_info_publisher_.publish(camera_info_.value());
-  }
+  auto camera_info = getCameraInfo();
+  camera_info_publisher_.publish(camera_info);
   image.header.frame_id = config_.optical_frame_id;
   image.header.stamp = ros::Time::now();
   image_publisher_.publish(image);

@@ -15,6 +15,7 @@
 #include <camera_info_manager/camera_info_manager.h>
 #include <image_transport/image_transport.h>
 #include <libuvc/libuvc.h>
+#include <openni2/OpenNI.h>
 #include <sensor_msgs/CameraInfo.h>
 
 #include <boost/optional.hpp>
@@ -47,7 +48,8 @@ std::ostream& operator<<(std::ostream& os, const UVCCameraConfig& config);
 class UVCCameraDriver {
  public:
   explicit UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
-                           const std::string& serial_number);
+                           const sensor_msgs::CameraInfo& camera_info,
+                           const std::string& serial_number = "");
 
   ~UVCCameraDriver();
 
@@ -70,7 +72,7 @@ class UVCCameraDriver {
  private:
   void setupCameraControlService();
 
-  void getCameraInfo();
+  sensor_msgs::CameraInfo getCameraInfo();
 
   static enum uvc_frame_format UVCFrameFormatString(const std::string& format);
 
@@ -143,12 +145,12 @@ class UVCCameraDriver {
   ros::ServiceServer get_uvc_mirror_srv_;
   ros::ServiceServer set_uvc_mirror_srv_;
   ros::ServiceServer toggle_uvc_camera_srv_;
-  ros::ServiceClient get_camera_info_client_;
   ros::ServiceServer save_image_srv_;
   ros::Publisher image_publisher_;
   ros::Publisher camera_info_publisher_;
-  boost::optional<sensor_msgs::CameraInfo> camera_info_;
+  sensor_msgs::CameraInfo camera_info_;
   std::recursive_mutex device_lock_;
   std::shared_ptr<camera_info_manager::CameraInfoManager> color_info_manager_ = nullptr;
+  int device_num_ = 1;
 };
 }  // namespace astra_camera
