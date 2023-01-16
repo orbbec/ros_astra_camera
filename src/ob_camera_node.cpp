@@ -415,13 +415,13 @@ void OBCameraNode::getParameters() {
 
 void OBCameraNode::setupTopics() {
   getParameters();
-  getCameraParams();
-  setupUVCCamera();
   setupFrameCallback();
   setupDevices();
   setupCameraCtrlServices();
   setupPublishers();
   setupVideoMode();
+  setupUVCCamera();
+  getCameraParams();
   setupD2CConfig();
   publishStaticTransforms();
 }
