@@ -74,7 +74,6 @@ void OBCameraNode::init() {
   device_info_ = device_->getDeviceInfo();
   setupConfig();
   setupTopics();
-  setupUVCCamera();
   for (const auto& stream_index : IMAGE_STREAMS) {
     if (streams_[stream_index]) {
       save_images_[stream_index] = false;
@@ -416,13 +415,14 @@ void OBCameraNode::getParameters() {
 
 void OBCameraNode::setupTopics() {
   getParameters();
+  getCameraParams();
+  setupUVCCamera();
   setupFrameCallback();
   setupDevices();
   setupCameraCtrlServices();
   setupPublishers();
   setupVideoMode();
   setupD2CConfig();
-  getCameraParams();
   publishStaticTransforms();
 }
 
