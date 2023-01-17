@@ -322,7 +322,8 @@ enum
 	XN_MODULE_MOTHERBOARD_TEMP_COMP = 0x10810022,
 	//For third customer platform read/write SN
 	XN_MODULE_PROPERTY_DEVICE_SN = 0x10810024,
-
+	//PublicBoard
+	XN_MODULE_PROPERTY_PUBLIC_BOARD_SENSOR_POWER = 0x10810025,
 
 
 	/*******************************************************************/

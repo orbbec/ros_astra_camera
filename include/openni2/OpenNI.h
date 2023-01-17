@@ -399,6 +399,8 @@ public:
 	const char* getVendor() const { return vendor; }
 	/** Returns the device name for this device. */
 	const char* getName() const { return name; }
+	/** Returns the device serialNumber for this device. */
+	const char* getSerialNumber() const { return serialNumber; }
 	/** Returns the USB VID code for this device. */
 	uint16_t getUsbVendorId() const { return usbVendorId; }
 	/** Returns the USB PID code for this device. */

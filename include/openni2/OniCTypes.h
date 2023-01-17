@@ -79,6 +79,7 @@ typedef struct
 	char uri[ONI_MAX_STR];
 	char vendor[ONI_MAX_STR];
 	char name[ONI_MAX_STR];
+	char serialNumber[ONI_MAX_STR];
 	uint16_t usbVendorId;
 	uint16_t usbProductId;
 } OniDeviceInfo;
