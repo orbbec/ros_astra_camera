@@ -52,6 +52,8 @@
     <arg name="oni_log_to_console" default="false"/>
     <arg name="oni_log_to_file" default="false"/>
     <arg name="enable_d2c_viewer" default="false"/>
+    <arg name="enable_publish_extrinsic" default="false"/>
+    <param name="enable_publish_extrinsic" value="$(arg enable_publish_extrinsic)"/>
     <group ns="$(arg camera_name)">
         <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
             <param name="camera_name" value="$(arg camera_name)"/>

@@ -303,5 +303,6 @@ class OBCameraNode {
   std::atomic_bool run_poll_frame_thread_{false};
   std::mutex poll_frame_thread_lock_;
   std::condition_variable poll_frame_thread_cv_;
+  bool enable_publish_extrinsic_ = false;
 };
 }  // namespace astra_camera

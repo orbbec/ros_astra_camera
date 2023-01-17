@@ -407,6 +407,7 @@ void OBCameraNode::getParameters() {
   keep_alive_interval_ = nh_private_.param<int>("keep_alive_interval", 15);
   enable_pointcloud_ = nh_private_.param<bool>("enable_point_cloud", false);
   enable_pointcloud_xyzrgb_ = nh_private_.param<bool>("enable_point_cloud_xyzrgb", false);
+  enable_publish_extrinsic_ = nh_private_.param<bool>("enable_publish_extrinsic", false);
   if (depth_align_ && !device_->hasSensor(openni::SENSOR_COLOR) && !use_uvc_camera_) {
     ROS_WARN("No color sensor found, depth align will be disabled");
     depth_align_ = false;
@@ -538,7 +539,7 @@ void OBCameraNode::calcAndPublishStaticTransform() {
   publishStaticTF(tf_timestamp, zero_trans, zero_rot, base_frame_id_, frame_id_[DEPTH]);
   publishStaticTF(tf_timestamp, zero_trans, zero_rot, base_frame_id_, frame_id_[INFRA1]);
   publishStaticTF(tf_timestamp, trans, Q, base_frame_id_, frame_id_[COLOR]);
-  if (transition_valid && rotation_valid) {
+  if (enable_publish_extrinsic_ && transition_valid && rotation_valid) {
     extrinsics_publisher_ = nh_.advertise<Extrinsics>("extrinsic/depth_to_color", 1, true);
     auto ex_msg = obExtrinsicsToMsg(rotation, transition, "depth_to_color");
     ex_msg.header.stamp = ros::Time::now();

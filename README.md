@@ -344,6 +344,7 @@ launch file can override the yaml values**
 - `uvc_camera_format`，Image format for uvc camera
 - `uvc_retry_count` sometimes the UVC protocol camera does not reconnect successfully when hot-plug, requiring many
   times to retry.
+- `enable_publish_extrinsic` Enable publish camera extrinsic.
 - `oni_log_level`, Log levels for OpenNI verbose/ info /warning/ error /none
 - `oni_log_to_console`, Whether to output OpenNI logs to the console
 - `oni_log_to_file`, Whether to output OpenNI logs to a file, by default it will save in Log folder under the path of
