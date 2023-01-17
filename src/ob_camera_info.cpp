@@ -191,6 +191,22 @@ sensor_msgs::CameraInfo OBCameraNode::getDepthCameraInfo() {
   double f = getFocalLength(DEPTH, height);
   double scaling = (double)width / 640;
   auto camera_info = getIRCameraInfo(width, height, f);
+  auto camera_params = getCameraParams();
+  if (!isValidCameraParams(camera_params)) {
+    if (depth_align_ || enable_pointcloud_xyzrgb_) {
+      camera_info.K[0] = camera_params.r_intr_p[0];
+      camera_info.K[2] = camera_params.r_intr_p[2];
+      camera_info.K[4] = camera_params.r_intr_p[1];
+      camera_info.K[5] = camera_params.r_intr_p[3];
+      auto pid = device_info_.getUsbProductId();
+      if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID && pid != DABAI_MAX_PID) {
+        camera_info.K[0] *= scaling;  // fx
+        camera_info.K[2] *= scaling;  // cx
+        camera_info.K[4] *= scaling;  // fy
+        camera_info.K[5] *= scaling;  // cy
+      }
+    }
+  }
   camera_info.K[2] -= depth_ir_x_offset_ * scaling;
   camera_info.K[5] -= depth_ir_y_offset_ * scaling;
   camera_info.K[2] -= depth_ir_x_offset_ * scaling;

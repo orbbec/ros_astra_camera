@@ -74,6 +74,9 @@ void OBCameraNode::init() {
   device_info_ = device_->getDeviceInfo();
   setupConfig();
   setupTopics();
+  if (enable_d2c_viewer_) {
+    d2c_filter_ = std::make_unique<D2CViewer>(nh_, nh_private_);
+  }
   setupUVCCamera();
   setupD2CConfig();
   for (const auto& stream_index : IMAGE_STREAMS) {
@@ -83,9 +86,6 @@ void OBCameraNode::init() {
   }
   init_ir_gain_ = getIRGain();
   init_ir_exposure_ = getIRExposure();
-  if (enable_d2c_viewer_) {
-    d2c_filter_ = std::make_unique<D2CViewer>(nh_, nh_private_);
-  }
   if (enable_reconfigure_) {
     reconfigure_server_ = std::make_unique<ReconfigureServer>(nh_private_);
     reconfigure_server_->setCallback([this](const AstraConfig& config, uint32_t level) {
@@ -276,14 +276,14 @@ void OBCameraNode::setupVideoMode() {
 }
 
 void OBCameraNode::setupD2CConfig() {
-  if (!depth_align_) {
+  if (!depth_align_ && !enable_pointcloud_xyzrgb_) {
     return;
   }
   auto color_width = width_[COLOR];
   auto color_height = height_[COLOR];
   setImageRegistrationMode(depth_align_);
   setDepthColorSync(color_depth_synchronization_);
-  if (depth_align_) {
+  if (depth_align_ || enable_pointcloud_xyzrgb_) {
     setDepthToColorResolution(color_width, color_height);
   }
 }
@@ -424,7 +424,6 @@ void OBCameraNode::setupTopics() {
   setupPublishers();
   setupVideoMode();
   getCameraParams();
-  setupD2CConfig();
   publishStaticTransforms();
 }
 
@@ -624,8 +623,7 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef& frame,
   image_publisher.publish(image_msg);
   sensor_msgs::CameraInfo camera_info;
   if (stream_index == DEPTH) {
-    camera_info = depth_align_ ? getColorCameraInfo() : getDepthCameraInfo();
-
+    camera_info = getDepthCameraInfo();
   } else if (stream_index == COLOR) {
     camera_info = getColorCameraInfo();
   } else if (stream_index == INFRA1 || stream_index == INFRA2) {
@@ -672,7 +670,7 @@ void OBCameraNode::setDepthToColorResolution(int width, int height) {
   if (pid != DABAI_DCW_DEPTH_PID && pid != GEMINI_E_DEPTH_PID && pid != DABAI_MAX_PID) {
     return;
   }
-  if (!depth_align_) {
+  if (!depth_align_ && !enable_pointcloud_xyzrgb_) {
     return;
   }
   if (width * 9 == height * 16) {
