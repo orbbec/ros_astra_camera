@@ -419,6 +419,7 @@ void OBCameraNode::getParameters() {
 
 void OBCameraNode::setupTopics() {
   getParameters();
+  setupCameraInfoManager();
   setupFrameCallback();
   setupDevices();
   setupCameraCtrlServices();
