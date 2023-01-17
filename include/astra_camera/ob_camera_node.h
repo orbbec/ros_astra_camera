@@ -60,6 +60,8 @@ class OBCameraNode {
 
   void setupConfig();
 
+  void setupCameraInfoManager();
+
   void setupDevices();
 
   void setupD2CConfig();

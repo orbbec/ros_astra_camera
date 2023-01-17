@@ -115,9 +115,13 @@ sensor_msgs::CameraInfo OBCameraNode::OBCameraParamsToCameraInfo(const OBCameraP
 }
 
 double OBCameraNode::getFocalLength(const stream_index_pair& stream_index, int y_resolution) {
-  CHECK(streams_.count(stream_index));
+  if (!streams_.count(stream_index)) {
+    return 0.0;
+  }
   auto stream = streams_.at(stream_index);
-  CHECK_NOTNULL(stream.get());
+  if (stream == nullptr) {
+    return 0.0;
+  }
   return static_cast<double>(y_resolution) / (2 * tan(stream->getVerticalFieldOfView() / 2));
 }
 
@@ -203,7 +207,7 @@ sensor_msgs::CameraInfo OBCameraNode::getColorCameraInfo() {
     auto camera_info = color_info_manager_->getCameraInfo();
     if (camera_info.width != static_cast<uint32_t>(width) ||
         camera_info.height != static_cast<uint32_t>(height)) {
-      ROS_WARN_ONCE(
+      ROS_WARN(
           "Image resolution doesn't match calibration of the RGB camera. Using default "
           "parameters.");
       double color_focal_length = getFocalLength(COLOR, height);

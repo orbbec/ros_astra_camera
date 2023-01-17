@@ -223,13 +223,13 @@ void UVCCameraDriver::setVideoMode() {
 }
 
 void UVCCameraDriver::imageSubscribedCallback() {
-  ROS_INFO_STREAM("image subscribed");
+  ROS_INFO_STREAM("UVCCameraDriver image subscribed");
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   startStreaming();
 }
 
 void UVCCameraDriver::imageUnsubscribedCallback() {
-  ROS_INFO_STREAM("image unsubscribed");
+  ROS_INFO_STREAM("UVCCameraDriver image unsubscribed");
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   auto subscriber_count = image_publisher_.getNumSubscribers();
   if (subscriber_count == 0) {
@@ -239,11 +239,11 @@ void UVCCameraDriver::imageUnsubscribedCallback() {
 
 void UVCCameraDriver::startStreaming() {
   if (is_streaming_started) {
-    ROS_WARN_STREAM("streaming is already started");
+    ROS_WARN_STREAM("UVCCameraDriver streaming is already started");
     return;
   }
   if (!is_camera_opened_) {
-    ROS_WARN_STREAM("camera is not opened");
+    ROS_WARN_STREAM("UVCCameraDriver camera is not opened");
     return;
   }
   CHECK_NOTNULL(device_);

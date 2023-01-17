@@ -74,6 +74,8 @@ void OBCameraNode::init() {
   device_info_ = device_->getDeviceInfo();
   setupConfig();
   setupTopics();
+  setupUVCCamera();
+  setupD2CConfig();
   for (const auto& stream_index : IMAGE_STREAMS) {
     if (streams_[stream_index]) {
       save_images_[stream_index] = false;
@@ -89,13 +91,6 @@ void OBCameraNode::init() {
     reconfigure_server_->setCallback([this](const AstraConfig& config, uint32_t level) {
       this->reconfigureCallback(config, level);
     });
-  }
-  auto serial_number = getSerialNumber();
-  ir_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
-      nh_private_, "ir_camera", ir_info_uri_);
-  if (!use_uvc_camera_ && device_->hasSensor(openni::SENSOR_COLOR)) {
-    color_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
-        nh_, "rgb_camera", color_info_uri_);
   }
   if (keep_alive_) {
     keep_alive_timer_ =
@@ -115,6 +110,9 @@ void OBCameraNode::init() {
     if (!enable_[stream_index]) {
       continue;
     }
+    if (use_uvc_camera_ && stream_index == COLOR) {
+      continue;
+    }
     sensor_msgs::CameraInfo camera_info;
     if (stream_index == COLOR) {
       camera_info = getColorCameraInfo();
@@ -126,7 +124,9 @@ void OBCameraNode::init() {
       double f = getFocalLength(stream_index, width);
       camera_info = getIRCameraInfo(width, height, f);
     }
+
     camera_info.header.stamp = ros::Time::now();
+    camera_info.header.frame_id = optical_frame_id_[stream_index];
     camera_info_publishers_.at(stream_index).publish(camera_info);
   }
   ROS_INFO_STREAM("OBCameraNode initialized");
@@ -158,10 +158,22 @@ void OBCameraNode::setupConfig() {
   encoding_[INFRA2] = sensor_msgs::image_encodings::MONO8;
 }
 
+void OBCameraNode::setupCameraInfoManager() {
+  ir_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
+      nh_private_, "ir_camera", ir_info_uri_);
+  if (!use_uvc_camera_ && device_->hasSensor(openni::SENSOR_COLOR)) {
+    color_info_manager_ = std::make_unique<camera_info_manager::CameraInfoManager>(
+        nh_, "rgb_camera", color_info_uri_);
+  }
+}
+
 void OBCameraNode::setupDevices() {
   for (const auto& stream_index : IMAGE_STREAMS) {
     stream_started_[stream_index] = false;
     if (enable_[stream_index] && device_->hasSensor(stream_index.first)) {
+      if (use_uvc_camera_ && stream_index == COLOR) {
+        continue;
+      }
       auto stream = std::make_shared<openni::VideoStream>();
       auto status = stream->create(*device_, stream_index.first);
       if (status != openni::STATUS_OK) {
@@ -194,8 +206,7 @@ void OBCameraNode::setupFrameCallback() {
 }
 
 void OBCameraNode::setupVideoMode() {
-  auto pid = device_->getDeviceInfo().getUsbProductId();
-  if (pid != ASTRA_PRO_DEPTH_PID && enable_[INFRA1] && enable_[COLOR]) {
+  if (!use_uvc_camera_ && enable_[INFRA1] && enable_[COLOR]) {
     ROS_WARN_STREAM(
         "Infrared and Color streams are enabled. "
         "Infrared stream will be disabled.");
@@ -204,7 +215,7 @@ void OBCameraNode::setupVideoMode() {
   for (const auto& stream_index : IMAGE_STREAMS) {
     supported_video_modes_[stream_index] = std::vector<openni::VideoMode>();
     if (device_->hasSensor(stream_index.first) && enable_[stream_index]) {
-      if (pid == ASTRA_PRO_DEPTH_PID && stream_index == COLOR) {
+      if (use_uvc_camera_ && stream_index == COLOR) {
         continue;
       }
       auto stream = streams_[stream_index];
@@ -268,19 +279,8 @@ void OBCameraNode::setupD2CConfig() {
   if (!depth_align_) {
     return;
   }
-  int color_width;
-  int color_height;
-  if (use_uvc_camera_) {
-    CHECK_NOTNULL(uvc_camera_driver_.get());
-    color_width = uvc_camera_driver_->getResolutionX();
-    color_height = uvc_camera_driver_->getResolutionY();
-  } else if (enable_[COLOR]) {
-    color_width = stream_video_mode_[COLOR].getResolutionX();
-    color_height = stream_video_mode_[COLOR].getResolutionY();
-  } else {
-    ROS_WARN_STREAM("Color stream is not enabled. Depth to color alignment is not possible.");
-    return;
-  }
+  auto color_width = width_[COLOR];
+  auto color_height = height_[COLOR];
   setImageRegistrationMode(depth_align_);
   setDepthColorSync(color_depth_synchronization_);
   if (depth_align_) {
@@ -292,6 +292,9 @@ void OBCameraNode::startStream(const stream_index_pair& stream_index) {
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   if (!enable_[stream_index]) {
     ROS_WARN_STREAM("Stream " << stream_name_[stream_index] << " is not enabled.");
+    return;
+  }
+  if (stream_index == COLOR && use_uvc_camera_) {
     return;
   }
   auto pid = device_->getDeviceInfo().getUsbProductId();
@@ -420,7 +423,6 @@ void OBCameraNode::setupTopics() {
   setupCameraCtrlServices();
   setupPublishers();
   setupVideoMode();
-  setupUVCCamera();
   getCameraParams();
   setupD2CConfig();
   publishStaticTransforms();
@@ -528,9 +530,6 @@ void OBCameraNode::calcAndPublishStaticTransform() {
     trans[1] = 0;
     trans[2] = 0;
     transition_valid = false;
-  }
-  if (!transition_valid || !rotation_valid) {
-    ROS_WARN_STREAM("invalid camera params");
   }
   auto tf_timestamp = ros::Time::now();
   publishStaticTF(tf_timestamp, zero_trans, quaternion_optical, frame_id_[COLOR],
@@ -763,7 +762,6 @@ void OBCameraNode::reconfigureCallback(const AstraConfig& config, uint32_t level
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   stopStreams();
   setupVideoMode();
-  setupD2CConfig();
   camera_params_.reset();
   getCameraParams();
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
