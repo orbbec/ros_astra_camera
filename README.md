@@ -268,7 +268,7 @@ NOTE: Point cloud are only available if it is running and saved under ~/.ros/poi
 ```bash
 rosrun astra_camera cleanup_shm_node 
 ```
-to clean up `/dev/sh`.
+to clean up `/dev/shm`.
 - Launch
 
 ``` bash
