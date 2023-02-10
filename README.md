@@ -377,6 +377,10 @@ launch file can override the yaml values**
     sudo sysctl -w net.core.rmem_max=8388608 net.core.rmem_default=8388608
    ```
 
+- Can't connect to the Camera on ARM.
+  - Current `main` branch SDK has bug on ARM linux, Please checkout to branch `fix_MX400_conneted_bug`.
+  - Related issue #176
+
 ## License
 
 Copyright 2022 Orbbec Ltd.
