@@ -379,7 +379,7 @@ launch file can override the yaml values**
 
 - Can't connect to the Camera on ARM.
   - Current `main` branch SDK has bug on ARM linux, Please checkout to branch `fix_MX400_conneted_bug`.
-  - Related issue #176
+  - Related issue [#176](https://github.com/orbbec/ros_astra_camera)
 
 ## License
 
