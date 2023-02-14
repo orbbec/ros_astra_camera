@@ -1,6 +1,7 @@
 # astra_camera
 
-A ROS driver for Orbbec 3D cameras. This package supports ROS Kinetic, Melodic and Noetic distributions
+The ros_astra_camera package is an OpenNI2 ROS wrapper created for Orbbec 3D cameras.
+This package allows the usage of Orbbec 3D cameras with ROS Kinetic, Melodic, and Noetic distributions
 
 ## Install dependencies
 
@@ -91,6 +92,7 @@ rosparam list
 
 ```bash
 rostopic echo /camera/extrinsic/depth_to_color
+
 ```
 
 - Get camera parameter
@@ -221,7 +223,8 @@ NOTE: Point cloud are only available if it is running and saved under ~/.ros/poi
 
 ### **Multiple cameras**
 
-- First, you need to enumerate the serial number of the camera, plug in the cameras and run
+- First, you need to enumerate the serial number of the camera, plug in the cameras,
+and run the following command:
 
   ```bash
   roslaunch astra_camera list_devices.launch  
@@ -229,8 +232,7 @@ NOTE: Point cloud are only available if it is running and saved under ~/.ros/poi
 
 - **Set the parameter `device_num` to the number of cameras**
 
-- Go to the `ros_astra_camera/launch/multi_xxx.launch`   and change the serial number. Currently, different cameras can
-  only be distinguished by the serial number,
+- Next, go to ros_astra_camera/launch/multi_xxx.launch and change the serial number. Currently, the different cameras can only be distinguished by the serial number.
 
 ```
   <launch>
@@ -260,22 +262,24 @@ NOTE: Point cloud are only available if it is running and saved under ~/.ros/poi
 
 ```
 
-- astra camera will use semaphore to do process synchronization,
-  if the camera start fails, the semaphore file may be left in the `/dev/shm`, 
-  causing the next start to be stuck.
-  Before launch, please run
+- The Astra camera will use a semaphore for process synchronization. If the camera fails to start, the semaphore file may be left in the /dev/shm, causing the next start to get stuck. To prevent this issue, please run the following command before launching:
 
 ```bash
 rosrun astra_camera cleanup_shm_node 
 ```
-to clean up `/dev/shm`.
+
+This command will clean up all semaphore files in the /dev/shm directory, ensuring that the camera will not get stuck during the next start.
+
 - Launch
 
 ``` bash
 roslaunch astra_camera multi_astra.launch
 ```
+
 ## Use calibration camera parameter
-- Set camera info uri, Go to `xxx.launch` 
+
+- Set camera info uri, Go to `xxx.launch`
+
 ```xml
 
 <launch>
@@ -285,7 +289,9 @@ roslaunch astra_camera multi_astra.launch
     <!--...-->
 </launch>
 ```
+
 - calibration file should like
+
 ```yaml
 image_width: 640
 image_height: 480
@@ -310,80 +316,62 @@ projection_matrix:
   data: [517.301, 0, 326.785, -25.3167, 0, 519.291, 244.563, 0.282065, 0, 0, 1, 0.0777703]
 
 ```
+
 ## Launch parameters
 
-**The configuration file is under the `ros_astra_cameraparams/camera_params_template.yaml`, the param parameters in the
-launch file can override the yaml values**
-
-- `reconnection_delay`, The delay time for reopening the device in seconds. Some devices would take longer time to
-  initialize, such as Astra mini, so reopening the device immediately would causes firmware crashes when hot plug.
-- `enable_point_cloud`, Whether to enable point cloud.
-- `enable_point_cloud_xyzrgb`, Whether to enable RGB point cloud.
-- `enable_d2c_filter`, Publish D2C overlay image.
-- `device_num`,The number of devices, You need to fill in the number of devices when you need multiple cameras.
+- `connection_delay`:The delay time for reopening the device in milliseconds. Some devices may take longer to initialize, such as the Astra mini. Reopening the device immediately may cause firmware crashes when hot plugging.
+- `enable_point_cloud`: Whether to enable point cloud..
+- `enable_point_cloud_xyzrgb`,:Whether to enable RGB point cloud.
+- `enable_d2c_viewer`: Publish D2C overlay image(For testing only).
+- `device_num`: The number of devices. You need to specify the number of devices when using multiple cameras.
 - `enable_reconfigure`, Whether to enable ROS [dynamic configuration](http://wiki.ros.org/dynamic_reconfigure) changes,
-  set to false `Astra.cfg` configuration will not take effect, recommended for testing purposes only, turn off when in
+  set to false means that the `Astra.cfg` configuration will not take effect. This is recommended for testing purposes only. Turn it off when in use.
   use. .
-- `color_width`， `color_height`， `color_fps`， color stream resolution and frame rate.
-- `ir_width`， `ir_height`， `ir_fps`，IR stream resolution and frame rate
-- `depth_width`， `depth_height`， `depth_fps` depth stream resolution and frame rate
-- `enable_color`， Whether to enable RGB camera, this parameter has no effect when the RGB camera is UVC protocol
-- `enable_depth` , Whether to enable depth camera
-- `enable_ir`, Whether to enable IR camera
-- `depth_align`, Enables hardware depth to color alignment, requires RGB point cloud to open
-- `depth_scale`, Depth image zoom scale, e.g. set to 2 means aligning depth 320x240 to RGB 640x480
-- `color_roi_x`， `color_roi_y`， `color_roi_width`， `color_roi_height`, Whether to crop RGB images, the default is -1,
-  which is only used when the RGB resolution is greater than the depth resolution and needs to be aligned. For example,
-  if you need to align the depth 640x400 to RGB 640x480, you need to set color_roi_x: 0, color_roi_y: 0,
-  color_roi_width: 640, color_roi_height: 400. roi_height: 400, which will crop the top 400 pixels of the RGB with a
-  corresponding depth ROI.
+- `color_width`， `color_height`， `color_fps`:  Color stream resolution and frame rate.
+- `ir_width`， `ir_height`， `ir_fps`:IR stream resolution and frame rate.
+- `depth_width`， `depth_height`， `depth_fps`: Depth stream resolution and frame rate.
+- `enable_color`: Whether to enable RGB camera. This parameter has no effect when the RGB camera is using the UVC protocol.
+- `enable_depth` : Whether to enable the depth camera.
+- `enable_ir`: Whether to enable the IR camera.
+- `depth_align`: Enables hardware depth to color alignment, which is required when the RGB point cloud is enabled.
+- `depth_scale`: Depth image zoom scale. For example, setting it to 2 means aligning a depth image of size 320x240 to an RGB image of size 640x480.
+- `color_roi_x`， `color_roi_y`， `color_roi_width`， `color_roi_height`:: Whether to crop RGB images. The default is -1, which is only used when the RGB resolution is greater than the depth resolution and needs to be aligned. For example, if you need to align a depth image of size 640x400 to an RGB image of size 640x480, you need to set `color_roi_x` to 0, `color_roi_y` to 0, `color_roi_width` to 640, and `color_roi_height` to 400. This will crop the top 400 pixels of the RGB image with a corresponding depth ROI.
 - `color_depth_synchronization`，Enable synchronization of RGB with depth
-- `use_uvc_camera`，if the RGB camera is UVC protocol, setting as true, UVC is the protocol that currently includes
-  dabai, dabai_dcw etc.
-- `uvc_product_id`，pid of UVC camera
-- `uvc_camera_format`，Image format for uvc camera
-- `uvc_retry_count` sometimes the UVC protocol camera does not reconnect successfully when hot-plug, requiring many
-  times to retry.
-- `enable_publish_extrinsic` Enable publish camera extrinsic.
-- `oni_log_level`, Log levels for OpenNI verbose/ info /warning/ error /none
-- `oni_log_to_console`, Whether to output OpenNI logs to the console
-- `oni_log_to_file`, Whether to output OpenNI logs to a file, by default it will save in Log folder under the path of
-  the currently running program
-- For Special customer Required
-    - `keep_alive`, Whether to send heartbeat packets to the firmware, not enabled by default
-    - `keep_alive_interval`, The time interval in seconds between sending heartbeat packets
+- `use_uvc_camera`: If the RGB camera is using the UVC protocol, set this parameter to true. UVC is the protocol that currently includes Dabai, Dabai_dcw, and so on.
+- `uvc_product_id`:PID of the UVC camera.
+- `uvc_camera_format`:Image format for the UVC camera.
+- `uvc_retry_count` : Sometimes the UVC protocol camera does not reconnect successfully when hot plugging, requiring many retries.
+- `enable_publish_extrinsic` Enable publishing camera extrinsic.
+- `oni_log_level`:  Log levels for OpenNI: `verbose`, `info`, `warning`, `error`, or `none`.
+- `oni_log_to_console`, Whether to output OpenNI logs to the console.
+- `oni_log_to_file`:Whether to output OpenNI logs to a file. By default, it will be saved in the Log folder under the path of the currently running program.
+- For special customer requirements:
+  - `keep_alive`,  Whether to send heartbeat packets to the firmware. This is not enabled by default.
+  - `keep_alive_interval`, The time interval in seconds between sending heartbeat packets.
 
 ## Frequently Asked Questions
 
 - No image when multiple cameras
-    - Maybe the the power supply is not sufficient, consider to connect the camera with a powered USB hub.
-    - Maybe the the resolution is too high, lower the resolution to test
+  - Maybe the the power supply is not sufficient, consider to connect the camera with a powered USB hub.
+  - Maybe the the resolution is too high, lower the resolution to test
 - Hot-plug image anomaly
-    - The `reconnection_delay` parameter can be set to bigger, as some devices take longer time to initialize and may
-      not have completed the initialization of the device.
+  - The `connection_delay` parameter can be increased because some devices take longer to initialize and may not have completed the initialization of the device.
 - No image when hot-plugging
-    - Check if the data cable is plugged in well
-    - Try to connect to a powered usb hub, the ARM development board may have unstable power supply causing the device
-      fail to repoen.
-- launch camera get stuck.
+  - Check if the data cable is plugged in properly.
+  - Try connecting the camera to a powered USB hub. The ARM development board may have an unstable power supply, causing the device to fail to reopen.
+- Launching the camera gets stuck:
 
-    - It is very likely that the camera failed to start last time, astra camera will use the semaphore
-      to do process synchronization, if it fails to start, the semaphore file may be left in the shm,
-      resulting in the next start stuck, Just run `rosrun astra_camera cleanup_shm_node` problem should be resolved.
+  - t is highly likely that the camera failed to start the last time. The Astra camera uses a semaphore to do process synchronization. If it fails to start, the semaphore file may be left in the `/dev/shm`, resulting in the next start being stuck. Just run `rosrun astra_camera cleanup_shm_node`, and the problem should be resolved..
 
-- The frame rate of a point cloud is very low, Consideration increased by adding an udp buffer
+- The point cloud's frame rate is very low. Consider increasing it by adding a core recv buffer:
 
    ```bash
     sudo sysctl -w net.core.rmem_max=8388608 net.core.rmem_default=8388608
    ```
 
-- Can't connect to the Camera on ARM.
-  - Current `main` branch SDK has bug on ARM linux, Please checkout to branch `fix_MX400_conneted_bug`.
-  - Related issue [#176](https://github.com/orbbec/ros_astra_camera/issues/176)
-
 ## License
 
-Copyright 2022 Orbbec Ltd.
+Copyright 2023 Orbbec Ltd.
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with
 the License. You may obtain a copy of the License at
