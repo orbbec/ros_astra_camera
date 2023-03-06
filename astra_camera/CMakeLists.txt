@@ -44,15 +44,6 @@ find_package(tf2_ros REQUIRED)
 find_package(tf2_sensor_msgs REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(LIBUVC REQUIRED libuvc)
-if (NOT LIBUVC_FOUND)
-  message(FATAL_ERROR "libuvc is not found")
-endif ()
-pkg_search_module(GLOG REQUIRED libglog)
-
-if (NOT GLOG_FOUND)
-  message(FATAL_ERROR "glog is not found")
-endif ()
-
 
 execute_process(COMMAND uname -m OUTPUT_VARIABLE MACHINES)
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE MACHINES_BIT)
@@ -128,9 +119,9 @@ ament_target_dependencies(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBS}
   Eigen3::Eigen
-  glog::glog
-  magic_enum::magic_enum
-  LibUVC::UVCShared
+  glog
+  ${magic_enum_LIBRARIES}
+  uvc
   -lOpenNI2
   -L${ORBBEC_OPENNI2_REDIST}
   )
@@ -151,9 +142,9 @@ ament_target_dependencies(list_devices_node
 target_link_libraries(list_devices_node
   ${OpenCV_LIBS}
   Eigen3::Eigen
-  glog::glog
-  magic_enum::magic_enum
-  LibUVC::UVCShared
+  glog
+  ${magic_enum_LIBRARIES}
+  uvc
   -lOpenNI2
   -L${ORBBEC_OPENNI2_REDIST}
   ${PROJECT_NAME}
