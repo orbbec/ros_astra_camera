@@ -475,9 +475,10 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
     image = *(cv_image_ptr->toImageMsg());
   }
   auto camera_info = getCameraInfo();
+  camera_info.header.stamp = ros::Time::now();
   camera_info_publisher_.publish(camera_info);
   image.header.frame_id = config_.optical_frame_id;
-  image.header.stamp = ros::Time::now();
+  image.header.stamp = camera_info.header.stamp;
   image_publisher_.publish(image);
   if (save_image_) {
     cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(image);
