@@ -36,6 +36,7 @@
     <arg name="oni_log_level" default="verbose"/>
     <arg name="oni_log_to_console" default="false"/>
     <arg name="oni_log_to_file" default="false"/>
+    <arg name="oni_log_path" default=""/>
     <arg name="enable_d2c_viewer" default="false"/>
     <arg name="enable_publish_extrinsic" default="false"/>
     <group ns="$(arg camera_name)">
@@ -75,6 +76,7 @@
             <param name="oni_log_level" value="$(arg oni_log_level)"/>
             <param name="oni_log_to_console" value="$(arg oni_log_to_console)"/>
             <param name="oni_log_to_file" value="$(arg oni_log_to_file)"/>
+            <param name="oni_log_path" value="$(arg oni_log_path)"/>
             <param name="enable_d2c_viewer" value="$(arg enable_d2c_viewer)"/>
             <param name="enable_publish_extrinsic" value="$(arg enable_publish_extrinsic)"/>
             <remap from="/$(arg camera_name)/depth/color/points" to="/$(arg camera_name)/depth_registered/points"/>

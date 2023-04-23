@@ -73,6 +73,7 @@ class OBCameraNodeFactory {
   std::string oni_log_level_str_ = "none";
   bool oni_log_to_console_ = false;
   bool oni_log_to_file_ = false;
+  std::string oni_log_path_ = "";
   std::recursive_mutex device_lock_;
   std::unique_ptr<std::thread> query_device_thread_ = nullptr;
 };

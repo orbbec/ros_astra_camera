@@ -55,10 +55,14 @@ void OBCameraNodeFactory::init() {
   oni_log_level_str_ = nh_private_.param<std::string>("oni_log_level", "info");
   oni_log_to_console_ = nh_private_.param<bool>("oni_log_to_console", false);
   oni_log_to_file_ = nh_private_.param<bool>("oni_log_to_file", false);
+  oni_log_path_ = nh_private_.param<std::string>("oni_log_path", "");
   auto log_level = getLogLevelFromString(oni_log_level_str_);
   openni::OpenNI::setLogMinSeverity(log_level);
   openni::OpenNI::setLogConsoleOutput(oni_log_to_console_);
   openni::OpenNI::setLogFileOutput(oni_log_to_file_);
+  if(!oni_log_path_.empty()) {
+    openni::OpenNI::setLogOutputFolder(oni_log_path_.c_str());
+  }
   auto rc = openni::OpenNI::initialize();
   if (rc != openni::STATUS_OK) {
     ROS_ERROR("Initialize failed\n%s\n", openni::OpenNI::getExtendedError());
