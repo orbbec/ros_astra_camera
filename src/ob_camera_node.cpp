@@ -606,7 +606,7 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef& frame,
   }
   image.data = (uint8_t*)frame.getData();
   cv::Mat scaled_image;
-  if (stream_index == DEPTH) {
+  if (stream_index == DEPTH && depth_scale_ > 1) {
     cv::resize(image, scaled_image, cv::Size(width * depth_scale_, height * depth_scale_), 0, 0,
                cv::INTER_NEAREST);
   }
