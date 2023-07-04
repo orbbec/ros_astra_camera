@@ -610,15 +610,16 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef& frame,
     cv::resize(image, scaled_image, cv::Size(width * depth_scale_, height * depth_scale_), 0, 0,
                cv::INTER_NEAREST);
   }
-  auto image_msg = *(cv_bridge::CvImage(std_msgs::Header(), encoding_.at(stream_index),
-                                        stream_index == DEPTH ? scaled_image : image)
-                         .toImageMsg());
+  auto image_msg =
+      *(cv_bridge::CvImage(std_msgs::Header(), encoding_.at(stream_index),
+                           (stream_index == DEPTH && depth_scale_ > 1) ? scaled_image : image)
+            .toImageMsg());
   auto timestamp = ros::Time::now();
   image_msg.header.stamp = timestamp;
   image_msg.header.frame_id =
       depth_align_ ? depth_aligned_frame_id_[stream_index] : optical_frame_id_[stream_index];
-  image_msg.width = stream_index == DEPTH ? width * depth_scale_ : width;
-  image_msg.height = stream_index == DEPTH ? height * depth_scale_ : height;
+  image_msg.width = (stream_index == DEPTH && depth_scale_ > 1) ? width * depth_scale_ : width;
+  image_msg.height = (stream_index == DEPTH && depth_scale_ > 1) ? height * depth_scale_ : height;
   image_msg.step = image_msg.width * unit_step_size_[stream_index];
   image_msg.is_bigendian = false;
   auto& image_publisher = image_publishers_.at(stream_index);
@@ -650,7 +651,7 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef& frame,
       boost::filesystem::create_directory(current_path + "/image");
     }
     ROS_INFO_STREAM("Saving image to " << filename);
-    if (stream_index != DEPTH) {
+    if (stream_index != DEPTH && depth_scale_ > 1) {
       cv::imwrite(filename, image);
     } else {
       cv::imwrite(filename, scaled_image);
