@@ -90,7 +90,7 @@ class OBCameraNode {
 
   void setupPublishers();
 
-  void publishStaticTF(const ros::Time& t, const std::vector<float>& trans,
+  void publishStaticTF(const ros::Time& t, const tf2::Vector3& trans,
                        const tf2::Quaternion& q, const std::string& from, const std::string& to);
 
   void calcAndPublishStaticTransform();
@@ -268,7 +268,6 @@ class OBCameraNode {
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_;
   std::shared_ptr<tf2_ros::TransformBroadcaster> dynamic_tf_broadcaster_;
   std::vector<geometry_msgs::TransformStamped> static_tf_msgs_;
-  ros::Publisher extrinsics_publisher_;
   std::shared_ptr<std::thread> tf_thread_;
   std::condition_variable tf_cv_;
   double tf_publish_rate_ = 10.0;
