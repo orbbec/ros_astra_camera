@@ -606,13 +606,14 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef& frame,
   }
   image.data = (uint8_t*)frame.getData();
   cv::Mat scaled_image;
-  if (stream_index == DEPTH) {
+  if (stream_index == DEPTH && depth_scale_ > 1) {
     cv::resize(image, scaled_image, cv::Size(width * depth_scale_, height * depth_scale_), 0, 0,
                cv::INTER_NEAREST);
   }
-  auto image_msg = *(cv_bridge::CvImage(std_msgs::Header(), encoding_.at(stream_index),
-                                        stream_index == DEPTH ? scaled_image : image)
-                         .toImageMsg());
+  auto image_msg =
+      *(cv_bridge::CvImage(std_msgs::Header(), encoding_.at(stream_index),
+                           (stream_index == DEPTH && depth_scale_ > 1) ? scaled_image : image)
+            .toImageMsg());
   auto timestamp = ros::Time::now();
   image_msg.header.stamp = timestamp;
   image_msg.header.frame_id =
