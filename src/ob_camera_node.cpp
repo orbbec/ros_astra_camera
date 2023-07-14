@@ -482,16 +482,16 @@ void OBCameraNode::setupPublishers() {
   }
 }
 
-void OBCameraNode::publishStaticTF(const ros::Time& t, const std::vector<float>& trans,
+void OBCameraNode::publishStaticTF(const ros::Time& t, const tf2::Vector3& trans,
                                    const tf2::Quaternion& q, const std::string& from,
                                    const std::string& to) {
   geometry_msgs::TransformStamped msg;
   msg.header.stamp = t;
   msg.header.frame_id = from;
   msg.child_frame_id = to;
-  msg.transform.translation.x = trans.at(2) / 1000.0;
-  msg.transform.translation.y = -trans.at(0) / 1000.0;
-  msg.transform.translation.z = -trans.at(1) / 1000.0;
+  msg.transform.translation.x = trans[2] / 1000.0;
+  msg.transform.translation.y = -trans[0] / 1000.0;
+  msg.transform.translation.z = -trans[1] / 1000.0;
   msg.transform.rotation.x = q.getX();
   msg.transform.rotation.y = q.getY();
   msg.transform.rotation.z = q.getZ();
@@ -503,7 +503,7 @@ void OBCameraNode::calcAndPublishStaticTransform() {
   tf2::Quaternion quaternion_optical, zero_rot;
   zero_rot.setRPY(0.0, 0.0, 0.0);
   quaternion_optical.setRPY(-M_PI / 2, 0.0, -M_PI / 2);
-  std::vector<float> zero_trans = {0, 0, 0};
+  tf2::Vector3 zero_trans(0, 0, 0);
   std::vector<float> rotation, transition;
   bool rotation_valid = true, transition_valid = true;
   for (float& i : camera_params_->r2l_r) {
@@ -524,7 +524,7 @@ void OBCameraNode::calcAndPublishStaticTransform() {
     Q.setRPY(0, 0, 0);
   }
   Q = quaternion_optical * Q * quaternion_optical.inverse();
-  std::vector<float> trans = {transition[0], transition[1], transition[2]};
+  tf2::Vector3 trans(transition[0], transition[1], transition[2]);
   if ((!use_uvc_camera_ && !device_->hasSensor(openni::SENSOR_COLOR)) ||
       std::isnan(transition[0]) || std::isnan(transition[1]) || std::isnan(transition[2])) {
     trans[0] = 0;
@@ -532,11 +532,17 @@ void OBCameraNode::calcAndPublishStaticTransform() {
     trans[2] = 0;
     transition_valid = false;
   }
+  tf2::Transform transform(Q, trans);
+  transform = transform.inverse();
+  Q = transform.getRotation();
+  trans = transform.getOrigin();
   auto tf_timestamp = ros::Time::now();
   publishStaticTF(tf_timestamp, zero_trans, quaternion_optical, frame_id_[COLOR],
                   optical_frame_id_[COLOR]);
   publishStaticTF(tf_timestamp, zero_trans, quaternion_optical, frame_id_[DEPTH],
                   optical_frame_id_[DEPTH]);
+  publishStaticTF(tf_timestamp, zero_trans, quaternion_optical, frame_id_[INFRA1],
+                  optical_frame_id_[INFRA1]);
   publishStaticTF(tf_timestamp, zero_trans, zero_rot, base_frame_id_, frame_id_[DEPTH]);
   publishStaticTF(tf_timestamp, zero_trans, zero_rot, base_frame_id_, frame_id_[INFRA1]);
   publishStaticTF(tf_timestamp, trans, Q, base_frame_id_, frame_id_[COLOR]);

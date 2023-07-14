@@ -24,6 +24,8 @@
 #include <sensor_msgs/distortion_models.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Vector3.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
@@ -90,8 +92,8 @@ class OBCameraNode {
 
   void setupPublishers();
 
-  void publishStaticTF(const ros::Time& t, const std::vector<float>& trans,
-                       const tf2::Quaternion& q, const std::string& from, const std::string& to);
+  void publishStaticTF(const ros::Time& t, const tf2::Vector3& trans, const tf2::Quaternion& q,
+                       const std::string& from, const std::string& to);
 
   void calcAndPublishStaticTransform();
 
