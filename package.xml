@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>astra_camera</name>
-  <version>1.2.3</version>
+  <version>1.2.6</version>
   <description>Drivers for Orbbec Astra Devices. </description>
   <license>Apache License 2.0</license>
   <maintainer email="mocun@orbbec.com">Mo Cun</maintainer>
@@ -12,8 +12,6 @@
   <depend>image_geometry</depend>
   <depend>image_transport</depend>
   <depend>libudev-dev</depend>
-  <depend>libuvc-dev</depend>
-  <depend>libgoogle-glog-dev</depend>
   <depend>libusb-1.0-dev</depend>
   <depend>message_generation</depend>
   <depend>message_runtime</depend>

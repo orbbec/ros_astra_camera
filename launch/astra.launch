@@ -36,9 +36,15 @@
     <arg name="oni_log_level" default="verbose"/>
     <arg name="oni_log_to_console" default="false"/>
     <arg name="oni_log_to_file" default="false"/>
-    <arg name="oni_log_path" default=""/>
     <arg name="enable_d2c_viewer" default="false"/>
     <arg name="enable_publish_extrinsic" default="false"/>
+    <!-- software filter 0-off ,1-on (default,support windows/linux/arm/
+    ,not support android),2 - Optimized software filtering algorithm,support windows/linux/arm/android-->
+    <arg name="soft_filter" default="2"/>
+    <!-- software filter param MaxDiff (default 16)-support when SoftFilter =2 -->
+    <arg name="soft_filter_max_diff" default="16"/>
+    <!-- software filter param maxSpeckleSize -support when SoftFilter =2-->
+    <arg name="soft_filter_max_speckle_size" default="480"/>
     <group ns="$(arg camera_name)">
         <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
             <param name="camera_name" value="$(arg camera_name)"/>
@@ -76,9 +82,11 @@
             <param name="oni_log_level" value="$(arg oni_log_level)"/>
             <param name="oni_log_to_console" value="$(arg oni_log_to_console)"/>
             <param name="oni_log_to_file" value="$(arg oni_log_to_file)"/>
-            <param name="oni_log_path" value="$(arg oni_log_path)"/>
             <param name="enable_d2c_viewer" value="$(arg enable_d2c_viewer)"/>
             <param name="enable_publish_extrinsic" value="$(arg enable_publish_extrinsic)"/>
+            <param name="soft_filter" value="$(arg soft_filter)"/>
+            <param name="soft_filter_max_diff" value="$(arg soft_filter_max_diff)"/>
+            <param name="soft_filter_max_speckle_size" value="$(arg soft_filter_max_speckle_size)"/>
             <remap from="/$(arg camera_name)/depth/color/points" to="/$(arg camera_name)/depth_registered/points"/>
         </node>
     </group>

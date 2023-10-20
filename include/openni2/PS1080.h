@@ -1,4 +1,4 @@
-/*****************************************************************************
+﻿/*****************************************************************************
 *                                                                            *
 *  OpenNI 2.x Alpha                                                          *
 *  Copyright (C) 2012 PrimeSense Ltd.                                        *
@@ -165,6 +165,8 @@ enum
 	XN_MODULE_PROPERTY_RT_IR_TEMP = 0x1080FFB4,
 	//LDMP real time Temperature mode
 	XN_MODULE_PROPERTY_RT_LDMP_TEMP = 0x1080FFB5,
+	//right LDMP real time Temperature mode
+	XN_MODULE_PROPERTY_RT_RIGHT_LDMP_TEMP = 0x10810026,
 	//IR temperature compensation coefficient mode
 	XN_MODULE_PROPERTY_IR_TEMP_COMP_CO = 0x1080FFB6,
 	//Ldmp temperature compensation coefficient mode
@@ -324,6 +326,23 @@ enum
 	XN_MODULE_PROPERTY_DEVICE_SN = 0x10810024,
 	//PublicBoard
 	XN_MODULE_PROPERTY_PUBLIC_BOARD_SENSOR_POWER = 0x10810025,
+	//Watch dog mode
+	XN_MODULE_PROPERTY_WATCH_DOG_MODE = 0x10810027,
+	//Watch dog support status
+	XN_MODULE_PROPERTY_WATCH_DOG_SUPPORT_STATUS = 0x10810028,
+	//Device power on times
+	XN_MODULE_PROPERTY_DEVICE_POWERON_TIMES = 0x10810029,
+
+	XN_MODULE_PROPERTY_TEC_SET_LDMP_TEMPERATURE = 0x10810030,
+	XN_MODULE_PROPERTY_TEC_GET_LDMP_TEMPERATURE = 0x10810031,
+	XN_MODULE_PROPERTY_TEC_SET_ADJUST_INTENSION = 0x10810032,
+	XN_MODULE_PROPERTY_TEC_GET_ADJUST_INTENSION = 0x10810033,
+	//XN_MODULE_PROPERTY_DEVICE_MASTER_ENABLE = 0x10810034,
+	XN_MODULE_PROPERTY_SET_DEVICE_MODE = 0x10810034,
+
+
+	XN_MODULE_PROPERTY_LASER_PULSE_WIDTH_PTS    = 0x10810050,
+	XN_MODULE_PROPERTY_LASER_LEVEL_SWITCH       = 0x10810051,
 
 
 	/*******************************************************************/
@@ -901,6 +920,12 @@ typedef struct
 	uint16_t nFiles;
 } XnFlashFileList;
 
+typedef struct
+{
+	OBCameraParam* pCameraParams;
+	int nParamSize;
+} OBCameraParamList;
+
 typedef struct XnProjectorFaultData
 {
 	uint16_t nMinThreshold;
@@ -1169,6 +1194,13 @@ typedef enum
 	SBG_MODE_2 = 2,
 } SBG_MODE;
 
+typedef enum
+{
+	OBDEVICE_MODE_SLAVE		= 0,
+	OBDEVICE_MODE_MASTER	= 1,
+	OBDEVICE_MODE_ROUTINE	= 2,
+} OBDEVICE_MODE;
+
 typedef struct
 {
 	uint32_t nEnable;  //1:enable ir faceAE;0: disable ir faceAE
@@ -1205,6 +1237,14 @@ typedef struct OBThirdCustomerSN
 	uint32_t size;
 	char SerialNumber[32];
 }OBThirdCustomerSN;
+
+typedef struct {
+	uint16_t cur;
+	uint16_t max;
+	uint16_t min;
+	uint16_t def;
+	uint16_t step;
+} OBLaserLevel;
 
 #pragma pack (pop)
 #endif // PS1080_H

@@ -24,6 +24,19 @@
 #include "types.h"
 #include "utils.h"
 
+#if defined(USE_RK_MPP)
+#include <rga/RgaApi.h>
+#include <rockchip/mpp_buffer.h>
+#include <rockchip/mpp_err.h>
+#include <rockchip/mpp_frame.h>
+#include <rockchip/mpp_log.h>
+#include <rockchip/mpp_packet.h>
+#include <rockchip/mpp_rc_defs.h>
+#include <rockchip/mpp_task.h>
+#include <rockchip/rk_mpi.h>
+#define MPP_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
+#endif
+
 namespace astra_camera {
 struct UVCCameraConfig {
   int vendor_id = 0;
@@ -68,6 +81,12 @@ class UVCCameraDriver {
   int getResolutionX() const;
 
   int getResolutionY() const;
+#if defined(USE_RK_MPP)
+  void mppInit();
+  void mppDeInit();
+  void convertFrameToRGB(MppFrame frame, uint8_t* rgb_data);
+  bool MPPDecodeFrame(uvc_frame_t* frame, uint8_t* rgb_data);
+#endif
 
  private:
   void setupCameraControlService();
@@ -133,6 +152,7 @@ class UVCCameraDriver {
   std::atomic_bool is_streaming_started{false};
   std::atomic_bool save_image_{false};
   std::atomic_bool is_camera_opened_{false};
+  bool flip_color_ = false;
 
   ros::ServiceServer get_uvc_exposure_srv_;
   ros::ServiceServer set_uvc_exposure_srv_;
@@ -152,5 +172,20 @@ class UVCCameraDriver {
   std::recursive_mutex device_lock_;
   std::shared_ptr<camera_info_manager::CameraInfoManager> color_info_manager_ = nullptr;
   int device_num_ = 1;
+#if defined(USE_RK_MPP)
+  MppCtx mpp_ctx_ = nullptr;
+  MppApi* mpp_api_ = nullptr;
+  MppPacket mpp_packet_ = nullptr;
+  MppFrame mpp_frame_ = nullptr;
+  uint8_t* rgb_data_ = nullptr;
+  MppDecCfg mpp_dec_cfg_ = nullptr;
+  MppBuffer mpp_frame_buffer_ = nullptr;
+  MppBuffer mpp_packet_buffer_ = nullptr;
+  uint8_t* data_buffer_ = nullptr;
+  MppBufferGroup mpp_frame_group_ = nullptr;
+  MppBufferGroup mpp_packet_group_ = nullptr;
+  MppTask mpp_task_ = nullptr;
+  uint32_t need_split_ = 0;
+#endif
 };
 }  // namespace astra_camera

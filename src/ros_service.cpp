@@ -105,6 +105,11 @@ void OBCameraNode::setupCameraCtrlServices() {
         response.success = this->getLdpStatusCallback(request, response);
         return response.success;
       });
+  get_ir_temperature_srv_ = nh_.advertiseService<GetDoubleRequest, GetDoubleResponse>(
+      "get_ir_temperature", [this](auto&& request, auto&& response) {
+        response.success = this->getIRTemperatureCallback(request, response);
+        return response.success;
+      });
 
   get_device_srv_ = nh_.advertiseService<GetDeviceInfoRequest, GetDeviceInfoResponse>(
       "get_device_info", [this](auto&& request, auto&& response) {
@@ -293,6 +298,20 @@ bool OBCameraNode::setGainCallback(SetInt32Request& request, SetInt32Response& r
   } else if (stream_index == INFRA1 || stream_index == INFRA2 || stream_index == DEPTH) {
     setIRGain(request.data);
   }
+  return true;
+}
+
+bool OBCameraNode::getIRTemperatureCallback(GetDoubleRequest& request,
+                                            GetDoubleResponse& response) {
+  (void)request;
+  double data = 0;
+  auto ret = device_->getProperty(XN_MODULE_PROPERTY_RT_IR_TEMP, &data);
+  if (ret != openni::STATUS_OK) {
+    response.success = false;
+    response.message = "Failed to get IR temperature";
+    return false;
+  }
+  response.data = data;
   return true;
 }
 

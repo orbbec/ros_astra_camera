@@ -17,7 +17,7 @@
 
 #define OB_ROS_MAJOR_VERSION 1
 #define OB_ROS_MINOR_VERSION 2
-#define OB_ROS_PATCH_VERSION 3
+#define OB_ROS_PATCH_VERSION 6
 
 #ifndef STRINGIFY
 #define STRINGIFY(arg) #arg
@@ -121,5 +121,6 @@ const std::string OB_DABAI_DCW = "Orbbec DaBai DCW";
 const std::string OB_DABAI_DW = "Orbbec DaBai DW";
 const std::string DEFAULT_SEM_NAME = "astra_device_sem";
 const key_t DEFAULT_SEM_KEY = 0x0401;
+const std::string DEFAULT_LOCK_FILE = "astra_device_lock";
 
 }  // namespace astra_camera

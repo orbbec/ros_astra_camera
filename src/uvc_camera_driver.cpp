@@ -38,7 +38,6 @@
 
 #include <boost/optional.hpp>
 #include <opencv2/opencv.hpp>
-#include <string>
 
 #define libuvc_VERSION \
   (libuvc_VERSION_MAJOR * 10000 + libuvc_VERSION_MINOR * 100 + libuvc_VERSION_PATCH)
@@ -96,16 +95,19 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   auto err = uvc_init(&ctx_, nullptr);
   if (err != UVC_SUCCESS) {
     uvc_perror(err, "ERROR: uvc_init");
-    ROS_ERROR_STREAM("init uvc context failed, exit");
+    ROS_ERROR_STREAM("init uvc context failed with error " << uvc_strerror(err)
+                     << " system error " << strerror(errno));
+    if (ctx_ != nullptr) {
+      uvc_exit(ctx_);
+    }
     throw std::runtime_error("init uvc context failed");
   }
   config_.serial_number = serial_number;
   device_num_ = nh_private_.param<int>("device_num", 1);
   uvc_flip_ = nh_private_.param<bool>("uvc_flip", false);
-  config_.vendor_id =
-      std::stoi(nh_private_.param<std::string>("uvc_vendor_id", "0x0"), nullptr, 16);
-  config_.product_id =
-      std::stoi(nh_private_.param<std::string>("uvc_product_id", "0x0"), nullptr, 16);
+  flip_color_ = nh_private_.param<bool>("flip_color", false);
+  config_.vendor_id = nh_private_.param<int>("uvc_vendor_id", 0x0);
+  config_.product_id = nh_private_.param<int>("uvc_product_id", 0x0);
   config_.width = nh_private_.param<int>("color_width", 640);
   config_.height = nh_private_.param<int>("color_height", 480);
   config_.fps = nh_private_.param<int>("color_fps", 30);
@@ -130,20 +132,40 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   openCamera();
   auto info = getCameraInfo();
   camera_info_publisher_.publish(info);
+#if defined(USE_RK_MPP)
+  mppInit();
+#endif
 }
 
 UVCCameraDriver::~UVCCameraDriver() {
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
-  uvc_close(device_handle_);
-  device_handle_ = nullptr;
-  uvc_unref_device(device_);
-  device_ = nullptr;
-  uvc_exit(ctx_);
-  ctx_ = nullptr;
+  if (device_handle_) {
+    ROS_INFO("uvc close device");
+    uvc_close(device_handle_);
+    ROS_INFO("uvc close device done");
+    device_handle_ = nullptr;
+  }
+  if (device_) {
+    ROS_INFO("uvc unref device");
+    uvc_unref_device(device_);
+    ROS_INFO("uvc unref device done");
+    device_ = nullptr;
+  }
+  if (ctx_) {
+    ROS_INFO("uvc exit");
+    uvc_exit(ctx_);
+    ROS_INFO("uvc exit done");
+    ctx_ = nullptr;
+  }
   if (frame_buffer_) {
+    ROS_INFO("uvc free frame");
     uvc_free_frame(frame_buffer_);
+    ROS_INFO("uvc free frame done");
   }
   frame_buffer_ = nullptr;
+#if defined(USE_RK_MPP)
+  mppDeInit();
+#endif
 }
 
 void UVCCameraDriver::openCamera() {
@@ -173,21 +195,28 @@ void UVCCameraDriver::openCamera() {
     std::stringstream ss;
     ss << "Find device error " << uvc_strerror(err) << " process will be exit";
     ROS_ERROR_STREAM(ss.str());
-    uvc_unref_device(device_);
+    if (device_ != nullptr) {
+      uvc_unref_device(device_);
+    }
+    device_ = nullptr;
     throw std::runtime_error(ss.str());
   }
   CHECK(device_handle_ == nullptr);
   err = uvc_open(device_, &device_handle_);
   if (err != UVC_SUCCESS) {
+    std::stringstream ss;
     if (UVC_ERROR_ACCESS == err) {
-      ROS_ERROR("Permission denied opening /dev/bus/usb/%03d/%03d", uvc_get_bus_number(device_),
-                uvc_get_device_address(device_));
+      ss << "Permission denied opening /dev/bus/usb/" << uvc_get_bus_number(device_) << "/"
+         << uvc_get_device_address(device_);
+      ROS_ERROR_STREAM(ss.str());
     } else {
-      ROS_ERROR("Can't open /dev/bus/usb/%03d/%03d: %s (%d)", uvc_get_bus_number(device_),
-                uvc_get_device_address(device_), uvc_strerror(err), err);
+      ss << "Can't open /dev/bus/usb/" << uvc_get_bus_number(device_) << "/"
+         << uvc_get_device_address(device_) << ": " << uvc_strerror(err) << " (" << err << ")";
+      ROS_ERROR_STREAM(ss.str());
     }
     uvc_unref_device(device_);
-    return;
+    device_ = nullptr;
+    throw std::runtime_error(ss.str());
   }
   uvc_set_status_callback(device_handle_, &UVCCameraDriver::autoControlsCallbackWrapper, this);
   CHECK_NOTNULL(device_handle_);
@@ -270,7 +299,9 @@ void UVCCameraDriver::startStreaming() {
   if (stream_err != UVC_SUCCESS) {
     uvc_perror(stream_err, "uvc_start_streaming");
     uvc_close(device_handle_);
+    device_handle_ = nullptr;
     uvc_unref_device(device_);
+    device_ = nullptr;
     return;
   }
 
@@ -290,6 +321,7 @@ void UVCCameraDriver::stopStreaming() noexcept {
     return;
   }
   ROS_INFO_STREAM("stop uvc streaming");
+  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   uvc_stop_streaming(device_handle_);
   if (frame_buffer_) {
     uvc_free_frame(frame_buffer_);
@@ -301,6 +333,177 @@ void UVCCameraDriver::stopStreaming() noexcept {
 int UVCCameraDriver::getResolutionX() const { return config_.width; }
 
 int UVCCameraDriver::getResolutionY() const { return config_.height; }
+
+#if defined(USE_RK_MPP)
+
+void UVCCameraDriver::mppInit() {
+  MPP_RET ret = mpp_create(&mpp_ctx_, &mpp_api_);
+  if (ret != MPP_OK) {
+    ROS_ERROR_STREAM("mpp_create failed, ret = " << ret);
+    throw std::runtime_error("mpp_create failed");
+  }
+  MpiCmd mpi_cmd = MPP_CMD_BASE;
+  MppParam mpp_param = nullptr;
+
+  mpi_cmd = MPP_DEC_SET_PARSER_SPLIT_MODE;
+  mpp_param = &need_split_;
+  ret = mpp_api_->control(mpp_ctx_, mpi_cmd, mpp_param);
+  if (ret != MPP_OK) {
+    ROS_ERROR_STREAM("mpp_api_->control failed, ret = " << ret);
+    throw std::runtime_error("mpp_api_->control failed");
+  }
+  ret = mpp_init(mpp_ctx_, MPP_CTX_DEC, MPP_VIDEO_CodingMJPEG);
+  if (ret != MPP_OK) {
+    ROS_ERROR_STREAM("mpp_init failed, ret = " << ret);
+    throw std::runtime_error("mpp_init failed");
+  }
+  MppFrameFormat fmt = MPP_FMT_YUV420SP_VU;
+  mpp_param = &fmt;
+  ret = mpp_api_->control(mpp_ctx_, MPP_DEC_SET_OUTPUT_FORMAT, mpp_param);
+  ret = mpp_frame_init(&mpp_frame_);
+  if (ret != MPP_OK) {
+    ROS_ERROR_STREAM("mpp_frame_init failed, ret = " << ret);
+    throw std::runtime_error("mpp_frame_init failed");
+  }
+  ret = mpp_buffer_group_get_internal(&mpp_frame_group_, MPP_BUFFER_TYPE_ION);
+  if (ret != MPP_OK) {
+    ROS_ERROR_STREAM("mpp_buffer_group_get_internal failed, ret = " << ret);
+    throw std::runtime_error("mpp_buffer_group_get_internal failed");
+  }
+  ret = mpp_buffer_group_get_internal(&mpp_packet_group_, MPP_BUFFER_TYPE_ION);
+  if (ret != MPP_OK) {
+    ROS_ERROR_STREAM("mpp_buffer_group_get_internal failed, ret = " << ret);
+    throw std::runtime_error("mpp_buffer_group_get_internal failed");
+  }
+  RK_U32 hor_stride = MPP_ALIGN((config_.width), 16);
+  RK_U32 ver_stride = MPP_ALIGN((config_.height), 16);
+  ret = mpp_buffer_get(mpp_frame_group_, &mpp_frame_buffer_, hor_stride * ver_stride * 4);
+  if (ret != MPP_OK) {
+    ROS_ERROR_STREAM("mpp_buffer_get failed, ret = " << ret);
+    throw std::runtime_error("mpp_buffer_get failed");
+  }
+  mpp_frame_set_buffer(mpp_frame_, mpp_frame_buffer_);
+  ret = mpp_buffer_get(mpp_packet_group_, &mpp_packet_buffer_, config_.width * config_.height * 3);
+  if (ret != MPP_OK) {
+    ROS_ERROR_STREAM("mpp_buffer_get failed, ret = " << ret);
+    throw std::runtime_error("mpp_buffer_get failed");
+  }
+  mpp_packet_init_with_buffer(&mpp_packet_, mpp_packet_buffer_);
+  data_buffer_ = (uint8_t*)mpp_buffer_get_ptr(mpp_packet_buffer_);
+  rgb_data_ = new uint8_t[config_.width * config_.height * 3];
+}
+void UVCCameraDriver::mppDeInit() {
+  if (mpp_frame_buffer_) {
+    mpp_buffer_put(mpp_frame_buffer_);
+    mpp_frame_buffer_ = nullptr;
+  }
+  if (mpp_packet_buffer_) {
+    mpp_buffer_put(mpp_packet_buffer_);
+    mpp_packet_buffer_ = nullptr;
+  }
+  if (mpp_frame_group_) {
+    mpp_buffer_group_put(mpp_frame_group_);
+    mpp_frame_group_ = nullptr;
+  }
+  if (mpp_packet_group_) {
+    mpp_buffer_group_put(mpp_packet_group_);
+    mpp_packet_group_ = nullptr;
+  }
+  if (mpp_frame_) {
+    mpp_frame_deinit(&mpp_frame_);
+    mpp_frame_ = nullptr;
+  }
+  if (mpp_packet_) {
+    mpp_packet_deinit(&mpp_packet_);
+    mpp_packet_ = nullptr;
+  }
+  if (mpp_ctx_) {
+    mpp_destroy(mpp_ctx_);
+    mpp_ctx_ = nullptr;
+  }
+  delete[] rgb_data_;
+  rgb_data_ = nullptr;
+}
+
+void UVCCameraDriver::convertFrameToRGB(MppFrame frame, uint8_t* rgb_data) {
+  rga_info_t src_info = {0};
+  rga_info_t dst_info = {0};
+  size_t width = mpp_frame_get_width(frame);
+  size_t height = mpp_frame_get_height(frame);
+  int format = mpp_frame_get_fmt(frame);
+  MppBuffer buffer = mpp_frame_get_buffer(frame);
+  memset(rgb_data, 0, width * height * 3);
+  auto data = mpp_buffer_get_ptr(buffer);
+  src_info.fd = -1;
+  src_info.mmuFlag = 1;
+  src_info.virAddr = data;
+  src_info.format = RK_FORMAT_YCbCr_420_SP;
+  dst_info.fd = -1;
+  dst_info.mmuFlag = 1;
+  dst_info.virAddr = rgb_data;
+  dst_info.format = RK_FORMAT_RGB_888;
+  rga_set_rect(&src_info.rect, 0, 0, width, height, width, height, RK_FORMAT_YCbCr_420_SP);
+  rga_set_rect(&dst_info.rect, 0, 0, width, height, width, height, RK_FORMAT_RGB_888);
+  int ret = c_RkRgaBlit(&src_info, &dst_info, NULL);
+  if (ret) {
+    ROS_ERROR_STREAM("c_RkRgaBlit error " << ret);
+  }
+}
+
+bool UVCCameraDriver::MPPDecodeFrame(uvc_frame_t* frame, uint8_t* rgb_data) {
+  MPP_RET ret = MPP_OK;
+  memset(data_buffer_, 0, config_.width * config_.height * 3);
+  memcpy(data_buffer_, frame->data, frame->data_bytes);
+  mpp_packet_set_pos(mpp_packet_, data_buffer_);
+  mpp_packet_set_length(mpp_packet_, frame->data_bytes);
+  mpp_packet_set_eos(mpp_packet_);
+  CHECK_NOTNULL(mpp_ctx_);
+  ret = mpp_api_->poll(mpp_ctx_, MPP_PORT_INPUT, MPP_POLL_BLOCK);
+  if (ret != MPP_OK) {
+    ROS_ERROR("mpp poll failed %d", ret);
+    return false;
+  }
+  ret = mpp_api_->dequeue(mpp_ctx_, MPP_PORT_INPUT, &mpp_task_);
+  if (ret != MPP_OK) {
+    ROS_ERROR("mpp dequeue failed %d", ret);
+    return false;
+  }
+  mpp_task_meta_set_packet(mpp_task_, KEY_INPUT_PACKET, mpp_packet_);
+  mpp_task_meta_set_frame(mpp_task_, KEY_OUTPUT_FRAME, mpp_frame_);
+  ret = mpp_api_->enqueue(mpp_ctx_, MPP_PORT_INPUT, mpp_task_);
+  if (ret != MPP_OK) {
+    ROS_ERROR("mpp enqueue failed %d", ret);
+    return false;
+  }
+  ret = mpp_api_->poll(mpp_ctx_, MPP_PORT_OUTPUT, MPP_POLL_BLOCK);
+  if (ret != MPP_OK) {
+    ROS_ERROR("mpp poll failed %d", ret);
+    return false;
+  }
+  ret = mpp_api_->dequeue(mpp_ctx_, MPP_PORT_OUTPUT, &mpp_task_);
+  if (ret != MPP_OK) {
+    ROS_ERROR("mpp dequeue failed %d", ret);
+    return false;
+  }
+  if (mpp_task_) {
+    MppFrame output_frame = nullptr;
+    mpp_task_meta_get_frame(mpp_task_, KEY_OUTPUT_FRAME, &output_frame);
+    if (mpp_frame_) {
+      convertFrameToRGB(mpp_frame_, rgb_data);
+      if (mpp_frame_get_eos(output_frame)) {
+        ROS_INFO_STREAM("mpp frame get eos");
+      }
+    }
+    ret = mpp_api_->enqueue(mpp_ctx_, MPP_PORT_OUTPUT, mpp_task_);
+    if (ret != MPP_OK) {
+      ROS_ERROR("mpp enqueue failed %d", ret);
+      return false;
+    }
+  }
+  return true;
+}
+
+#endif
 
 void UVCCameraDriver::setupCameraControlService() {
   get_uvc_exposure_srv_ = nh_.advertiseService<GetInt32Request, GetInt32Response>(
@@ -445,6 +648,17 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
   } else if (frame->frame_format == UVC_FRAME_FORMAT_MJPEG) {
     // Enable mjpeg support despite uvs_any2bgr shortcoming
     //  https://github.com/ros-drivers/libuvc_ros/commit/7508a09f
+#if defined(USE_RK_MPP)
+    bool ret = MPPDecodeFrame(frame, rgb_data_);
+    if (!ret) {
+      ROS_ERROR("MPPDecodeFrame failed");
+      return;
+    }
+    image.encoding = "bgr8";
+    CHECK_NOTNULL(mpp_frame_);
+    CHECK_NOTNULL(rgb_data_);
+    memcpy(&(image.data[0]), rgb_data_, frame->width * frame->height * 3);
+#else
     uvc_error_t conv_ret = uvc_mjpeg2rgb(frame, frame_buffer_);
     if (conv_ret != UVC_SUCCESS) {
       uvc_perror(conv_ret, "Couldn't convert frame to RGB");
@@ -452,6 +666,7 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
     }
     image.encoding = "rgb8";
     memcpy(&(image.data[0]), frame_buffer_->data, frame_buffer_->data_bytes);
+#endif
   } else {
     uvc_error_t conv_ret = uvc_any2bgr(frame, frame_buffer_);
     if (conv_ret != UVC_SUCCESS) {
@@ -470,7 +685,7 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
     cv_image_ptr->image = dst;
     image = *(cv_image_ptr->toImageMsg());
   }
-  if (uvc_flip_) {
+  if (uvc_flip_ || flip_color_) {
     auto cv_image_ptr = cv_bridge::toCvCopy(image);
     auto cv_img = cv_image_ptr->image;
     cv::flip(cv_img, cv_img, 1);

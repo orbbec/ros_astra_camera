@@ -6,32 +6,54 @@ import rospy
 import cv2
 from cv_bridge import CvBridge
 import numpy as np
+from tf2_ros import TransformListener,Buffer
+import math
+import tf2_ros
+from geometry_msgs.msg import PointStamped
+from tf2_geometry_msgs import do_transform_point
 
-d2c_pub = None
 
-def callback(rgb_msg : Image, depth_msg : Image):
+tf_listener = None
+tf_buffer = None
+def callback( depth_msg : Image):
   cv_bridge = CvBridge()
-  if rgb_msg.width != depth_msg.width or rgb_msg.height != depth_msg.height:
-    print ("only support same size images")
-    return
-
-  rgb_img = cv_bridge.imgmsg_to_cv2(rgb_msg, "rgb8")
   depth_img = cv_bridge.imgmsg_to_cv2(depth_msg, "16UC1")
-  gray_depth = np.uint8(depth_img)
-  gray_depth = cv2.cvtColor(gray_depth, cv2.COLOR_GRAY2BGR)
-  d2c_image = np.zeros((rgb_img.shape[0], rgb_img.shape[1], 3), dtype=np.uint8)
-  cv2.bitwise_or(rgb_img, gray_depth, d2c_image)
-  d2c_msg = cv_bridge.cv2_to_imgmsg(d2c_image, "rgb8")
-  d2c_pub.publish(d2c_msg)
+  center_x = depth_img.shape[1] / 2
+  center_y = depth_img.shape[0] / 2
+  try:
+      trans = tf_buffer.lookup_transform('camera_depth_frame', 'camera_color_frame', rospy.Time(0))
+  except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+      rospy.loginfo(e)
+      return
+
+  # Create a point in the depth camera's coordinate frame
+  depth_point = PointStamped()
+  depth_point.header.frame_id = 'camera_depth_frame'
+  depth_point.header.stamp = rospy.Time.now()
+  depth_point.point.x = center_x
+  depth_point.point.y = center_y
+  depth_point.point.z = depth_img[int(center_y), int(center_x)]
+
+  # Now we transform the point from the depth camera's coordinate frame to the color camera's coordinate frame
+  try:
+      color_point = do_transform_point(depth_point, trans)
+  except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+      rospy.loginfo(e)
+      return
+
+  # The point's position in the color frame is now stored in color_point.point
+  color_x = color_point.point.x
+  color_y = color_point.point.y
+  print("from depth {},{} to color {},{}".format(center_x,center_y,color_x,color_y))
+
+  
 
 def main():
     rospy.init_node('test_sync', anonymous=True)
-    rgb_sub = message_filters.Subscriber('/camera/color/image_raw', Image)
-    depth_sub = message_filters.Subscriber('/camera/depth/image_raw', Image)
-    global d2c_pub
-    d2c_pub = rospy.Publisher('/camera/depth_to_color/image_raw', Image, queue_size=1)
-    ts = message_filters.ApproximateTimeSynchronizer([rgb_sub, depth_sub], 10, 1)
-    ts.registerCallback(callback)
+    depth_sub = rospy.Subscriber('/camera/depth/image_raw', Image, callback)
+    global tf_listener, tf_buffer
+    tf_buffer = Buffer()
+    tf_listener = TransformListener(tf_buffer)
     rospy.spin()
 
 

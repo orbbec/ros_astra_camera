@@ -27,6 +27,7 @@
 #include "astra_camera/GetBool.h"
 #include "astra_camera/GetCameraInfo.h"
 #include "astra_camera/GetDeviceInfo.h"
+#include "astra_camera/GetDouble.h"
 #include "astra_camera/GetInt32.h"
 #include "astra_camera/GetString.h"
 #include "astra_camera/Metadata.h"

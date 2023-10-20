@@ -7,6 +7,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fPIC -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC -g")
 set(CMAKE_BUILD_TYPE "Release")
+option(USE_RK_MPP "Use rock chip MPP libary for hardware decode" OFF)
+option(USE_RK_RGA "Use rock chip RGA libary for hardware decode" OFF)
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif ()
@@ -39,7 +41,22 @@ pkg_search_module(GLOG REQUIRED libglog)
 if (NOT GLOG_FOUND)
   message(FATAL_ERROR "glog is not found")
 endif ()
-
+if (USE_RK_MPP)
+  message(STATUS "Use rock chip MPP libary for hardware decode")
+  add_definitions(-DUSE_RK_MPP)
+  pkg_search_module(RK_MPP REQUIRED rockchip_mpp)
+  if (NOT RK_MPP_FOUND)
+    message(FATAL_ERROR "rockchip_mpp is not found")
+  endif ()
+endif ()
+if (USE_RK_RGA)
+  message(STATUS "Use rock chip RGA libary for hardware decode")
+  add_definitions(-DUSE_RK_RGA)
+  pkg_search_module(RK_RGA REQUIRED librga)
+  if (NOT RK_RGA_FOUND)
+    message(FATAL_ERROR "rockchip_rga is not found")
+  endif ()
+endif ()
 execute_process(COMMAND uname -m OUTPUT_VARIABLE MACHINES)
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE MACHINES_BIT)
 message(STATUS "ORRBEC Machine : ${MACHINES}")
@@ -72,6 +89,7 @@ add_service_files(
   GetCameraInfo.srv
   GetCameraParams.srv
   GetDeviceInfo.srv
+  GetDouble.srv
   GetInt32.srv
   GetString.srv
   SetInt32.srv
@@ -133,8 +151,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${Boost_INCLUDE_DIRS}
   ${libuvc_INCLUDE_DIRS}
   ${OpenCV_INCLUDED_DIRS}
+  ${RK_MPP_INCLUDE_DIRS}
+  ${RK_RGA_INCLUDE_DIRS}
   )
-
 target_link_libraries(${PROJECT_NAME}
   -lOpenNI2
   -L${ORBBEC_OPENNI2_REDIST}
@@ -143,6 +162,8 @@ target_link_libraries(${PROJECT_NAME}
   ${OpenCV_LIBS}
   ${GLOG_LIBRARIES}
   ${LIBUVC_LIBRARIES}
+  ${RK_MPP_LIBRARIES}
+  ${RK_RGA_LIBRARIES}
   )
 
 add_dependencies(${PROJECT_NAME}

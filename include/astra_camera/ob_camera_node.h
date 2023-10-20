@@ -24,8 +24,8 @@
 #include <sensor_msgs/distortion_models.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
 #include <tf2/LinearMath/Vector3.h>
+#include <tf2/LinearMath/Transform.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
@@ -92,8 +92,9 @@ class OBCameraNode {
 
   void setupPublishers();
 
-  void publishStaticTF(const ros::Time& t, const tf2::Vector3& trans, const tf2::Quaternion& q,
-                       const std::string& from, const std::string& to);
+  void publishStaticTF(const ros::Time& t, const tf2::Vector3& trans,
+                                     const tf2::Quaternion& q, const std::string& from,
+                                     const std::string& to);
 
   void calcAndPublishStaticTransform();
 
@@ -117,6 +118,8 @@ class OBCameraNode {
 
   bool setGainCallback(SetInt32Request& request, SetInt32Response& response,
                        const stream_index_pair& stream_index);
+
+  bool getIRTemperatureCallback(GetDoubleRequest& request, GetDoubleResponse& response);
 
   int getIRExposure();
 
@@ -238,6 +241,7 @@ class OBCameraNode {
   std::map<stream_index_pair, int> unit_step_size_;
   std::map<stream_index_pair, ros::Publisher> image_publishers_;
   std::map<stream_index_pair, ros::Publisher> camera_info_publishers_;
+  std::map<stream_index_pair, bool> flip_image_;
 
   std::map<stream_index_pair, ros::ServiceServer> get_exposure_srv_;
   std::map<stream_index_pair, ros::ServiceServer> set_exposure_srv_;
@@ -265,6 +269,7 @@ class OBCameraNode {
   ros::ServiceServer reset_ir_exposure_srv_;
   ros::ServiceServer set_ir_flood_srv_;
   ros::ServiceServer get_ldp_status_srv_;
+  ros::ServiceServer get_ir_temperature_srv_;
 
   bool publish_tf_ = true;
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_;
@@ -306,5 +311,8 @@ class OBCameraNode {
   std::mutex poll_frame_thread_lock_;
   std::condition_variable poll_frame_thread_cv_;
   bool enable_publish_extrinsic_ = false;
+  int soft_filter_ = 2;
+  int soft_filter_max_diff_ = 16;
+  int soft_filter_max_speckle_size_ = 480;
 };
 }  // namespace astra_camera
