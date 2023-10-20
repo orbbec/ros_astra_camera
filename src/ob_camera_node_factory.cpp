@@ -112,6 +112,7 @@ void OBCameraNodeFactory::startDevice(const std::shared_ptr<openni::Device>& dev
   } catch (const std::exception& e) {
     ROS_ERROR_STREAM("Start device " << serial_number_ << " failed: " << e.what());
     ob_camera_node_.reset();
+    device_->close();
     has_exception_ = true;
     device_uri_ = "";
     device_connected_ = false;
@@ -119,6 +120,7 @@ void OBCameraNodeFactory::startDevice(const std::shared_ptr<openni::Device>& dev
   } catch (...) {
     ROS_ERROR_STREAM("Start device " << serial_number_ << " failed");
     ob_camera_node_.reset();
+    device_->close();
     device_uri_ = "";
     device_connected_ = false;
     has_exception_ = true;

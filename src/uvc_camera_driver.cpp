@@ -93,6 +93,23 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
                                  const std::string& serial_number)
     : nh_(nh), nh_private_(nh_private), camera_info_(camera_info) {
   auto err = uvc_init(&ctx_, nullptr);
+  int max_try = 5;
+  do{
+    if (err == UVC_SUCCESS) {
+      break;
+    }
+    ROS_ERROR_STREAM("init uvc context failed with error " << uvc_strerror(err)
+                     << " system error " << strerror(errno));
+    ROS_ERROR_STREAM("retry init uvc context");
+    if(ctx_ != nullptr){
+      uvc_exit(ctx_);
+    }
+    //sleep 1s
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    err = uvc_init(&ctx_, nullptr);
+    max_try--;
+  }while (max_try > 0);
+  
   if (err != UVC_SUCCESS) {
     uvc_perror(err, "ERROR: uvc_init");
     ROS_ERROR_STREAM("init uvc context failed with error " << uvc_strerror(err)
@@ -100,6 +117,8 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
     if (ctx_ != nullptr) {
       uvc_exit(ctx_);
     }
+    ctx_ = nullptr;
+    ROS_ERROR_STREAM("init uvc context failed, throw exception");
     throw std::runtime_error("init uvc context failed");
   }
   config_.serial_number = serial_number;
@@ -203,6 +222,25 @@ void UVCCameraDriver::openCamera() {
   }
   CHECK(device_handle_ == nullptr);
   err = uvc_open(device_, &device_handle_);
+  int max_try = 5;
+  do {
+    if (err == UVC_SUCCESS) {
+      break;
+    }
+    ROS_ERROR_STREAM("open uvc device failed with error " << uvc_strerror(err)
+                                                         << " retry " << config_.retry_count
+                                                         << " times");
+    if (device_handle_ != nullptr) {
+      uvc_close(device_handle_);
+    }
+    if (device_ != nullptr) {
+      uvc_unref_device(device_);
+    }
+    device_ = nullptr;
+    device_handle_ = nullptr;
+    usleep(100 * config_.retry_count);
+    err = uvc_open(device_, &device_handle_);
+  } while (err != UVC_SUCCESS && max_try-- > 0);
   if (err != UVC_SUCCESS) {
     std::stringstream ss;
     if (UVC_ERROR_ACCESS == err) {
@@ -214,8 +252,14 @@ void UVCCameraDriver::openCamera() {
          << uvc_get_device_address(device_) << ": " << uvc_strerror(err) << " (" << err << ")";
       ROS_ERROR_STREAM(ss.str());
     }
-    uvc_unref_device(device_);
+    if(device_handle_ != nullptr) {
+      uvc_close(device_handle_);
+    }
+    if(device_ != nullptr){
+      uvc_unref_device(device_);
+      }
     device_ = nullptr;
+    ROS_ERROR_STREAM("open uvc device failed, throw exception");
     throw std::runtime_error(ss.str());
   }
   uvc_set_status_callback(device_handle_, &UVCCameraDriver::autoControlsCallbackWrapper, this);
