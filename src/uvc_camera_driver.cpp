@@ -38,6 +38,7 @@
 
 #include <boost/optional.hpp>
 #include <opencv2/opencv.hpp>
+#include <thread>
 
 #define libuvc_VERSION \
   (libuvc_VERSION_MAJOR * 10000 + libuvc_VERSION_MINOR * 100 + libuvc_VERSION_PATCH)
