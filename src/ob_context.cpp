@@ -60,6 +60,7 @@ void Context::onDeviceConnected(const openni::DeviceInfo* device_info) {
   ROS_INFO_STREAM("Context::onDeviceConnected");
   std::lock_guard<decltype(mutex_)> lock(mutex_);
   device_info_list_[device_info->getUri()] = *device_info;
+  ROS_INFO_STREAM("Context::onDeviceConnected done");
 }
 
 void Context::onDeviceDisconnected(const openni::DeviceInfo* device_info) {

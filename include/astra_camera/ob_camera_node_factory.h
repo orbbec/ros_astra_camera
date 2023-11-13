@@ -12,6 +12,7 @@
 #pragma once
 #include <dynamic_reconfigure/server.h>
 #include <openni2/OpenNI.h>
+#include <pthread.h>
 #include <ros/ros.h>
 #include <semaphore.h>
 #include <sys/shm.h>
@@ -33,8 +34,6 @@ class OBCameraNodeFactory {
   explicit OBCameraNodeFactory(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
 
   ~OBCameraNodeFactory();
-
-  static void cleanUpSharedMemory();
 
  private:
   void init();
@@ -68,13 +67,17 @@ class OBCameraNodeFactory {
   std::string device_uri_;
   ros::WallTimer check_connection_timer_;
   std::atomic_bool device_connected_{false};
+  std::atomic_bool has_exception_{false};
   size_t device_num_ = 1;
   long connection_delay_ = 100;
   std::string oni_log_level_str_ = "none";
   bool oni_log_to_console_ = false;
   bool oni_log_to_file_ = false;
-  std::string oni_log_path_ = "";
   std::recursive_mutex device_lock_;
   std::unique_ptr<std::thread> query_device_thread_ = nullptr;
+  pthread_mutex_t* astra_device_lock_ = nullptr;
+  pthread_mutexattr_t astra_device_lock_attr_;
+  uint8_t* astra_device_lock_shm_ptr_ = nullptr;
+  int astra_device_lock_shm_id_ = -1;
 };
 }  // namespace astra_camera

@@ -62,7 +62,6 @@ void OBCameraNode::clean() {
   }
   if (device_ && device_->isValid()) {
     ROS_INFO_STREAM("OBCameraNode::clean close device");
-    device_->close();
     ROS_INFO_STREAM("OBCameraNode::clean close device done.");
   }
   ROS_INFO("OBCameraNode::clean stop streams done.");
@@ -70,6 +69,10 @@ void OBCameraNode::clean() {
 
 void OBCameraNode::init() {
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
+  if (!device_->isValid()) {
+    ROS_ERROR_STREAM("OBCameraNode::init device is not valid");
+    throw std::runtime_error("OBCameraNode::init device is not valid");
+  }
   is_running_.store(true);
   device_info_ = device_->getDeviceInfo();
   setupConfig();
@@ -168,6 +171,16 @@ void OBCameraNode::setupCameraInfoManager() {
 }
 
 void OBCameraNode::setupDevices() {
+  // first check
+  for (const auto& stream_index : IMAGE_STREAMS) {
+    if (enable_[stream_index] && !device_->hasSensor(stream_index.first)) {
+      std::stringstream ss;
+      ss << "OBCameraNode::setupDevices failed to get sensor:" << stream_name_[stream_index]
+         << " from device. maybe hardware has some problem, or the device is plugged out.";
+      ROS_WARN_STREAM("check device status " << device_->isValid());
+      ROS_WARN_STREAM(ss.str());
+    }
+  }
   for (const auto& stream_index : IMAGE_STREAMS) {
     stream_started_[stream_index] = false;
     if (enable_[stream_index] && device_->hasSensor(stream_index.first)) {
@@ -185,12 +198,20 @@ void OBCameraNode::setupDevices() {
       }
       streams_[stream_index] = stream;
     } else {
+      ROS_WARN_STREAM("OBCameraNode::setupDevices failed to create stream "
+                      << stream_name_[stream_index] << ", stream is disabled or sensor not found");
       if (streams_[stream_index]) {
+        ROS_ERROR_STREAM("code should not reach here, it's MUST a hidden bug");
+        ROS_WARN_STREAM("OBCameraNode::setupDevices stream " << stream_name_[stream_index]
+                                                             << " is already created, closing it");
         streams_[stream_index].reset();
       }
       enable_[stream_index] = false;
     }
   }
+  device_->setProperty(XN_STREAM_PROPERTY_SOFTWARE_FILTER, soft_filter_);
+  device_->setProperty(XN_STREAM_PROPERTY_DEPTH_MAX_DIFF, soft_filter_max_diff_);
+  device_->setProperty(XN_STREAM_PROPERTY_DEPTH_MAX_SPECKLE_SIZE, soft_filter_max_speckle_size_);
 }
 
 void OBCameraNode::setupFrameCallback() {
@@ -290,6 +311,10 @@ void OBCameraNode::setupD2CConfig() {
 
 void OBCameraNode::startStream(const stream_index_pair& stream_index) {
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
+  if (!is_running_) {
+    ROS_ERROR_STREAM("Device is not running.");
+    return;
+  }
   if (!enable_[stream_index]) {
     ROS_WARN_STREAM("Stream " << stream_name_[stream_index] << " is not enabled.");
     return;
@@ -316,9 +341,27 @@ void OBCameraNode::startStream(const stream_index_pair& stream_index) {
   CHECK(stream_video_mode_.count(stream_index));
   auto video_mode = stream_video_mode_.at(stream_index);
   CHECK(streams_.count(stream_index));
+  if (!streams_[stream_index].get() && device_->hasSensor(stream_index.first)) {
+    ROS_WARN_STREAM("stream is not created, that is anomalous, but we'll try to create it.");
+    auto stream = std::make_shared<openni::VideoStream>();
+    auto status = stream->create(*device_, stream_index.first);
+    if (status != openni::STATUS_OK) {
+      ROS_ERROR_STREAM("Can't create " << stream_name_[stream_index] << " stream. "
+                                       << "OpenNI error: " << openni::OpenNI::getExtendedError());
+      return;
+    }
+    streams_[stream_index] = stream;
+  }
   CHECK(streams_[stream_index].get());
   streams_[stream_index]->setVideoMode(video_mode);
   streams_[stream_index]->setMirroringEnabled(false);
+
+  if(stream_index == INFRA1 && !ir_ae_) {
+    setIRAutoExposure(false);
+    setIRGain(ir_gain_);
+    setIRExposure(ir_exposure_);
+  }
+
   auto status = streams_[stream_index]->start();
   if (status == openni::STATUS_OK) {
     stream_started_[stream_index] = true;
@@ -382,7 +425,14 @@ void OBCameraNode::getParameters() {
     fps_[stream_index] = nh_private_.param<int>(param_name, IMAGE_FPS);
     param_name = "enable_" + stream_name_[stream_index];
     enable_[stream_index] = nh_private_.param<bool>(param_name, false);
+    param_name = "flip_" + stream_name_[stream_index];
+    flip_image_[stream_index] = nh_private_.param<bool>(param_name, false);
   }
+
+  ir_ae_ = nh_private_.param<bool>("ir_ae", true);
+  ir_gain_ = nh_private_.param<int>("ir_gain", init_ir_gain_);
+  ir_exposure_ = nh_private_.param<int>("ir_exposure", init_ir_exposure_);
+
   for (const auto& stream_index : IMAGE_STREAMS) {
     depth_aligned_frame_id_[stream_index] = optical_frame_id_[COLOR];
   }
@@ -415,6 +465,9 @@ void OBCameraNode::getParameters() {
   if (enable_pointcloud_xyzrgb_) {
     depth_align_ = true;
   }
+  soft_filter_ = nh_private_.param<int>("soft_filter", 2);
+  soft_filter_max_diff_ = nh_private_.param<int>("soft_filter_max_diff", 16);
+  soft_filter_max_speckle_size_ = nh_private_.param<int>("soft_filter_max_speckle_size", 480);
 }
 
 void OBCameraNode::setupTopics() {
@@ -434,8 +487,14 @@ void OBCameraNode::setupUVCCamera() {
     ROS_INFO("OBCameraNode::setupUVCCamera");
     auto color_camera_info = getColorCameraInfo();
     auto serial_number = getSerialNumber();
-    uvc_camera_driver_ =
-        std::make_shared<UVCCameraDriver>(nh_, nh_private_, color_camera_info, serial_number);
+    try {
+      uvc_camera_driver_ =
+          std::make_shared<UVCCameraDriver>(nh_, nh_private_, color_camera_info, serial_number);
+    } catch (const std::exception& e) {
+      ROS_ERROR_STREAM("Failed to initialize UVC camera: " << e.what());
+      clean();
+      throw e;
+    }
   } else {
     uvc_camera_driver_ = nullptr;
   }
@@ -444,7 +503,7 @@ void OBCameraNode::setupUVCCamera() {
 void OBCameraNode::imageSubscribedCallback(const stream_index_pair& stream_index) {
   ROS_INFO_STREAM("Image stream " << stream_name_[stream_index] << " subscribed");
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
-  if (!initialized_) {
+  if (!initialized_ || !is_running_) {
     ROS_WARN_STREAM("Camera not initialized, subscribing to stream " << stream_name_[stream_index]);
     return;
   }
@@ -505,7 +564,6 @@ void OBCameraNode::calcAndPublishStaticTransform() {
   quaternion_optical.setRPY(-M_PI / 2, 0.0, -M_PI / 2);
   tf2::Vector3 zero_trans(0, 0, 0);
   std::vector<float> rotation, transition;
-  bool rotation_valid = true, transition_valid = true;
   for (float& i : camera_params_->r2l_r) {
     rotation.emplace_back(i);
   }
@@ -516,7 +574,6 @@ void OBCameraNode::calcAndPublishStaticTransform() {
   for (int i = 0; i < 9; i++) {
     if (std::isnan(rotation[i])) {
       Q.setRPY(0, 0, 0);
-      rotation_valid = false;
       break;
     }
   }
@@ -527,10 +584,10 @@ void OBCameraNode::calcAndPublishStaticTransform() {
   tf2::Vector3 trans(transition[0], transition[1], transition[2]);
   if ((!use_uvc_camera_ && !device_->hasSensor(openni::SENSOR_COLOR)) ||
       std::isnan(transition[0]) || std::isnan(transition[1]) || std::isnan(transition[2])) {
+    ROS_WARN("No color sensor found or transition is invalid , setting translation to 0");
     trans[0] = 0;
     trans[1] = 0;
     trans[2] = 0;
-    transition_valid = false;
   }
   tf2::Transform transform(Q, trans);
   transform = transform.inverse();
@@ -546,12 +603,6 @@ void OBCameraNode::calcAndPublishStaticTransform() {
   publishStaticTF(tf_timestamp, zero_trans, zero_rot, base_frame_id_, frame_id_[DEPTH]);
   publishStaticTF(tf_timestamp, zero_trans, zero_rot, base_frame_id_, frame_id_[INFRA1]);
   publishStaticTF(tf_timestamp, trans, Q, base_frame_id_, frame_id_[COLOR]);
-  if (enable_publish_extrinsic_ && transition_valid && rotation_valid) {
-    extrinsics_publisher_ = nh_.advertise<Extrinsics>("extrinsic/depth_to_color", 1, true);
-    auto ex_msg = obExtrinsicsToMsg(rotation, transition, "depth_to_color");
-    ex_msg.header.stamp = ros::Time::now();
-    extrinsics_publisher_.publish(ex_msg);
-  }
 }
 
 void OBCameraNode::publishDynamicTransforms() {
@@ -612,20 +663,24 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef& frame,
   }
   image.data = (uint8_t*)frame.getData();
   cv::Mat scaled_image;
-  if (stream_index == DEPTH && depth_scale_ > 1) {
+  if (stream_index == DEPTH && depth_scale_ != 1) {
     cv::resize(image, scaled_image, cv::Size(width * depth_scale_, height * depth_scale_), 0, 0,
                cv::INTER_NEAREST);
   }
+  if (flip_image_[stream_index]) {
+    cv::flip(stream_index == DEPTH ? scaled_image : image,
+             stream_index == DEPTH ? scaled_image : image, 1);
+  }
   auto image_msg =
       *(cv_bridge::CvImage(std_msgs::Header(), encoding_.at(stream_index),
-                           (stream_index == DEPTH && depth_scale_ > 1) ? scaled_image : image)
+                           (stream_index == DEPTH && depth_scale_ != 1) ? scaled_image : image)
             .toImageMsg());
   auto timestamp = ros::Time::now();
   image_msg.header.stamp = timestamp;
   image_msg.header.frame_id =
       depth_align_ ? depth_aligned_frame_id_[stream_index] : optical_frame_id_[stream_index];
-  image_msg.width = (stream_index == DEPTH && depth_scale_ > 1) ? width * depth_scale_ : width;
-  image_msg.height = (stream_index == DEPTH && depth_scale_ > 1) ? height * depth_scale_ : height;
+  image_msg.width = (stream_index == DEPTH && depth_scale_ != 1) ? width * depth_scale_ : width;
+  image_msg.height = (stream_index == DEPTH && depth_scale_ != 1) ? height * depth_scale_ : height;
   image_msg.step = image_msg.width * unit_step_size_[stream_index];
   image_msg.is_bigendian = false;
   auto& image_publisher = image_publishers_.at(stream_index);
@@ -657,7 +712,7 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef& frame,
       boost::filesystem::create_directory(current_path + "/image");
     }
     ROS_INFO_STREAM("Saving image to " << filename);
-    if (stream_index != DEPTH && depth_scale_ > 1) {
+    if (stream_index != DEPTH) {
       cv::imwrite(filename, image);
     } else {
       cv::imwrite(filename, scaled_image);

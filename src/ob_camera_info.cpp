@@ -91,26 +91,26 @@ sensor_msgs::CameraInfo OBCameraNode::OBCameraParamsToCameraInfo(const OBCameraP
   camera_info.D[4] = params.r_k[2];
 
   camera_info.K.fill(0.0);
-  camera_info.K[0] = params.r_intr_p[0];
-  camera_info.K[2] = params.r_intr_p[2];
-  camera_info.K[4] = params.r_intr_p[1];
-  camera_info.K[5] = params.r_intr_p[3];
+  camera_info.K[0] = params.r_intr_p[0];  // fx
+  camera_info.K[2] = params.r_intr_p[2];  // cx
+  camera_info.K[4] = params.r_intr_p[1];  // fy
+  camera_info.K[5] = params.r_intr_p[3];  // cy
   camera_info.K[8] = 1.0;
 
   camera_info.R.fill(0.0);
-  for (int i = 0; i < 9; i++) {
-    camera_info.R[i] = params.r2l_r[i];
-  }
+  camera_info.R[0] = 1.0;
+  camera_info.R[4] = 1.0;
+  camera_info.R[8] = 1.0;
 
   camera_info.P.fill(0.0);
-  camera_info.P[0] = camera_info.K[0];
-  camera_info.P[2] = camera_info.K[2];
-  camera_info.P[3] = params.r2l_t[0];
-  camera_info.P[5] = camera_info.K[4];
-  camera_info.P[6] = camera_info.K[5];
-  camera_info.P[7] = params.r2l_t[1];
+  camera_info.P[0] = camera_info.K[0];  // fx
+  camera_info.P[2] = camera_info.K[2];  // cx
+  camera_info.P[3] = 0;                 // Tx
+  camera_info.P[5] = camera_info.K[4];  // fy
+  camera_info.P[6] = camera_info.K[5];  // cy
+  camera_info.P[7] = 0;                 // Ty
   camera_info.P[10] = 1.0;
-  camera_info.P[11] = params.r2l_t[2];
+  camera_info.P[11] = 0.0;
   return camera_info;
 }
 
@@ -151,10 +151,9 @@ sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo(int width, int height, dou
     camera_info.K[4] = camera_params.l_intr_p[1];
     camera_info.K[5] = camera_params.l_intr_p[3];
     camera_info.K[8] = 1.0;
-    camera_info.R.fill(0.0);
-    camera_info.R[0] = 1.0;
-    camera_info.R[4] = 1.0;
-    camera_info.R[8] = 1.0;
+    for (int i = 0; i < 9; i++) {
+      camera_info.R[i] = camera_params.r2l_r[i];
+    }
 
     camera_info.P.fill(0.0);
     camera_info.P[0] = camera_info.K[0];
@@ -193,6 +192,9 @@ sensor_msgs::CameraInfo OBCameraNode::getDepthCameraInfo() {
   auto camera_info = getIRCameraInfo(width, height, f);
   auto camera_params = getCameraParams();
   if (!isValidCameraParams(camera_params)) {
+    for (int i = 0; i < 9; i++) {
+      camera_info.R[i] = camera_params.r2l_r[i];
+    }
     if (depth_align_ || enable_pointcloud_xyzrgb_) {
       camera_info.K[0] = camera_params.r_intr_p[0];
       camera_info.K[2] = camera_params.r_intr_p[2];
@@ -239,7 +241,6 @@ sensor_msgs::CameraInfo OBCameraNode::getColorCameraInfo() {
     sensor_msgs::CameraInfo camera_info;
     camera_info.D.resize(5, 0.0);
     camera_info.K.fill(0.0);
-    camera_info.R.fill(0.0);
     camera_info.P.fill(0.0);
     camera_info.distortion_model = sensor_msgs::distortion_models::PLUMB_BOB;
     camera_info.width = width;
@@ -247,9 +248,10 @@ sensor_msgs::CameraInfo OBCameraNode::getColorCameraInfo() {
 
     for (int i = 0; i < 9; i++) {
       camera_info.K[i] = default_camera_info.K[i];
-      camera_info.R[i] = default_camera_info.R[i];
     }
-
+    for (int i = 0; i < 9; i++) {
+      camera_info.R[i] = camera_params.r2l_r[i];
+    }
     for (int i = 0; i < 12; i++) {
       camera_info.P[i] = default_camera_info.P[i];
     }
