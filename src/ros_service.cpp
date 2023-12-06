@@ -16,7 +16,7 @@ namespace astra_camera {
 void OBCameraNode::setupCameraCtrlServices() {
   for (const auto& stream_index : IMAGE_STREAMS) {
     if (!enable_[stream_index] || !device_->hasSensor(stream_index.first)) {
-      ROS_INFO_STREAM("Stream " << stream_name_[stream_index] << " is disabled");
+      //ROS_INFO_STREAM("Stream " << stream_name_[stream_index] << " is disabled");
       continue;
     }
     auto stream_name = stream_name_[stream_index];
@@ -94,6 +94,12 @@ void OBCameraNode::setupCameraCtrlServices() {
         response.success = this->setLaserEnableCallback(request, response);
         return response.success;
       });
+  //Laser is read only.
+  // get_laser_status_srv_ = nh_.advertiseService<GetBoolRequest, GetBoolResponse>(
+  //     "get_laser_status", [this](auto&& request, auto&& response) {
+  //       response.success = this->getLaserStatusCallback(request, response);
+  //       return response.success;
+  //     });
   set_ldp_enable_srv_ = nh_.advertiseService<std_srvs::SetBoolRequest, std_srvs::SetBoolResponse>(
       "set_ldp", [this](auto&& request, auto&& response) {
         response.success = this->setLdpEnableCallback(request, response);
@@ -467,10 +473,10 @@ bool OBCameraNode::setIRFloodCallback(std_srvs::SetBoolRequest& request,
 bool OBCameraNode::setLdpEnableCallback(std_srvs::SetBoolRequest& request,
                                         std_srvs::SetBoolResponse& response) {
   (void)response;
-  stopStreams();
+  //stopStreams();
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   auto status = device_->setProperty(XN_MODULE_PROPERTY_LDP_ENABLE, request.data);
-  startStreams();
+  //startStreams();
   if (status != openni::STATUS_OK) {
     std::stringstream ss;
     ss << "Couldn't set LDP enable: " << openni::OpenNI::getExtendedError();
@@ -639,12 +645,22 @@ bool OBCameraNode::getSupportedVideoModesCallback(GetStringRequest& request,
   }
 }
 
+// bool OBCameraNode::getLaserStatusCallback(GetBoolRequest& request, GetBoolResponse& response) {
+//   (void)request;
+//   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
+//   int data = 0;
+//   int data_size = 4;
+//   device_->getProperty(XN_MODULE_PROPERTY_EMITTER_STATE, (uint8_t*)&data, &data_size);
+//   response.data = data;
+//   return true;
+// }
+
 bool OBCameraNode::getLdpStatusCallback(GetBoolRequest& request, GetBoolResponse& response) {
   (void)request;
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   int data = 0;
   int data_size = 4;
-  device_->getProperty(XN_MODULE_PROPERTY_LDP_ENABLE, (uint8_t*)&data, &data_size);
+  device_->getProperty(XN_MODULE_PROPERTY_LDP_STATUS, (uint8_t*)&data, &data_size);
   response.data = data;
   return true;
 }

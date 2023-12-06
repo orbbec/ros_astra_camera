@@ -50,5 +50,7 @@ void savePointToPly(sensor_msgs::PointCloud2::Ptr cloud, const std::string& file
 
 void saveRGBPointToPly(sensor_msgs::PointCloud2::Ptr cloud, const std::string& filename);
 
+MultiDeviceSyncMode getMultiDeviceSyncMode(const std::string& mode);
+
 
 }  // namespace astra_camera

@@ -18,17 +18,75 @@ OBCameraParams OBCameraNode::getCameraParams() {
     return camera_params_.value();
   }
   auto pid = device_info_.getUsbProductId();
-  if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID && pid != GEMINI_E_DEPTH_PID &&
-      pid != GEMINI_E_LITE_DEPTH_PID && pid != DABAI_MAX_PID) {
+  if (pid == DABAI_DCW2_DEPTH_PID || pid == DABAI_MAX_PID || pid == DABAI_DW2_DEPTH_PID ||
+      pid == DABAI_MAX_PRO_PID || pid == GEMINI_UW_PID) {
+    OBCameraParamList cameraParamList;
+    int data_size = sizeof(OBCameraParamList);
+    OBCameraParam cameraParams[10], depthParams;
     OBCameraParams params;
-    int data_size = sizeof(OBCameraParams);
-    device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS, (uint8_t*)&params, &data_size);
+    cameraParamList.pCameraParams = (OBCameraParam*)cameraParams;
+    cameraParamList.nParamSize = 10;
+    openni::Status rc = device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS,
+                                             (uint8_t*)&cameraParamList, &data_size);
+    if (rc != openni::STATUS_OK) {
+      ROS_WARN_STREAM("Failed to get camera params");
+      return {};
+    }
+    bool matched = false;
+    for (int i = 0; i < cameraParamList.nParamSize; i++) {
+      if (width_[DEPTH] == cameraParamList.pCameraParams[i].depthIntrinsic.width &&
+          height_[DEPTH] == cameraParamList.pCameraParams[i].depthIntrinsic.height &&
+          width_[COLOR] == cameraParamList.pCameraParams[i].rgbIntrinsic.width &&
+          height_[COLOR] == cameraParamList.pCameraParams[i].rgbIntrinsic.height) {
+        depthParams = cameraParamList.pCameraParams[i];
+        matched = true;
+        break;
+      }
+    }
+
+    if (!matched) {
+      for (int i = 0; i < cameraParamList.nParamSize; i++) {
+        if (width_[DEPTH] == cameraParamList.pCameraParams[i].depthIntrinsic.width &&
+            height_[DEPTH] == cameraParamList.pCameraParams[i].depthIntrinsic.height) {
+          depthParams = cameraParamList.pCameraParams[i];
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    if (!matched) {
+      ROS_WARN_STREAM("Failed to get camera params");
+      depthParams = cameraParamList.pCameraParams[0];
+    }
+    params.l_intr_p[0] = depthParams.depthIntrinsic.fx;
+    params.l_intr_p[1] = depthParams.depthIntrinsic.fy;
+    params.l_intr_p[2] = depthParams.depthIntrinsic.cx;
+    params.l_intr_p[3] = depthParams.depthIntrinsic.cy;
+    params.r_intr_p[0] = depthParams.rgbIntrinsic.fx;
+    params.r_intr_p[1] = depthParams.rgbIntrinsic.fy;
+    params.r_intr_p[2] = depthParams.rgbIntrinsic.cx;
+    params.r_intr_p[3] = depthParams.rgbIntrinsic.cy;
+    params.l_k[0] = depthParams.depthDistortion.k1;
+    params.l_k[1] = depthParams.depthDistortion.k2;
+    params.l_k[2] = depthParams.depthDistortion.k3;
+    params.l_k[3] = depthParams.depthDistortion.p1;
+    params.l_k[4] = depthParams.depthDistortion.p2;
+    params.r_k[0] = depthParams.rgbDistortion.k1;
+    params.r_k[1] = depthParams.rgbDistortion.k2;
+    params.r_k[2] = depthParams.rgbDistortion.k3;
+    params.r_k[3] = depthParams.rgbDistortion.p1;
+    params.r_k[4] = depthParams.rgbDistortion.p2;
+    for (int i = 0; i < 9; i++) {
+      if (i < 3) {
+        params.r2l_t[i] = depthParams.transform.trans[i];
+      }
+      params.r2l_r[i] = depthParams.transform.rot[i];
+    }
     camera_params_ = params;
     return params;
-  } else if (pid == DABAI_MAX_PID) {
-    ROS_ERROR_STREAM("current SDK not support dabai max camera");
-    throw std::runtime_error("current SDK not support dabai max camera");
-  } else {
+  } else if (pid == DABAI_DCW_DEPTH_PID || pid == DABAI_DW_PID || pid == GEMINI_E_DEPTH_PID ||
+             pid == GEMINI_E_LITE_DEPTH_PID) {
     OBCameraParamsData camera_params_data;
     int data_size = sizeof(camera_params_data);
     memset(&camera_params_data, 0, data_size);
@@ -77,7 +135,87 @@ OBCameraParams OBCameraNode::getCameraParams() {
                          &data_size);
     camera_params_ = camera_params_data.params;
     return camera_params_data.params;
+  } else {
+    OBCameraParams params;
+    int data_size = sizeof(OBCameraParams);
+    device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS, (uint8_t*)&params, &data_size);
+    camera_params_ = params;
+    return params;
   }
+}
+
+OBCameraParams OBCameraNode::getColorCameraParams() {
+  if (color_camera_params_) {
+    return color_camera_params_.value();
+  }
+
+  OBCameraParamList cameraParamList;
+  int data_size = sizeof(OBCameraParamList);
+  OBCameraParam cameraParams[10], depthParams;
+  OBCameraParams params;
+  cameraParamList.pCameraParams = (OBCameraParam*)cameraParams;
+  cameraParamList.nParamSize = 10;
+
+  openni::Status rc = device_->getProperty(openni::OBEXTENSION_ID_CAM_PARAMS,
+                                           (uint8_t*)&cameraParamList, &data_size);
+  if (rc != openni::STATUS_OK) {
+    ROS_WARN_STREAM("Failed to get camera params");
+    return {};
+  }
+  bool matched = false;
+  for (int i = 0; i < cameraParamList.nParamSize; i++) {
+    if (width_[DEPTH] == cameraParamList.pCameraParams[i].depthIntrinsic.width &&
+        height_[DEPTH] == cameraParamList.pCameraParams[i].depthIntrinsic.height &&
+        width_[COLOR] == cameraParamList.pCameraParams[i].rgbIntrinsic.width &&
+        height_[COLOR] == cameraParamList.pCameraParams[i].rgbIntrinsic.height) {
+      depthParams = cameraParamList.pCameraParams[i];
+      matched = true;
+      break;
+    }
+  }
+
+  if (!matched) {
+    for (int i = 0; i < cameraParamList.nParamSize; i++) {
+      if (width_[COLOR] == cameraParamList.pCameraParams[i].rgbIntrinsic.width &&
+          height_[COLOR] == cameraParamList.pCameraParams[i].rgbIntrinsic.height) {
+        depthParams = cameraParamList.pCameraParams[i];
+        matched = true;
+        break;
+      }
+    }
+  }
+
+  if (!matched) {
+    ROS_WARN_STREAM("Failed to get color camera params");
+    depthParams = cameraParamList.pCameraParams[0];
+  }
+  params.l_intr_p[0] = depthParams.depthIntrinsic.fx;
+  params.l_intr_p[1] = depthParams.depthIntrinsic.fy;
+  params.l_intr_p[2] = depthParams.depthIntrinsic.cx;
+  params.l_intr_p[3] = depthParams.depthIntrinsic.cy;
+  params.r_intr_p[0] = depthParams.rgbIntrinsic.fx;
+  params.r_intr_p[1] = depthParams.rgbIntrinsic.fy;
+  params.r_intr_p[2] = depthParams.rgbIntrinsic.cx;
+  params.r_intr_p[3] = depthParams.rgbIntrinsic.cy;
+  params.l_k[0] = depthParams.depthDistortion.k1;
+  params.l_k[1] = depthParams.depthDistortion.k2;
+  params.l_k[2] = depthParams.depthDistortion.k3;
+  params.l_k[3] = depthParams.depthDistortion.p1;
+  params.l_k[4] = depthParams.depthDistortion.p2;
+  params.r_k[0] = depthParams.rgbDistortion.k1;
+  params.r_k[1] = depthParams.rgbDistortion.k2;
+  params.r_k[2] = depthParams.rgbDistortion.k3;
+  params.r_k[3] = depthParams.rgbDistortion.p1;
+  params.r_k[4] = depthParams.rgbDistortion.p2;
+  for (int i = 0; i < 9; i++) {
+    if (i < 3) {
+      params.r2l_t[i] = depthParams.transform.trans[i];
+    }
+    params.r2l_r[i] = depthParams.transform.rot[i];
+  }
+
+  color_camera_params_ = params;
+  return params;
 }
 
 sensor_msgs::CameraInfo OBCameraNode::OBCameraParamsToCameraInfo(const OBCameraParams& params) {
@@ -162,7 +300,9 @@ sensor_msgs::CameraInfo OBCameraNode::getIRCameraInfo(int width, int height, dou
     camera_info.P[6] = camera_info.K[5];
     camera_info.P[10] = 1.0;
     auto pid = device_info_.getUsbProductId();
-    if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID && pid != DABAI_MAX_PID) {
+    if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID && pid != DABAI_MAX_PID &&
+        pid != DABAI_DCW2_DEPTH_PID && pid != DABAI_DW2_DEPTH_PID && pid != DABAI_MAX_PRO_PID &&
+        pid != GEMINI_UW_PID) {
       /* 02122020 Scale IR Params */
       double scaling = static_cast<double>(width) / 640;
       camera_info.K[0] *= scaling;  // fx
@@ -201,7 +341,9 @@ sensor_msgs::CameraInfo OBCameraNode::getDepthCameraInfo() {
       camera_info.K[4] = camera_params.r_intr_p[1];
       camera_info.K[5] = camera_params.r_intr_p[3];
       auto pid = device_info_.getUsbProductId();
-      if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID && pid != DABAI_MAX_PID) {
+      if (pid != DABAI_DCW_DEPTH_PID && pid != DABAI_DW_PID && pid != DABAI_MAX_PID &&
+          pid != DABAI_DCW2_DEPTH_PID && pid != DABAI_DW2_DEPTH_PID && pid != DABAI_MAX_PRO_PID &&
+          pid != GEMINI_UW_PID) {
         camera_info.K[0] *= scaling;  // fx
         camera_info.K[2] *= scaling;  // cx
         camera_info.K[4] *= scaling;  // fy
@@ -235,7 +377,15 @@ sensor_msgs::CameraInfo OBCameraNode::getColorCameraInfo() {
     }
   }
   // If uncalibrated, fill in default values
-  auto camera_params = getCameraParams();
+
+  auto pid = device_info_.getUsbProductId();
+  OBCameraParams camera_params;
+  memset(&camera_params, 0, sizeof(OBCameraParams));
+  if (pid == DABAI_DCW2_DEPTH_PID || pid == DABAI_MAX_PRO_PID || pid == GEMINI_UW_PID) {
+    camera_params = getColorCameraParams();
+  } else {
+    camera_params = getCameraParams();
+  }
   if (isValidCameraParams(camera_params)) {
     auto default_camera_info = OBCameraParamsToCameraInfo(camera_params);
     sensor_msgs::CameraInfo camera_info;
@@ -255,8 +405,9 @@ sensor_msgs::CameraInfo OBCameraNode::getColorCameraInfo() {
     for (int i = 0; i < 12; i++) {
       camera_info.P[i] = default_camera_info.P[i];
     }
-    auto pid = device_info_.getUsbProductId();
-    if (pid != DABAI_DCW_DEPTH_PID && pid != GEMINI_E_DEPTH_PID) {
+
+    if (pid != DABAI_DCW_DEPTH_PID && pid != GEMINI_E_DEPTH_PID && pid != DABAI_DCW2_DEPTH_PID &&
+        pid != DABAI_MAX_PRO_PID && pid != GEMINI_UW_PID) {
       /*02112020 color camera param change according to resolution */
       double scaling = (double)width / 640;
       camera_info.K[0] *= scaling;  // fx

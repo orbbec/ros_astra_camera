@@ -1,4 +1,4 @@
-/*****************************************************************************
+﻿/*****************************************************************************
 *                                                                            *
 *  OpenNI 2.x Alpha                                                          *
 *  Copyright (C) 2012 PrimeSense Ltd.                                        *
@@ -26,7 +26,7 @@
 #define ONI_VERSION_MAJOR 2
 #define ONI_VERSION_MINOR 3
 #define ONI_VERSION_MAINTENANCE 0
-#define ONI_VERSION_BUILD 85
+#define ONI_VERSION_BUILD 88
 
 /** OpenNI version (in brief string format): "Major.Minor.Maintenance (Build)" */ 
 #define ONI_BRIEF_VERSION_STRING \
@@ -34,7 +34,7 @@
 	ONI_STRINGIFY(ONI_VERSION_MAJOR) "." \
 	ONI_STRINGIFY(ONI_VERSION_MINOR) "." \
 	ONI_STRINGIFY(ONI_VERSION_MAINTENANCE) \
-	" (Build " ONI_STRINGIFY(ONI_VERSION_BUILD) ")"
+	" (Build " ONI_STRINGIFY(ONI_VERSION_BUILD) "-beta36)"
 
 /** OpenNI version (in numeric format): (OpenNI major version * 100000000 + OpenNI minor version * 1000000 + OpenNI maintenance version * 10000 + OpenNI build version). */
 #define ONI_VERSION (ONI_VERSION_MAJOR*100000000 + ONI_VERSION_MINOR*1000000 + ONI_VERSION_MAINTENANCE*10000 + ONI_VERSION_BUILD)

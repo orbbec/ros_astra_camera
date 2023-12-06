@@ -1,6 +1,11 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package astra_camera
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1.2.6 (2023-11-16)
+------------
+* Add device Astra mini pro.
+* Add device Dabai Max
+
 1.2.1 (2023-01-12)
 ------------
 

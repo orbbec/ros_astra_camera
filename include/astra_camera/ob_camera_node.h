@@ -24,8 +24,8 @@
 #include <sensor_msgs/distortion_models.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Vector3.h>
 #include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Vector3.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
@@ -70,6 +70,8 @@ class OBCameraNode {
 
   void setupFrameCallback();
 
+  void setupSyncMode();
+
   void setupVideoMode();
 
   void startStreams();
@@ -92,9 +94,8 @@ class OBCameraNode {
 
   void setupPublishers();
 
-  void publishStaticTF(const ros::Time& t, const tf2::Vector3& trans,
-                                     const tf2::Quaternion& q, const std::string& from,
-                                     const std::string& to);
+  void publishStaticTF(const ros::Time& t, const tf2::Vector3& trans, const tf2::Quaternion& q,
+                       const std::string& from, const std::string& to);
 
   void calcAndPublishStaticTransform();
 
@@ -176,6 +177,8 @@ class OBCameraNode {
   bool getSupportedVideoModesCallback(GetStringRequest& request, GetStringResponse& response,
                                       const stream_index_pair& stream_index);
 
+  //bool getLaserStatusCallback(GetBoolRequest& request, GetBoolResponse& response);
+
   bool getLdpStatusCallback(GetBoolRequest& request, GetBoolResponse& response);
 
   bool toggleSensor(const stream_index_pair& stream_index, bool enabled, std::string& msg);
@@ -188,6 +191,8 @@ class OBCameraNode {
   void setDepthToColorResolution(int width, int height);
 
   OBCameraParams getCameraParams();
+
+  OBCameraParams getColorCameraParams();
 
   static sensor_msgs::CameraInfo OBCameraParamsToCameraInfo(const OBCameraParams& params);
 
@@ -209,6 +214,9 @@ class OBCameraNode {
   void sendKeepAlive(const ros::TimerEvent& event);
 
   void pollFrame();
+
+  void dcw2Align(const cv::Mat& src, cv::Mat& dst);
+  void maxProAlign(const cv::Mat& src, cv::Mat& dst);
 
  private:
   ros::NodeHandle nh_;
@@ -257,6 +265,7 @@ class OBCameraNode {
   std::map<stream_index_pair, ros::ServiceServer> set_auto_exposure_srv_;
   ros::ServiceServer get_device_srv_;
   ros::ServiceServer set_laser_enable_srv_;
+  //ros::ServiceServer get_laser_status_srv_;
   ros::ServiceServer set_ldp_enable_srv_;
   ros::ServiceServer set_fan_enable_srv_;
   ros::ServiceServer get_camera_info_srv_;
@@ -283,6 +292,7 @@ class OBCameraNode {
   double tf_publish_rate_ = 10.0;
   bool depth_align_ = false;
   boost::optional<OBCameraParams> camera_params_;
+  boost::optional<OBCameraParams> color_camera_params_;
   double depth_ir_x_offset_ = 0.0;
   double depth_ir_y_offset_ = 0.0;
   bool color_depth_synchronization_ = false;
@@ -317,7 +327,10 @@ class OBCameraNode {
   std::condition_variable poll_frame_thread_cv_;
   bool enable_publish_extrinsic_ = false;
   int soft_filter_ = 2;
+  //Default 16
   int soft_filter_max_diff_ = 16;
+  //Default 480
   int soft_filter_max_speckle_size_ = 480;
+  MultiDeviceSyncMode multi_device_sync_mode_;
 };
 }  // namespace astra_camera

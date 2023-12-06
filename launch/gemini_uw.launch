@@ -11,26 +11,23 @@
     <arg name="enable_point_cloud_xyzrgb" default="false"/>
     <arg name="connection_delay" default="100"/>
     <arg name="color_width" default="640"/>
-    <arg name="color_height" default="360"/>
-    <arg name="color_fps" default="30"/>
+    <arg name="color_height" default="480"/>
+    <arg name="color_fps" default="25"/>
     <arg name="enable_color" default="true"/>
     <arg name="flip_color" default="false"/>
     <arg name="color_format" default="RGB"/>
     <arg name="depth_width" default="640"/>
-    <arg name="depth_height" default="360"/>
-    <arg name="depth_fps" default="30"/>
+    <arg name="depth_height" default="400"/>
+    <arg name="depth_fps" default="10"/>
     <arg name="enable_depth" default="true"/>
     <arg name="flip_depth" default="false"/>
     <arg name="depth_format" default="Y11"/>
     <arg name="ir_width" default="640"/>
-    <arg name="ir_height" default="480"/>
-    <arg name="ir_fps" default="30"/>
+    <arg name="ir_height" default="400"/>
+    <arg name="ir_fps" default="10"/>
     <arg name="enable_ir" default="true"/>
     <arg name="ir_format" default="Y10"/>
     <arg name="flip_ir" default="false"/>
-    <arg name="ir_ae" default="true"/>
-    <arg name="ir_gain" default="5000"/>
-    <arg name="ir_exposure" default="9990"/>
     <arg name="publish_tf" default="true"/>
     <arg name="tf_publish_rate" default="10.0"/>
     <arg name="ir_info_uri" default=""/>
@@ -46,7 +43,7 @@
     <arg name="depth_scale" default="1"/>
     <arg name="use_uvc_camera" default="true"/>
     <arg name="uvc_vendor_id" default="0x2bc5"/>
-    <arg name="uvc_product_id" default="0x0559"/>
+    <arg name="uvc_product_id" default="0x055a"/>
     <arg name="uvc_retry_count" default="100"/>
     <arg name="uvc_camera_format" default="mjpeg"/>
     <arg name="uvc_flip" default="false"/>
@@ -55,6 +52,13 @@
     <arg name="oni_log_to_file" default="false"/>
     <arg name="enable_d2c_viewer" default="false"/>
     <arg name="enable_publish_extrinsic" default="false"/>
+    <!-- software filter 0-off ,1-on (default,support windows/linux/arm/
+    ,not support android),2 - Optimized software filtering algorithm,support windows/linux/arm/android-->
+    <arg name="soft_filter" default="2"/>
+    <!-- software filter param MaxDiff (default 16)-support when SoftFilter =2 -->
+    <arg name="soft_filter_max_diff" default="0"/>
+    <!-- software filter param maxSpeckleSize -support when SoftFilter =2-->
+    <arg name="soft_filter_max_speckle_size" default="0"/>
     <group ns="$(arg camera_name)">
         <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
             <param name="camera_name" value="$(arg camera_name)"/>
@@ -83,9 +87,6 @@
             <param name="ir_fps" value="$(arg ir_fps)"/>
             <param name="enable_ir" value="$(arg enable_ir)"/>
             <param name="flip_ir" value="$(arg flip_ir)"/>
-            <param name="ir_ae" value="$(arg ir_ae)"/>
-            <param name="ir_gain" value="$(arg ir_gain)"/>
-            <param name="ir_exposure" value="$(arg ir_exposure)"/>
             <param name="ir_format" value="$(arg ir_format)"/>
             <param name="publish_tf" value="$(arg publish_tf)"/>
             <param name="tf_publish_rate" value="$(arg tf_publish_rate)"/>
@@ -110,6 +111,9 @@
             <param name="oni_log_to_console" value="$(arg oni_log_to_console)"/>
             <param name="oni_log_to_file" value="$(arg oni_log_to_file)"/>
             <param name="enable_d2c_viewer" value="$(arg enable_d2c_viewer)"/>
+            <param name="soft_filter" value="$(arg soft_filter)"/>
+            <param name="soft_filter_max_diff" value="$(arg soft_filter_max_diff)"/>
+            <param name="soft_filter_max_speckle_size" value="$(arg soft_filter_max_speckle_size)"/>
             <remap from="/$(arg camera_name)/depth/color/points" to="/$(arg camera_name)/depth_registered/points"/>
         </node>
     </group>

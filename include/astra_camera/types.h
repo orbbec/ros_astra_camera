@@ -61,4 +61,11 @@ struct ImageROI {
   int width = -1;
   int height = -1;
 };
+
+enum class MultiDeviceSyncMode {
+  None = 0,  // 不同步
+  Master = 1,
+  Slave = 2,
+};
+
 }  // namespace astra_camera

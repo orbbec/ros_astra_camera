@@ -41,7 +41,6 @@
     <arg name="depth_roi_width" default="-1"/>
     <arg name="depth_roi_height" default="-1"/>
     <arg name="depth_scale" default="1"/>
-    <arg name="color_depth_synchronization" default="false"/>
     <arg name="use_uvc_camera" default="true"/>
     <arg name="uvc_vendor_id" default="0x2bc5"/>
     <arg name="uvc_product_id" default="0x0557"/>
@@ -95,7 +94,6 @@
             <param name="depth_roi_width" value="$(arg depth_roi_width)"/>
             <param name="depth_roi_height" value="$(arg depth_roi_height)"/>
             <param name="depth_scale" value="$(arg depth_scale)"/>
-            <param name="color_depth_synchronization" value="$(arg color_depth_synchronization)"/>
             <param name="use_uvc_camera" value="$(arg use_uvc_camera)"/>
             <param name="uvc_vendor_id" value="$(arg uvc_vendor_id)"/>
             <param name="uvc_product_id" value="$(arg uvc_product_id)"/>

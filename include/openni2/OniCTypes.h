@@ -1,4 +1,4 @@
-/*****************************************************************************
+﻿/*****************************************************************************
 *                                                                            *
 *  OpenNI 2.x Alpha                                                          *
 *  Copyright (C) 2012 PrimeSense Ltd.                                        *
@@ -79,6 +79,7 @@ typedef struct
 	char uri[ONI_MAX_STR];
 	char vendor[ONI_MAX_STR];
 	char name[ONI_MAX_STR];
+	char serialNumber[ONI_MAX_STR];
 	uint16_t usbVendorId;
 	uint16_t usbProductId;
 } OniDeviceInfo;
@@ -93,6 +94,45 @@ typedef struct OBCameraParams
     float r_k[5];
     //int is_mirror;
 }OBCameraParams;
+
+/**相机内参*/
+typedef struct OBCameraIntrinsic
+{
+	float   fx;      //x方向焦距
+	float   fy;      //y方向焦距
+	float   cx;      //光心横坐标
+	float   cy;      //光心纵坐标
+	int16_t width;   //图像宽度
+	int16_t height;  //图像高度
+} OBCameraIntrinsic;
+
+/**畸变参数*/
+typedef struct OBCameraDistortion
+{
+	float k1;  //径向畸变系数1
+	float k2;  //径向畸变系数2
+	float k3;  //径向畸变系数3
+	float p1;  //径向畸变系数4
+	float p2;  //径向畸变系数5
+} OBCameraDistortion;
+
+/**@brief 旋转/变换矩阵*/
+typedef struct OBD2CTransform
+{
+	float rot[9];    //旋转矩阵
+	float trans[3];  //变化矩阵
+} OBD2CTransform;
+
+/**相机参数*/
+typedef struct OBCameraParam
+{
+	OBCameraIntrinsic  depthIntrinsic;   //深度相机内参
+	OBCameraIntrinsic  rgbIntrinsic;     //彩色相机内参
+	OBCameraDistortion depthDistortion;  //深度相机畸变参数
+	OBCameraDistortion rgbDistortion;    //彩色相机畸变参数
+	OBD2CTransform     transform;        //旋转/变换矩阵
+	bool               isMirrored;       //本组参数对应的图像帧是否被镜像
+} OBCameraParam;
 
 struct _OniDevice;
 typedef struct _OniDevice* OniDeviceHandle;

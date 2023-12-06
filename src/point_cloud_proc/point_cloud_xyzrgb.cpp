@@ -203,7 +203,7 @@ void PointCloudXyzrgbNode::imageCb(const sensor_msgs::ImageConstPtr& depth_msg,
   sensor_msgs::PointCloud2Modifier pcd_modifier(*cloud_msg);
   pcd_modifier.setPointCloud2FieldsByString(2, "xyz", "rgb");
 
-  if (depth_msg->encoding == enc::TYPE_16UC1) {
+  if (depth_msg->encoding == enc::TYPE_16UC1 || depth_msg->encoding == enc::MONO16) {
     convert<uint16_t>(depth_msg, rgb_msg, cloud_msg, red_offset, green_offset, blue_offset,
                       color_step);
   } else if (depth_msg->encoding == enc::TYPE_32FC1) {

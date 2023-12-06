@@ -695,18 +695,21 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
   image.header.stamp = camera_info.header.stamp;
   image_publisher_.publish(image);
   if (save_image_) {
-    cv_bridge::CvImagePtr cv_image_ptr = cv_bridge::toCvCopy(image);
     auto now = std::time(nullptr);
     std::stringstream ss;
     ss << std::put_time(std::localtime(&now), "%Y%m%d_%H%M%S");
     auto current_path = boost::filesystem::current_path().string();
     std::string filename = current_path + "/image/uvc_color_" + std::to_string(image.width) + "x" +
-                           std::to_string(image.height) + "_" + ss.str() + ".jpg";
+                           std::to_string(image.height) + "_" + ss.str() + ".png";
     if (!boost::filesystem::exists(current_path + "/image")) {
       boost::filesystem::create_directory(current_path + "/image");
     }
     ROS_INFO_STREAM("Saving image to " << filename);
-    cv::imwrite(filename, cv_image_ptr->image);
+
+    auto image_to_save =
+          cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8)->image;
+    cv::imwrite(filename, image_to_save);
+
     save_image_ = false;
   }
 }
