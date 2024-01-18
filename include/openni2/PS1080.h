@@ -339,6 +339,16 @@ enum
 	XN_MODULE_PROPERTY_TEC_GET_ADJUST_INTENSION = 0x10810033,
 	//XN_MODULE_PROPERTY_DEVICE_MASTER_ENABLE = 0x10810034,
 	XN_MODULE_PROPERTY_SET_DEVICE_MODE = 0x10810034,
+	
+	//切换AE模式
+	XN_MODULE_PROPERTY_IR_EXPOSURE_MODE = 0x10810035,
+	
+	//Set Watch dog heart time
+	XN_MODULE_PROPERTY_WATCH_DOG_HEART_TIME = 0x10810036,
+	//Set/Get skip frame mode
+	XN_MODULE_PROPERTY_SKIP_FRAEM_MODE = 0x10810037,
+
+	XN_MODULE_PROPERTY_END_FRAME_DEPTH = 0x108100FF,
 
 
 	XN_MODULE_PROPERTY_LASER_PULSE_WIDTH_PTS    = 0x10810050,
@@ -367,7 +377,8 @@ enum
 	/** XnPixelRegistration - get only */
 	XN_STREAM_PROPERTY_PIXEL_C2D_REGISTRATION = 0x20801001, // "PixelRegistration"
 	/** XnPixelRegistration - get only */
-	XN_STREAM_PROPERTY_PIXEL_D2C_REGISTRATION = 0x20801002, // "PixelRegistration"
+	XN_STREAM_PROPERTY_PIXEL_D2C_REGISTRATION = 0x20801002, // "PixelRegistration"	
+	XN_STREAM_PROPERTY_IR_TO_DEPTH_X_Y = 0x20801003, 
 	/** unsigned long long */
 	XN_STREAM_PROPERTY_WHITE_BALANCE_ENABLED = 0x10801002, // "WhiteBalancedEnabled"
 	/** unsigned long long */ 
@@ -418,6 +429,15 @@ enum
 	/** Boolean */
 	XN_STREAM_PROPERTY_WAVELENGTH_CORRECTION_DEBUG = 0x1080FF47, // "WavelengthCorrectionDebug"
 
+	//DCW2
+	XN_MODULE_PROPERTY_LDP_CALIBRATION_BOOL = 0x1080FF70,	//"LDP calibration status"
+	XN_MODULE_PROPERTY_PRODUCT_SERIAL_NUMBER_WQ = 0x1080FF60, 
+	XN_MODULE_PROPERTY_SWITCH_STREAM_IR_NIR_GAIN_EXP = 0x1080FF61,
+	XN_MODULE_PROPERTY_LDP_MEASURE_EXT_INFO = 0x1080FF62,
+
+	//Gemini EW
+	XN_MODULE_PROPERTY_OVERSEAS_VERSION_PID = 0x1080FF63,
+
     /** Boolean */
     XN_STREAM_PROPERTY_SOFTWARE_REGISTRATION = 0x2080FF42, // "Software Registration"
 	XN_STREAM_PROPERTY_SOFTWARE_FILTER = 0x2080FF43,		//soft filter enable
@@ -428,6 +448,33 @@ enum
 	XN_STREAM_PROPERTY_DEPTH_LEFT_EXTEND = 0x2080FF48, 	//Calibration unit accuracy coefficient
 	XN_STREAM_PROPERTY_DEPTH_ORIGINAL_SHIFT = 0x2080FF49, 	//original shift or openni shift
 	XN_STREAM_PROPERTY_DEPTH_SHIFT_COMPENSATION = 0x2080FF4A, //shift compensation
+
+
+	//
+	XN_STREAM_PROPERTY_MG_FILTER_STATUS    = 0x2080FF80, //MG filter status
+	XN_STREAM_PROPERTY_MG_FILTER_MARGIN_X1 = 0x2080FF81, //MG filter status
+	XN_STREAM_PROPERTY_MG_FILTER_MARGIN_X2 = 0x2080FF82, //MG filter status
+	XN_STREAM_PROPERTY_MG_FILTER_MARGIN_Y  = 0x2080FF83, //MG filter status
+	XN_STREAM_PROPERTY_MG_FILTER_Limit_X   = 0x2080FF84,
+	XN_STREAM_PROPERTY_MG_FILTER_Limit_Y   = 0x2080FF85,
+	
+	XN_STREAM_PROPERTY_CHAMFER_STATUS	       = 0x2080FF86,
+	XN_STREAM_PROPERTY_CHAMFER_MAX_WIDTH_LEFT  = 0x2080FF87,
+	XN_STREAM_PROPERTY_CHAMFER_MAX_WIDTH_RIGHT = 0x2080FF88,
+	XN_STREAM_PROPERTY_CHAMFER_RADIUS		   = 0x2080FF89,
+
+	XN_STREAM_PROPERTY_SPECKLE_FILTER_MAX_SPECKLE_SIZE = 0x2080FFA0,
+
+	XN_STREAM_PROPERTY_CHAMFER_MARGIN_X = 0x2080FFA0,
+	XN_STREAM_PROPERTY_CHAMFER_MARGIN_Y = 0x2080FFA1,
+	XN_STREAM_PROPERTY_CHAMFER_Limit_X = 0x2080FFA2,
+	XN_STREAM_PROPERTY_CHAMFER_Limit_Y = 0x2080FFA3,
+
+	XN_STREAM_PROPERTY_MG_FILTER_PARAM = 0x2080FFA4,
+	XN_STREAM_PROPERTY_CHAMFER_FILTER_PARAM = 0x2080FFA5,
+
+	
+
 	/*******************************************************************/
 	/* Color stream properties                                         */
 	/*******************************************************************/
@@ -801,6 +848,14 @@ typedef struct XnPixelRegistration
 	unsigned int nImageY; // out
 } XnPixelRegistration;
 
+typedef struct OBIrToDepthRectify
+{
+	double DepthX;
+	double DepthY;
+	double IrX;
+	double IrY;
+} OBIrToDepthRectify;
+
 typedef struct XnLedState
 {
 	uint16_t nLedID;
@@ -1002,6 +1057,19 @@ typedef struct OBSerialNumber
 	uint8_t SN[32];
 }OBSerialNumber;
 
+typedef struct OBSerialNumberWq
+{
+	uint8_t SN[32];
+}OBSerialNumberWq;
+
+typedef struct OBIrNirGainExp
+{
+	uint32_t ir_gain;
+	uint32_t nir_gain;
+	uint32_t ir_exp;
+	uint32_t nir_exp;
+}OBIrNirGainExp;
+
 typedef struct OBKTProductNumber
 {
 	uint8_t PN[32];
@@ -1201,6 +1269,19 @@ typedef enum
 	OBDEVICE_MODE_ROUTINE	= 2,
 } OBDEVICE_MODE;
 
+typedef enum
+{
+	OB_IR_EXPOSURE_DEFAULT = 0,
+	OB_IR_EXPOSURE_LONG = 1,
+} OBIRExposureMode;
+
+typedef enum
+{
+	LDP_CALIBRATION_COMPLETE = 0,
+	LDP_CALIBRATION_COMPLETE_IN_PROCESSING = 1,
+} OBLdpCalibrationStatus;
+
+
 typedef struct
 {
 	uint32_t nEnable;  //1:enable ir faceAE;0: disable ir faceAE
@@ -1245,6 +1326,71 @@ typedef struct {
 	uint16_t def;
 	uint16_t step;
 } OBLaserLevel;
+
+typedef struct OBLdpMeasureExtensionInfo
+{
+	uint32_t xtalk;          //串扰值  
+	uint32_t reference_hit;  //参考光子击中数
+	uint32_t distance_peek;  //测距值
+	uint32_t reliability;    //置信度
+	uint32_t obj_hits;       //目标光子击中数
+}OBLdpMeasureExtensionInfo;
+
+#define SPECK_FILTER_MAX_SPECKLE_SIZE 256
+
+typedef struct
+{
+	uint32_t size;
+	char maxSpeckleSize[SPECK_FILTER_MAX_SPECKLE_SIZE];
+}OBSpeckFilterMaxSpeckleSize;
+
+typedef struct OBCfgOverseasVidPidInfo
+{
+	uint16_t pid;
+	uint16_t vid;
+}OBCfgOverseasVidPidInfo;
+
+struct OBChamferfilterParam
+{
+	OBChamferfilterParam()
+	{
+		nChamferStatus = 0;
+		nChamferMaxWidthLeft = 0;
+		nChamferMaxWidthRight = 0;
+		nChamferMarginRadius = 0;
+		nChamferMarginX = 0;
+		nChamferMarginY = 0;
+		nChamferLimitX = 0;
+		nChamferLimitY = 0;
+	}
+	uint32_t nChamferStatus;
+	uint32_t nChamferMaxWidthLeft;
+	uint32_t nChamferMaxWidthRight;
+	uint32_t nChamferMarginRadius;
+	uint32_t nChamferMarginX;
+	uint32_t nChamferMarginY;
+	uint32_t nChamferLimitX;
+	uint32_t nChamferLimitY;
+};
+
+struct OBMGfilterParam
+{
+	OBMGfilterParam()
+	{
+		nStatus = 0;
+		nMarginX1 = 0;
+		nMarginX2 = 0;
+		nMarginY = 0;
+		nMarginLimitX = 0;
+		nMarginLimitY = 0;
+	}
+	uint32_t nStatus;
+	uint32_t nMarginX1;
+	uint32_t nMarginX2;
+	uint32_t nMarginY;
+	uint32_t nMarginLimitX;
+	uint32_t nMarginLimitY;
+};
 
 #pragma pack (pop)
 #endif // PS1080_H
