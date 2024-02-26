@@ -32,6 +32,7 @@
 *  POSSIBILITY OF SUCH DAMAGE.
 *********************************************************************/
 #pragma once
+
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <image_transport/image_transport.h>
@@ -54,57 +55,60 @@
 
 
 namespace astra_camera {
-using namespace message_filters::sync_policies;
-namespace enc = sensor_msgs::image_encodings;
-using PointCloud2 = sensor_msgs::PointCloud2;
+    using namespace message_filters::sync_policies;
+    namespace enc = sensor_msgs::image_encodings;
+    using PointCloud2 = sensor_msgs::PointCloud2;
 
-class PointCloudXyzrgbNode {
- public:
-  PointCloudXyzrgbNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
+    class PointCloudXyzrgbNode {
+    public:
+        PointCloudXyzrgbNode(ros::NodeHandle &nh, ros::NodeHandle &nh_private);
 
-  ~PointCloudXyzrgbNode();
+        ~PointCloudXyzrgbNode();
 
- private:
-  void connectCb();
+    private:
+        void connectCb();
 
-  void disconnectCb();
+        void disconnectCb();
 
-  void imageCb(const sensor_msgs::ImageConstPtr& depth_msg,
-               const sensor_msgs::ImageConstPtr& rgb_msg,
-               const sensor_msgs::CameraInfoConstPtr& info_msg);
-  bool SavePointCloudXyzrgbCallback(std_srvs::Empty::Request& request,
-                                 std_srvs::Empty::Response& response);
+        void imageCb(const sensor_msgs::ImageConstPtr &depth_msg,
+                     const sensor_msgs::ImageConstPtr &rgb_msg,
+                     const sensor_msgs::CameraInfoConstPtr &info_msg);
 
-  template <typename T>
-  void convert(const sensor_msgs::ImageConstPtr& depth_msg,
-               const sensor_msgs::ImageConstPtr& rgb_msg, const PointCloud2::Ptr& cloud_msg,
-               int red_offset, int green_offset, int blue_offset, int color_step);
+        bool SavePointCloudXyzrgbCallback(std_srvs::Empty::Request &request,
+                                          std_srvs::Empty::Response &response);
 
- private:
-  ros::NodeHandle nh_;
-  ros::NodeHandle nh_private_;
-  ros::NodeHandlePtr rgb_nh_;
-  boost::shared_ptr<image_transport::ImageTransport> rgb_it_, depth_it_;
+        template<typename T>
+        void convert(const sensor_msgs::ImageConstPtr &depth_msg,
+                     const sensor_msgs::ImageConstPtr &rgb_msg, const PointCloud2::Ptr &cloud_msg,
+                     int red_offset, int green_offset, int blue_offset, int color_step, bool ordered_pc = true);
 
-  // Subscriptions
-  image_transport::SubscriberFilter sub_depth_, sub_rgb_;
-  message_filters::Subscriber<sensor_msgs::CameraInfo> sub_info_;
-  typedef ApproximateTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo>
-      SyncPolicy;
-  typedef ExactTime<sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo>
-      ExactSyncPolicy;
-  typedef message_filters::Synchronizer<SyncPolicy> Synchronizer;
-  typedef message_filters::Synchronizer<ExactSyncPolicy> ExactSynchronizer;
-  std::shared_ptr<Synchronizer> sync_;
-  std::shared_ptr<ExactSynchronizer> exact_sync_;
-  ros::ServiceServer save_point_cloud_srv_;
-  std::atomic_bool save_cloud_{false};
+    private:
+        ros::NodeHandle nh_;
+        ros::NodeHandle nh_private_;
+        ros::NodeHandlePtr rgb_nh_;
+        boost::shared_ptr <image_transport::ImageTransport> rgb_it_, depth_it_;
 
-  // Publications
-  std::mutex connect_mutex_;
-  typedef sensor_msgs::PointCloud2 PointCloud;
-  ros::Publisher pub_point_cloud_;
+        // Subscriptions
+        image_transport::SubscriberFilter sub_depth_, sub_rgb_;
+        message_filters::Subscriber <sensor_msgs::CameraInfo> sub_info_;
+        typedef ApproximateTime <sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo>
+                SyncPolicy;
+        typedef ExactTime <sensor_msgs::Image, sensor_msgs::Image, sensor_msgs::CameraInfo>
+                ExactSyncPolicy;
+        typedef message_filters::Synchronizer <SyncPolicy> Synchronizer;
+        typedef message_filters::Synchronizer <ExactSyncPolicy> ExactSynchronizer;
+        std::shared_ptr <Synchronizer> sync_;
+        std::shared_ptr <ExactSynchronizer> exact_sync_;
+        ros::ServiceServer save_point_cloud_srv_;
+        std::atomic_bool save_cloud_{false};
 
-  image_geometry::PinholeCameraModel model_;
-};
+        // Publications
+        std::mutex connect_mutex_;
+        typedef sensor_msgs::PointCloud2 PointCloud;
+        ros::Publisher pub_point_cloud_;
+
+        image_geometry::PinholeCameraModel model_;
+        std::string data_save_path_;
+        bool ordered_pc_ = true;
+    };
 }  // namespace astra_camera

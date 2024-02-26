@@ -32,6 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 #pragma once
+
 #include <image_geometry/pinhole_camera_model.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
@@ -41,46 +42,63 @@
 #include "depth_traits.h"
 
 namespace astra_camera {
-using PointCloud2 = sensor_msgs::PointCloud2;
+    using PointCloud2 = sensor_msgs::PointCloud2;
 
 // Handles float or uint16 depths
-template <typename T>
-inline void convert(const sensor_msgs::ImageConstPtr& depth_msg, PointCloud2::Ptr& cloud_msg,
-                    const image_geometry::PinholeCameraModel& model, double range_max = 0.0) {
-  // Use correct principal point from calibration
-  float center_x = model.cx();
-  float center_y = model.cy();
+    template<typename T>
+    inline void convert(const sensor_msgs::ImageConstPtr &depth_msg, PointCloud2::Ptr &cloud_msg,
+                        const image_geometry::PinholeCameraModel &model, bool ordered_pc = true) {
+        // Use correct principal point from calibration
+        float center_x = model.cx();
+        float center_y = model.cy();
 
-  // Combine unit conversion (if necessary) with scaling by focal length for computing (X,Y)
-  double unit_scaling = DepthTraits<T>::toMeters(T(1));
-  float constant_x = unit_scaling / model.fx();
-  float constant_y = unit_scaling / model.fy();
-  float bad_point = std::numeric_limits<float>::quiet_NaN();
+        // Combine unit conversion (if necessary) with scaling by focal length for computing (X,Y)
+        double unit_scaling = DepthTraits<T>::toMeters(T(1));
+        float constant_x = unit_scaling / model.fx();
+        float constant_y = unit_scaling / model.fy();
+        int valid_points = 0;
+        sensor_msgs::PointCloud2Modifier modifier(*cloud_msg);
+        modifier.setPointCloud2FieldsByString(1, "xyz");
+        modifier.resize(depth_msg->width * depth_msg->height);
+        sensor_msgs::PointCloud2Iterator<float> iter_x(*cloud_msg, "x");
+        sensor_msgs::PointCloud2Iterator<float> iter_y(*cloud_msg, "y");
+        sensor_msgs::PointCloud2Iterator<float> iter_z(*cloud_msg, "z");
+        const T *depth_row = reinterpret_cast<const T *>(&depth_msg->data[0]);
+        int row_step = depth_msg->step / sizeof(T);
+        cloud_msg->point_step =
+                addPointField(*cloud_msg, "intensity", 1, sensor_msgs::PointField::FLOAT32, 0);
+        cloud_msg->header = depth_msg->header;
+        cloud_msg->height = depth_msg->height;
+        cloud_msg->width = depth_msg->width;
+        cloud_msg->is_dense = false;
+        cloud_msg->row_step = cloud_msg->width * cloud_msg->point_step;
+        cloud_msg->data.resize(cloud_msg->height * cloud_msg->row_step);
+        auto bad_point = std::numeric_limits<float>::quiet_NaN();
+        for (int v = 0; v < (int) cloud_msg->height; ++v, depth_row += row_step) {
+            for (int u = 0; u < (int) cloud_msg->width; ++u) {
+                T depth = depth_row[u];
+                bool valid = true;
+                // Missing points denoted by NaNs
+                if (!DepthTraits<T>::valid(depth)) {
+                    valid = false;
+                    depth = bad_point;
+                }
 
-  sensor_msgs::PointCloud2Iterator<float> iter_x(*cloud_msg, "x");
-  sensor_msgs::PointCloud2Iterator<float> iter_y(*cloud_msg, "y");
-  sensor_msgs::PointCloud2Iterator<float> iter_z(*cloud_msg, "z");
-  const T* depth_row = reinterpret_cast<const T*>(&depth_msg->data[0]);
-  int row_step = depth_msg->step / sizeof(T);
-  for (int v = 0; v < (int)cloud_msg->height; ++v, depth_row += row_step) {
-    for (int u = 0; u < (int)cloud_msg->width; ++u, ++iter_x, ++iter_y, ++iter_z) {
-      T depth = depth_row[u];
-
-      // Missing points denoted by NaNs
-      if (!DepthTraits<T>::valid(depth)) {
-        if (range_max != 0.0) {
-          depth = DepthTraits<T>::fromMeters(range_max);
-        } else {
-          *iter_x = *iter_y = *iter_z = bad_point;
-          continue;
+                // Fill in XYZ
+                if (valid || ordered_pc) {
+                    *iter_x = (u - center_x) * depth * constant_x;
+                    *iter_y = (v - center_y) * depth * constant_y;
+                    *iter_z = DepthTraits<T>::toMeters(depth);
+                    ++iter_x, ++iter_y, ++iter_z;
+                    valid_points++;
+                }
+            }
         }
-      }
-
-      // Fill in XYZ
-      *iter_x = (u - center_x) * depth * constant_x;
-      *iter_y = (v - center_y) * depth * constant_y;
-      *iter_z = DepthTraits<T>::toMeters(depth);
+        if (!ordered_pc) {
+            cloud_msg->width = valid_points;
+            cloud_msg->height = 1;
+            cloud_msg->is_dense = true;
+            modifier.resize(valid_points);
+        }
     }
-  }
-}
 }  // namespace astra_camera

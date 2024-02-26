@@ -40,31 +40,36 @@
 namespace astra_camera {
 
 // Encapsulate differences between processing float and uint16_t depths
-template <typename T>
-struct DepthTraits {};
+    template<typename T>
+    struct DepthTraits {
+    };
 
-template <>
-struct DepthTraits<uint16_t> {
-  static inline bool valid(uint16_t depth) { return depth != 0; }
-  static inline float toMeters(uint16_t depth) {
-    return static_cast<float>(depth) * 0.001f;
-  }  // originally mm
-  static inline uint16_t fromMeters(float depth) { return std::lround(depth * 1000.0f); }
-  // Do nothing - already zero-filled
-  static inline void initializeBuffer(std::vector<uint8_t> &buffer) { (void)buffer; }
-};
+    template<>
+    struct DepthTraits<uint16_t> {
+        static inline bool valid(uint16_t depth) { return depth != 0; }
 
-template <>
-struct DepthTraits<float> {
-  static inline bool valid(float depth) { return std::isfinite(depth); }
-  static inline float toMeters(float depth) { return depth; }
-  static inline float fromMeters(float depth) { return depth; }
+        static inline float toMeters(uint16_t depth) {
+            return static_cast<float>(depth) * 0.001f;
+        }  // originally mm
+        static inline uint16_t fromMeters(float depth) { return std::lround(depth * 1000.0f); }
 
-  static inline void initializeBuffer(std::vector<uint8_t> &buffer) {
-    auto start = reinterpret_cast<float *>(&buffer[0]);
-    auto end = reinterpret_cast<float *>(&buffer[0] + buffer.size());
-    std::fill(start, end, std::numeric_limits<float>::quiet_NaN());
-  }
-};
+        // Do nothing - already zero-filled
+        static inline void initializeBuffer(std::vector <uint8_t> &buffer) { (void) buffer; }
+    };
+
+    template<>
+    struct DepthTraits<float> {
+        static inline bool valid(float depth) { return std::isfinite(depth); }
+
+        static inline float toMeters(float depth) { return depth; }
+
+        static inline float fromMeters(float depth) { return depth; }
+
+        static inline void initializeBuffer(std::vector <uint8_t> &buffer) {
+            auto start = reinterpret_cast<float *>(&buffer[0]);
+            auto end = reinterpret_cast<float *>(&buffer[0] + buffer.size());
+            std::fill(start, end, std::numeric_limits<float>::quiet_NaN());
+        }
+    };
 
 }  // namespace astra_camera
