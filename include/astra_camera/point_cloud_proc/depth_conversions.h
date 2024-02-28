@@ -65,8 +65,6 @@ namespace astra_camera {
         sensor_msgs::PointCloud2Iterator<float> iter_z(*cloud_msg, "z");
         const T *depth_row = reinterpret_cast<const T *>(&depth_msg->data[0]);
         int row_step = depth_msg->step / sizeof(T);
-        cloud_msg->point_step =
-                addPointField(*cloud_msg, "intensity", 1, sensor_msgs::PointField::FLOAT32, 0);
         cloud_msg->header = depth_msg->header;
         cloud_msg->height = depth_msg->height;
         cloud_msg->width = depth_msg->width;

@@ -247,14 +247,14 @@ namespace astra_camera {
         float constant_x = unit_scaling / model_.fx();
         float constant_y = unit_scaling / model_.fy();
 
-        // Initially, assume all points will be valid for unordered point clouds
-        size_t expected_points = depth_msg->width * depth_msg->height;
-        cloud_msg->height = 1; // For both ordered and unordered, start with single-row layout
-        cloud_msg->is_dense = false; // Assume not dense; will adjust if unordered
-
         sensor_msgs::PointCloud2Modifier modifier(*cloud_msg);
         modifier.setPointCloud2FieldsByString(2, "xyz", "rgb");
-        modifier.resize(expected_points); // Resize to maximum expected points
+        cloud_msg->height = rgb_msg->height;
+        cloud_msg->width = rgb_msg->width;
+        cloud_msg->is_dense = false;
+        cloud_msg->is_bigendian = false;
+        cloud_msg->row_step = cloud_msg->point_step * cloud_msg->width;
+        cloud_msg->data.resize(cloud_msg->height * cloud_msg->row_step);
 
         sensor_msgs::PointCloud2Iterator<float> iter_x(*cloud_msg, "x");
         sensor_msgs::PointCloud2Iterator<float> iter_y(*cloud_msg, "y");
