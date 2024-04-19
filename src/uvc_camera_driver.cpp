@@ -91,8 +91,10 @@ std::ostream& operator<<(std::ostream& os, const UVCCameraConfig& config) {
 void UVCCameraDriver::setupCameraParams() {
   // auto exposure
   if (enable_color_auto_exposure_) {
+    ROS_INFO("enable color auto exposure");
     uvc_set_ae_mode(device_handle_, 8);
   } else {
+    ROS_INFO("disable color auto exposure");
     uvc_set_ae_mode(device_handle_, 1);
   }
   if (exposure_ != -1) {
@@ -166,6 +168,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
       boost::bind(&UVCCameraDriver::imageUnsubscribedCallback, this));
   setupCameraControlService();
   openCamera();
+  setupCameraParams();
   auto info = getCameraInfo();
   camera_info_publisher_.publish(info);
 #if defined(USE_RK_MPP)
