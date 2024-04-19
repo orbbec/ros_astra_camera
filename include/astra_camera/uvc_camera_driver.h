@@ -34,7 +34,7 @@
 #include <rockchip/mpp_rc_defs.h>
 #include <rockchip/mpp_task.h>
 #include <rockchip/rk_mpi.h>
-#define MPP_ALIGN(x, a) (((x) + (a)-1) & ~((a)-1))
+#define MPP_ALIGN(x, a) (((x) + (a) - 1) & ~((a) - 1))
 #endif
 
 namespace astra_camera {
@@ -65,6 +65,8 @@ class UVCCameraDriver {
                            const std::string& serial_number = "");
 
   ~UVCCameraDriver();
+
+  void setupCameraParams();
 
   void updateConfig(const UVCCameraConfig& config);
 
@@ -172,6 +174,10 @@ class UVCCameraDriver {
   std::recursive_mutex device_lock_;
   std::shared_ptr<camera_info_manager::CameraInfoManager> color_info_manager_ = nullptr;
   int device_num_ = 1;
+  bool enable_color_auto_exposure_ = true;
+  int exposure_ = -1;
+  int gain_ = -1;
+  int white_balance_ = -1;
 #if defined(USE_RK_MPP)
   MppCtx mpp_ctx_ = nullptr;
   MppApi* mpp_api_ = nullptr;

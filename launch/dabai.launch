@@ -16,6 +16,8 @@
     <arg name="enable_color" default="true"/>
     <arg name="flip_color" default="false"/>
     <arg name="color_format" default="RGB"/>
+    <arg name="enable_color_auto_exposure" default="true"/>
+    <arg name="color_exposure" default="-1"/>
     <arg name="depth_width" default="640"/>
     <arg name="depth_height" default="400"/>
     <arg name="depth_fps" default="30"/>
@@ -68,6 +70,8 @@
             <param name="color_height" value="$(arg color_height)"/>
             <param name="color_fps" value="$(arg color_fps)"/>
             <param name="enable_color" value="$(arg enable_color)"/>
+            <param name="enable_color_auto_exposure" value="$(arg enable_color_auto_exposure)"/>
+            <param name="color_exposure" value="$(arg color_exposure)"/>
             <param name="color_format" value="$(arg color_format)"/>
             <param name="flip_color" value="$(arg flip_color)"/>
             <param name="depth_width" value="$(arg depth_width)"/>

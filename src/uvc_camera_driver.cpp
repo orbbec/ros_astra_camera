@@ -88,6 +88,43 @@ std::ostream& operator<<(std::ostream& os, const UVCCameraConfig& config) {
   return os;
 }
 
+void UVCCameraDriver::setupCameraParams() {
+  // auto exposure
+  if (enable_color_auto_exposure_) {
+    uvc_set_ae_mode(device_handle_, 8);
+  } else {
+    uvc_set_ae_mode(device_handle_, 1);
+  }
+  if (exposure_ != -1) {
+    uint32_t max_expo, min_expo;
+    uvc_get_exposure_abs(device_handle_, &max_expo, UVC_GET_MAX);
+    uvc_get_exposure_abs(device_handle_, &min_expo, UVC_GET_MIN);
+    if (exposure_ < static_cast<int>(min_expo) || exposure_ > static_cast<int>(max_expo)) {
+      ROS_WARN_STREAM("exposure value " << exposure_ << " is out of range [" << min_expo << ", "
+                                        << max_expo << "], set to auto mode");
+      uvc_set_ae_mode(device_handle_, 1);
+    } else {
+      uvc_set_ae_mode(device_handle_,
+                      1);  // mode 1: manual mode; 2: auto mode; 4: shutter priority mode; 8:
+                           // aperture priority mode
+      uvc_set_exposure_abs(device_handle_, static_cast<uint32_t>(exposure_));
+    }
+  }
+  if (gain_ != -1) {
+    uint16_t min_gain, max_gain;
+    uvc_get_gain(device_handle_, &min_gain, UVC_GET_MIN);
+    uvc_get_gain(device_handle_, &max_gain, UVC_GET_MAX);
+    if (gain_ < min_gain || gain_ > max_gain) {
+      ROS_WARN_STREAM("gain value " << gain_ << " is out of range [" << min_gain << ", " << max_gain
+                                    << "], set to auto mode");
+      uvc_set_ae_mode(device_handle_, 1);
+    } else {
+      uvc_set_ae_mode(device_handle_, 1);
+      uvc_set_gain(device_handle_, static_cast<uint16_t>(gain_));
+    }
+  }
+}
+
 UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
                                  const sensor_msgs::CameraInfo& camera_info,
                                  const std::string& serial_number)
@@ -114,6 +151,9 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   roi_.width = nh_private.param<int>("color_roi_width", -1);
   roi_.height = nh_private.param<int>("color_roi_height", -1);
   camera_name_ = nh_private.param<std::string>("camera_name", "camera");
+  enable_color_auto_exposure_ = nh_private.param<bool>("enable_color_auto_exposure", true);
+  gain_ = nh_private.param<int>("color_gain", -1);
+  exposure_ = nh_private.param<int>("color_exposure", -1);
   config_.frame_id = camera_name_ + "_color_frame";
   config_.optical_frame_id = camera_name_ + "_color_optical_frame";
   camera_info_publisher_ = nh_.advertise<sensor_msgs::CameraInfo>("color/camera_info", 1, true);
@@ -191,7 +231,7 @@ void UVCCameraDriver::openCamera() {
     std::stringstream ss;
     ss << "Find device error " << uvc_strerror(err) << " process will be exit";
     ROS_ERROR_STREAM(ss.str());
-    if(device_ != nullptr) {
+    if (device_ != nullptr) {
       uvc_unref_device(device_);
     }
     device_ = nullptr;
@@ -706,8 +746,7 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
     }
     ROS_INFO_STREAM("Saving image to " << filename);
 
-    auto image_to_save =
-          cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8)->image;
+    auto image_to_save = cv_bridge::toCvCopy(image, sensor_msgs::image_encodings::BGR8)->image;
     cv::imwrite(filename, image_to_save);
 
     save_image_ = false;
