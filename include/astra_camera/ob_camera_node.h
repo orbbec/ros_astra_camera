@@ -41,6 +41,9 @@
 #include "types.h"
 #include "utils.h"
 #include "uvc_camera_driver.h"
+#include <image_transport/image_transport.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <cv_bridge/cv_bridge.h>
 
 namespace astra_camera {
 
@@ -253,7 +256,7 @@ class OBCameraNode {
   std::map<stream_index_pair, std::vector<openni::VideoMode>> supported_video_modes_;
   std::map<stream_index_pair, FrameCallbackFunction> stream_frame_callback_;
   std::map<stream_index_pair, int> unit_step_size_;
-  std::map<stream_index_pair, ros::Publisher> image_publishers_;
+  std::map<stream_index_pair, image_transport::Publisher> image_publishers_;
   std::map<stream_index_pair, ros::Publisher> camera_info_publishers_;
   std::map<stream_index_pair, bool> flip_image_;
 
