@@ -137,6 +137,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
     ROS_ERROR_STREAM("init uvc context failed, exit");
     throw std::runtime_error("init uvc context failed");
   }
+  image_transport::ImageTransport it(nh_);
   config_.serial_number = serial_number;
   device_num_ = nh_private_.param<int>("device_num", 1);
   uvc_flip_ = nh_private_.param<bool>("uvc_flip", false);
@@ -163,7 +164,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   color_info_manager_ =
       std::make_shared<camera_info_manager::CameraInfoManager>(nh_, "rgb_camera", color_info_uri_);
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
-  image_publisher_ = nh_.advertise<sensor_msgs::Image>(
+  image_publisher_ =it.advertise(
       "color/image_raw", 10, boost::bind(&UVCCameraDriver::imageSubscribedCallback, this),
       boost::bind(&UVCCameraDriver::imageUnsubscribedCallback, this));
   setupCameraControlService();
