@@ -29,7 +29,13 @@ find_package(catkin REQUIRED
 )
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED)
+#find_package(Boost REQUIRED) # Causes build error as discussed here https://github.com/orbbec/ros_astra_camera/issues/199
+find_package(Boost REQUIRED COMPONENTS filesystem)
+if(Boost_FOUND)
+    include_directories(${Boost_INCLUDE_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
+    add_definitions(${Boost_LIB_DIAGNOSTIC_DEFINITIONS})
+endif()
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
 pkg_search_module(LIBUVC REQUIRED libuvc)
@@ -163,6 +169,7 @@ target_link_libraries(${PROJECT_NAME}
   ${LIBUVC_LIBRARIES}
   ${RK_MPP_LIBRARIES}
   ${RK_RGA_LIBRARIES}
+  ${Boost_LIBRARIES}  # Added 05/24/24
 )
 
 add_dependencies(${PROJECT_NAME}
@@ -194,6 +201,7 @@ target_link_libraries(${PROJECT_NAME}_node
   ${OpenCV_LIBS}
   ${LIBUVC_LIBRARIES}
   ${GLOG_LIBRARIES}
+  ${Boost_LIBRARIES} # Added 05/24/24
 )
 
 add_executable(list_devices_node
@@ -218,6 +226,7 @@ target_link_libraries(list_devices_node
   ${OpenCV_LIBS}
   ${GLOG_LIBRARIES}
   ${LIBUVC_LIBRARIES}
+  ${Boost_LIBRARIES} # Added 05/24/24
 )
 
 
