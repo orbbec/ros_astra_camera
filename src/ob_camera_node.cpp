@@ -608,8 +608,8 @@ void OBCameraNode::setupPublishers() {
           boost::bind(&OBCameraNode::imageSubscribedCallback, this, stream_index);
       image_transport::SubscriberStatusCallback image_unsubscribed_cb =
           boost::bind(&OBCameraNode::imageUnsubscribedCallback, this, stream_index);
-      image_publishers_[stream_index] = it.advertise(
-          name, 1, image_subscribed_cb, image_unsubscribed_cb);
+      image_publishers_[stream_index] =
+          it.advertise(name + "/image_raw", 1, image_subscribed_cb, image_unsubscribed_cb);
     }
   }
 }
