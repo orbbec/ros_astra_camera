@@ -24,4 +24,5 @@
   <depend>tf2</depend>
   <depend>message_filters</depend>
   <depend>camera_info_manager</depend>
+  <depend>libuvc-dev</depend>
 </package>
