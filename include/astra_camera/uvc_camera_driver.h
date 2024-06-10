@@ -168,7 +168,7 @@ class UVCCameraDriver {
   ros::ServiceServer set_uvc_mirror_srv_;
   ros::ServiceServer toggle_uvc_camera_srv_;
   ros::ServiceServer save_image_srv_;
-  ros::Publisher image_publisher_;
+  image_transport::Publisher image_publisher_;
   ros::Publisher camera_info_publisher_;
   sensor_msgs::CameraInfo camera_info_;
   std::recursive_mutex device_lock_;

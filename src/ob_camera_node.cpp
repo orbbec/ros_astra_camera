@@ -598,17 +598,18 @@ void OBCameraNode::imageUnsubscribedCallback(const stream_index_pair &stream_ind
 }
 
 void OBCameraNode::setupPublishers() {
+  image_transport::ImageTransport it(nh_);
   for (const auto &stream_index : IMAGE_STREAMS) {
     std::string name = stream_name_[stream_index];
     camera_info_publishers_[stream_index] =
         nh_.advertise<sensor_msgs::CameraInfo>(name + "/camera_info", 1, true);
     if (enable_[stream_index] && device_->hasSensor(stream_index.first)) {
-      ros::SubscriberStatusCallback image_subscribed_cb =
+      image_transport::SubscriberStatusCallback image_subscribed_cb =
           boost::bind(&OBCameraNode::imageSubscribedCallback, this, stream_index);
-      ros::SubscriberStatusCallback image_unsubscribed_cb =
+      image_transport::SubscriberStatusCallback image_unsubscribed_cb =
           boost::bind(&OBCameraNode::imageUnsubscribedCallback, this, stream_index);
-      image_publishers_[stream_index] = nh_.advertise<sensor_msgs::Image>(
-          name + "/image_raw", 1, image_subscribed_cb, image_unsubscribed_cb);
+      image_publishers_[stream_index] =
+          it.advertise(name + "/image_raw", 1, image_subscribed_cb, image_unsubscribed_cb);
     }
   }
 }
