@@ -658,7 +658,11 @@ void UVCCameraDriver::frameCallbackWrapper(uvc_frame_t* frame, void* ptr) {
 void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
   CHECK_NOTNULL(frame);
   CHECK_NOTNULL(frame_buffer_);
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
+  std::unique_lock<decltype(device_lock_)> lock(device_lock_, std::defer_lock);
+  if(!lock.try_lock()) {
+    // if we don't get the lock, just return. Otherwise it might result in a uvc deadlock.
+    return;
+  }
   static constexpr int unit_step = 3;
   sensor_msgs::Image image;
   image.width = frame->width;
