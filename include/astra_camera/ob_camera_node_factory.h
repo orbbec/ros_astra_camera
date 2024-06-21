@@ -12,7 +12,6 @@
 #pragma once
 #include <dynamic_reconfigure/server.h>
 #include <openni2/OpenNI.h>
-#include <pthread.h>
 #include <ros/ros.h>
 #include <semaphore.h>
 #include <sys/shm.h>
@@ -38,8 +37,11 @@ class OBCameraNodeFactory {
  private:
   void init();
 
-  void startDevice(const std::shared_ptr<openni::Device>& device,
-                   const openni::DeviceInfo* device_info);
+  void queryDeviceThread();
+
+  void resetPtrWithTimeout();
+
+  void startDevice();
 
   void onDeviceConnected(const openni::DeviceInfo* device_info);
 
@@ -49,35 +51,30 @@ class OBCameraNodeFactory {
 
   static OniLogSeverity getLogLevelFromString(const std::string& level);
 
-  void queryDevice();
-
  private:
   ros::NodeHandle nh_;
   ros::NodeHandle nh_private_;
   std::atomic_bool is_alive_{false};
-  std::unique_ptr<OBCameraNode> ob_camera_node_ = nullptr;
+  std::shared_ptr<OBCameraNode> ob_camera_node_ = nullptr;
   std::shared_ptr<openni::Device> device_ = nullptr;
+  std::shared_ptr<UVCCameraDriver> uvc_camera_driver_ = nullptr;
   std::shared_ptr<openni::DeviceInfo> device_info_ = nullptr;
-  std::unique_ptr<dynamic_reconfigure::Reconfigure> reconfigure_ = nullptr;
+  std::shared_ptr<dynamic_reconfigure::Reconfigure> reconfigure_ = nullptr;
   bool use_uvc_camera_ = false;
   UVCCameraConfig uvc_config_;
-  std::unique_ptr<Context> context_ = nullptr;
+  std::shared_ptr<OBContext> context_ = nullptr;
   std::string serial_number_;
   std::string device_type_;
   std::string device_uri_;
   ros::WallTimer check_connection_timer_;
   std::atomic_bool device_connected_{false};
-  std::atomic_bool has_exception_{false};
   size_t device_num_ = 1;
-  long connection_delay_ = 100;
+  std::shared_ptr<std::thread> device_listener_thread_ = nullptr;
   std::string oni_log_level_str_ = "none";
   bool oni_log_to_console_ = false;
   bool oni_log_to_file_ = false;
+  ros::Subscriber reset_device_sub_;
   std::recursive_mutex device_lock_;
-  std::unique_ptr<std::thread> query_device_thread_ = nullptr;
-  pthread_mutex_t* astra_device_lock_ = nullptr;
-  pthread_mutexattr_t astra_device_lock_attr_;
-  uint8_t* astra_device_lock_shm_ptr_ = nullptr;
-  int astra_device_lock_shm_id_ = -1;
+  std::shared_ptr<std::thread> query_device_thread_ = nullptr;
 };
 }  // namespace astra_camera

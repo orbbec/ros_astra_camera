@@ -12,7 +12,6 @@
 #pragma once
 #include <openni2/OpenNI.h>
 #include <ros/ros.h>
-#include <mutex>
 
 namespace astra_camera {
 
@@ -20,13 +19,15 @@ using DeviceConnectedCb = std::function<void(const openni::DeviceInfo*)>;
 
 using DeviceDisconnectedCb = std::function<void(const openni::DeviceInfo*)>;
 
-class Context : public openni::OpenNI::DeviceConnectedListener,
-                public openni::OpenNI::DeviceDisconnectedListener,
-                public openni::OpenNI::DeviceStateChangedListener {
+class OBContext : public openni::OpenNI::DeviceConnectedListener,
+                  public openni::OpenNI::DeviceDisconnectedListener,
+                  public openni::OpenNI::DeviceStateChangedListener {
  public:
-  explicit Context(DeviceDisconnectedCb device_disconnected_cb);
+  explicit OBContext(DeviceDisconnectedCb disconnected_cb);
 
-  ~Context() override;
+  ~OBContext() override;
+
+  std::vector<openni::DeviceInfo> queryDeviceList();
 
   void onDeviceStateChanged(const openni::DeviceInfo* pInfo, openni::DeviceState state) override;
 
@@ -34,12 +35,10 @@ class Context : public openni::OpenNI::DeviceConnectedListener,
 
   void onDeviceDisconnected(const openni::DeviceInfo* pInfo) override;
 
-  std::vector<openni::DeviceInfo> queryDeviceList();
-
  private:
+  DeviceDisconnectedCb disconnected_cb_;
+  bool first_query_ = true;
   std::recursive_mutex mutex_;
-  bool first_time_query_ = true;
-  DeviceDisconnectedCb device_disconnected_cb_;
   std::map<std::string, openni::DeviceInfo> device_info_list_;
 };
 

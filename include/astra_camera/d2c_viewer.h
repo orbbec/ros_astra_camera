@@ -34,7 +34,7 @@ class D2CViewer {
   message_filters::Subscriber<sensor_msgs::Image> rgb_sub_;
   message_filters::Subscriber<sensor_msgs::Image> depth_sub_;
   using MySyncPolicy = message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image>;
-  std::unique_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
+  std::shared_ptr<message_filters::Synchronizer<MySyncPolicy>> sync_;
   ros::Publisher d2c_pub_;
 };
 }  // namespace astra_camera

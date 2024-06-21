@@ -1,14 +1,12 @@
 cmake_minimum_required(VERSION 3.5.1)
 project(astra_camera)
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  -fPIC -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -O3")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC -g")
 set(CMAKE_BUILD_TYPE "Release")
-option(USE_RK_MPP "Use rock chip MPP libary for hardware decode" OFF)
-option(USE_RK_RGA "Use rock chip RGA libary for hardware decode" OFF)
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif ()
@@ -26,9 +24,8 @@ find_package(catkin REQUIRED
   tf2_ros
   message_filters
   camera_info_manager
-)
+  )
 find_package(OpenCV REQUIRED)
-find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED)
 find_package(PkgConfig REQUIRED)
 find_package(Threads REQUIRED)
@@ -36,23 +33,17 @@ pkg_search_module(LIBUVC REQUIRED libuvc)
 if (NOT LIBUVC_FOUND)
   message(FATAL_ERROR "libuvc is not found")
 endif ()
+pkg_search_module(GLOG REQUIRED libglog)
 
-if (USE_RK_MPP)
-  message(STATUS "Use rock chip MPP libary for hardware decode")
-  add_definitions(-DUSE_RK_MPP)
-  pkg_search_module(RK_MPP REQUIRED rockchip_mpp)
-  if (NOT RK_MPP_FOUND)
-    message(FATAL_ERROR "rockchip_mpp is not found")
-  endif ()
+if (NOT GLOG_FOUND)
+  message(FATAL_ERROR "glog is not found")
 endif ()
-if (USE_RK_RGA)
-  message(STATUS "Use rock chip RGA libary for hardware decode")
-  add_definitions(-DUSE_RK_RGA)
-  pkg_search_module(RK_RGA REQUIRED librga)
-  if (NOT RK_RGA_FOUND)
-    message(FATAL_ERROR "rockchip_rga is not found")
-  endif ()
+
+pkg_search_module(EIGEN3 REQUIRED eigen3)
+if (NOT EIGEN3_FOUND)
+  message(FATAL_ERROR "eigen3 is not found")
 endif ()
+
 execute_process(COMMAND uname -m OUTPUT_VARIABLE MACHINES)
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE MACHINES_BIT)
 message(STATUS "ORRBEC Machine : ${MACHINES}")
@@ -85,7 +76,6 @@ add_service_files(
   GetCameraInfo.srv
   GetCameraParams.srv
   GetDeviceInfo.srv
-  GetDouble.srv
   GetInt32.srv
   GetString.srv
   SetInt32.srv
@@ -122,8 +112,9 @@ add_definitions(-Dlibuvc_VERSION_PATCH=${libuvc_VERSION_PATCH})
 set(ORBBEC_OPENNI2_REDIST
   "${CMAKE_CURRENT_SOURCE_DIR}/include/openni2_redist/${HOST_PLATFORM}")
 
-set(CMAKE_BUILD_RPATH "${CMAKE_BUILD_RPATH}:${ORBBEC_OPENNI2_REDIST}")
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH}:${ORBBEC_OPENNI2_REDIST}")
+link_directories(${ORBBEC_OPENNI2_REDIST}
+  ${catkin_LINK_DIRS}
+  ${OpenCV_LIBS})
 
 add_library(${PROJECT_NAME}
   src/point_cloud_proc/point_cloud_xyz.cpp
@@ -136,7 +127,7 @@ add_library(${PROJECT_NAME}
   src/ros_service.cpp
   src/utils.cpp
   src/uvc_camera_driver.cpp
-)
+  )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
@@ -146,19 +137,17 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${Boost_INCLUDE_DIRS}
   ${libuvc_INCLUDE_DIRS}
   ${OpenCV_INCLUDED_DIRS}
-  ${RK_MPP_INCLUDE_DIRS}
-  ${RK_RGA_INCLUDE_DIRS}
-)
+  )
+
 target_link_libraries(${PROJECT_NAME}
   -lOpenNI2
   -L${ORBBEC_OPENNI2_REDIST}
   ${catkin_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${OpenCV_LIBS}
+  ${GLOG_LIBRARIES}
   ${LIBUVC_LIBRARIES}
-  ${RK_MPP_LIBRARIES}
-  ${RK_RGA_LIBRARIES}
-)
+  )
 
 add_dependencies(${PROJECT_NAME}
   ${PROJECT_NAME}_gencfg
@@ -168,7 +157,7 @@ add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
 add_executable(${PROJECT_NAME}_node
   src/main.cpp
-)
+  )
 
 target_include_directories(${PROJECT_NAME}_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
@@ -178,7 +167,7 @@ target_include_directories(${PROJECT_NAME}_node PUBLIC
   ${Boost_INCLUDE_DIRS}
   ${LIBUVC_INCLUDE_DIRS}
   ${OpenCV_INCLUDED_DIRS}
-)
+  )
 
 target_link_libraries(${PROJECT_NAME}_node
   -lOpenNI2
@@ -188,11 +177,12 @@ target_link_libraries(${PROJECT_NAME}_node
   ${CMAKE_THREAD_LIBS_INIT}
   ${OpenCV_LIBS}
   ${LIBUVC_LIBRARIES}
-)
+  ${GLOG_LIBRARIES}
+  )
 
 add_executable(list_devices_node
   src/list_devices_node.cpp
-)
+  )
 target_include_directories(list_devices_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -201,7 +191,7 @@ target_include_directories(list_devices_node PUBLIC
   ${Boost_INCLUDE_DIRS}
   ${LIBUVC_INCLUDE_DIRS}
   ${OpenCV_INCLUDED_DIRS}
-)
+  )
 
 target_link_libraries(list_devices_node
   -lOpenNI2
@@ -210,49 +200,62 @@ target_link_libraries(list_devices_node
   ${catkin_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${OpenCV_LIBS}
+  ${GLOG_LIBRARIES}
   ${LIBUVC_LIBRARIES}
-)
+  )
 
+add_executable(cleanup_shm_node
+  src/astra_cleanup.cpp
+  )
+
+target_include_directories(cleanup_shm_node PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+  ${catkin_INCLUDE_DIRS}
+  )
+target_link_libraries(cleanup_shm_node
+  Threads::Threads
+  ${catkin_LIBRARIES}
+  )
 
 install(TARGETS ${PROJECT_NAME}
   ${PROJECT_NAME}_node
   list_devices_node
+  cleanup_shm_node
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+  )
 
 install(FILES ${ORBBEC_OPENNI2_REDIST}/libOpenNI2.so
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
-)
+  )
 
 install(DIRECTORY ${ORBBEC_OPENNI2_REDIST}/OpenNI2
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/
-)
+  )
 
-install(DIRECTORY include/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING
-  PATTERN "*"
-  PATTERN "openni2_redist" EXCLUDE
-)
+install(DIRECTORY include
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}/
+  )
 
 install(FILES 56-orbbec-usb.rules
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/${PROJECT_NAME}
-)
+  )
 
 install(DIRECTORY scripts
   DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}/${PROJECT_NAME}
-)
+  )
 
 install(FILES 56-orbbec-usb.rules
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+  )
 
 install(DIRECTORY scripts
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+  )
 
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+  )

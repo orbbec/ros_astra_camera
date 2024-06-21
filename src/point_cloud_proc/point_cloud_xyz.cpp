@@ -1,36 +1,14 @@
-/*********************************************************************
-* Software License Agreement (BSD License)
-*
-*  Copyright (c) 2008, Willow Garage, Inc.
-*  All rights reserved.
-*
-*  Redistribution and use in source and binary forms, with or without
-*  modification, are permitted provided that the following conditions
-*  are met:
-*
-*   * Redistributions of source code must retain the above copyright
-*     notice, this list of conditions and the following disclaimer.
-*   * Redistributions in binary form must reproduce the above
-*     copyright notice, this list of conditions and the following
-*     disclaimer in the documentation and/or other materials provided
-*     with the distribution.
-*   * Neither the name of the Willow Garage nor the names of its
-*     contributors may be used to endorse or promote products derived
-*     from this software without specific prior written permission.
-*
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-*  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-*  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-*  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-*  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-*  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-*  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-*  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-*  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
-*  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-*  POSSIBILITY OF SUCH DAMAGE.
-*********************************************************************/
+/**************************************************************************/
+/*                                                                        */
+/* Copyright (c) 2013-2022 Orbbec 3D Technology, Inc                      */
+/*                                                                        */
+/* PROPRIETARY RIGHTS of Orbbec 3D Technology are involved in the         */
+/* subject matter of this material. All manufacturing, reproduction, use, */
+/* and sales rights pertaining to this subject matter are governed by the */
+/* license agreement. The recipient of this software implicitly accepts   */
+/* the terms of the license.                                              */
+/*                                                                        */
+/**************************************************************************/
 
 #include "astra_camera/point_cloud_proc/point_cloud_xyz.h"
 
@@ -46,8 +24,9 @@ PointCloudXyzNode::PointCloudXyzNode(ros::NodeHandle &nh, ros::NodeHandle &nh_pr
   pub_point_cloud_ = nh_.advertise<sensor_msgs::PointCloud2>("depth/points", queue_size_,
                                                              connect_cb, disconnect_cb);
   save_point_cloud_srv_ = nh_.advertiseService<std_srvs::EmptyRequest, std_srvs::EmptyResponse>(
-      "save_point_cloud_xyz",
-      [this](auto &&req, auto &&res) { return this->SavePointCloudXyzCallback(req, res); });
+      "save_point_cloud_xyz", [this](std_srvs::EmptyRequest &req, std_srvs::EmptyResponse &res) {
+        return this->SavePointCloudXyzCallback(req, res);
+      });
 }
 
 PointCloudXyzNode::~PointCloudXyzNode() = default;
@@ -92,8 +71,12 @@ void PointCloudXyzNode::depthCb(const sensor_msgs::ImageConstPtr &depth_msg,
   if (save_cloud_) {
     save_cloud_ = false;
     auto now = std::time(nullptr);
+    char buffer[80];
+    struct tm* timeinfo;
+    timeinfo = std::localtime(&now);
+    std::strftime(buffer, 80, "%Y%m%d_%H%M%S", timeinfo);
     std::stringstream ss;
-    ss << std::put_time(std::localtime(&now), "%Y%m%d_%H%M%S");
+    ss << buffer;
     auto current_path = boost::filesystem::current_path().string();
     std::string filename = current_path + "/point_cloud/points_xyz_" + ss.str() + ".ply";
     if (!boost::filesystem::exists(current_path + "/point_cloud")) {

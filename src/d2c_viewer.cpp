@@ -22,7 +22,7 @@ D2CViewer::D2CViewer(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
     : nh_(nh), nh_private_(nh_private) {
   rgb_sub_.subscribe(nh_, "color/image_raw", 1);
   depth_sub_.subscribe(nh_, "depth/image_raw", 1);
-  sync_ = std::make_unique<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(10), rgb_sub_,
+  sync_ = std::make_shared<message_filters::Synchronizer<MySyncPolicy>>(MySyncPolicy(10), rgb_sub_,
                                                                         depth_sub_);
   sync_->registerCallback(boost::bind(&D2CViewer::messageCallback, this, _1, _2));
   d2c_pub_ = nh_.advertise<sensor_msgs::Image>("depth_to_color/image_raw", 1);

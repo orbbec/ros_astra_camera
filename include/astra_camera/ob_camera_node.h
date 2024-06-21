@@ -24,8 +24,6 @@
 #include <sensor_msgs/distortion_models.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <tf2/LinearMath/Quaternion.h>
-#include <tf2/LinearMath/Transform.h>
-#include <tf2/LinearMath/Vector3.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
@@ -49,7 +47,11 @@ using ReconfigureServer = dynamic_reconfigure::Server<AstraConfig>;
 class OBCameraNode {
  public:
   OBCameraNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
-               std::shared_ptr<openni::Device> device, bool use_uvc_camera = false);
+               std::shared_ptr<openni::Device> device);
+
+  OBCameraNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private,
+               std::shared_ptr<openni::Device> device,
+               std::shared_ptr<UVCCameraDriver> uvc_camera_driver);
 
   ~OBCameraNode();
 
@@ -62,17 +64,11 @@ class OBCameraNode {
 
   void setupConfig();
 
-  void setupCameraInfoManager();
-
   void setupDevices();
-
-  void setupCameraParameter();
 
   void setupD2CConfig();
 
   void setupFrameCallback();
-
-  void setupSyncMode();
 
   void setupVideoMode();
 
@@ -88,16 +84,14 @@ class OBCameraNode {
 
   void setupTopics();
 
-  void setupUVCCamera();
-
   void imageSubscribedCallback(const stream_index_pair& stream_index);
 
   void imageUnsubscribedCallback(const stream_index_pair& stream_index);
 
   void setupPublishers();
 
-  void publishStaticTF(const ros::Time& t, const tf2::Vector3& trans, const tf2::Quaternion& q,
-                       const std::string& from, const std::string& to);
+  void publishStaticTF(const ros::Time& t, const std::vector<float>& trans,
+                       const tf2::Quaternion& q, const std::string& from, const std::string& to);
 
   void calcAndPublishStaticTransform();
 
@@ -121,10 +115,6 @@ class OBCameraNode {
 
   bool setGainCallback(SetInt32Request& request, SetInt32Response& response,
                        const stream_index_pair& stream_index);
-
-  bool getIRTemperatureCallback(GetDoubleRequest& request, GetDoubleResponse& response);
-
-  void setIRAutoExposure(bool status);
 
   int getIRExposure();
 
@@ -179,8 +169,6 @@ class OBCameraNode {
   bool getSupportedVideoModesCallback(GetStringRequest& request, GetStringResponse& response,
                                       const stream_index_pair& stream_index);
 
-  bool getLdpStatusCallback(GetBoolRequest& request, GetBoolResponse& response);
-
   bool toggleSensor(const stream_index_pair& stream_index, bool enabled, std::string& msg);
 
   void onNewFrameCallback(const openni::VideoFrameRef& frame,
@@ -192,13 +180,11 @@ class OBCameraNode {
 
   OBCameraParams getCameraParams();
 
-  OBCameraParams getColorCameraParams();
-
   static sensor_msgs::CameraInfo OBCameraParamsToCameraInfo(const OBCameraParams& params);
 
   double getFocalLength(const stream_index_pair& stream_index, int y_resolution);
 
-  sensor_msgs::CameraInfo getIRCameraInfo(int width, int height, double f);
+  sensor_msgs::CameraInfo getIRCameraInfo();
 
   sensor_msgs::CameraInfo getDepthCameraInfo();
 
@@ -211,12 +197,9 @@ class OBCameraNode {
   // NOTE: This interface only for testing purposes.
   void reconfigureCallback(const AstraConfig& config, uint32_t level);
 
-  void sendKeepAlive(const ros::TimerEvent& event);
+  void sendKeepAlive();
 
-  void pollFrame();
-
-  void dcw2Align(const cv::Mat& src, cv::Mat& dst);
-  void maxProAlign(const cv::Mat& src, cv::Mat& dst);
+  void streamingPoller();
 
  private:
   ros::NodeHandle nh_;
@@ -224,16 +207,12 @@ class OBCameraNode {
   std::shared_ptr<openni::Device> device_;
   std::shared_ptr<UVCCameraDriver> uvc_camera_driver_ = nullptr;
   std::string camera_name_ = "camera";
-  std::unique_ptr<ReconfigureServer> reconfigure_server_ = nullptr;
+  std::shared_ptr<ReconfigureServer> reconfigure_server_ = nullptr;
   std::map<int, openni::VideoMode> video_modes_lookup_table_;
   bool use_uvc_camera_ = false;
   openni::DeviceInfo device_info_{};
   std::atomic_bool is_running_{false};
   std::map<stream_index_pair, bool> enable_;
-  std::map<stream_index_pair, bool> enable_auto_exposure_;
-  std::map<stream_index_pair, int> stream_exposure_;
-  std::map<stream_index_pair, int> stream_gain_;
-  bool enable_auto_white_balance_;
   std::map<stream_index_pair, bool> stream_started_;
   std::map<stream_index_pair, int> width_;
   std::map<stream_index_pair, int> height_;
@@ -255,7 +234,6 @@ class OBCameraNode {
   std::map<stream_index_pair, int> unit_step_size_;
   std::map<stream_index_pair, ros::Publisher> image_publishers_;
   std::map<stream_index_pair, ros::Publisher> camera_info_publishers_;
-  std::map<stream_index_pair, bool> flip_image_;
 
   std::map<stream_index_pair, ros::ServiceServer> get_exposure_srv_;
   std::map<stream_index_pair, ros::ServiceServer> set_exposure_srv_;
@@ -269,7 +247,6 @@ class OBCameraNode {
   std::map<stream_index_pair, ros::ServiceServer> set_auto_exposure_srv_;
   ros::ServiceServer get_device_srv_;
   ros::ServiceServer set_laser_enable_srv_;
-  // ros::ServiceServer get_laser_status_srv_;
   ros::ServiceServer set_ldp_enable_srv_;
   ros::ServiceServer set_fan_enable_srv_;
   ros::ServiceServer get_camera_info_srv_;
@@ -283,8 +260,6 @@ class OBCameraNode {
   ros::ServiceServer reset_ir_gain_srv_;
   ros::ServiceServer reset_ir_exposure_srv_;
   ros::ServiceServer set_ir_flood_srv_;
-  ros::ServiceServer get_ldp_status_srv_;
-  ros::ServiceServer get_ir_temperature_srv_;
 
   bool publish_tf_ = true;
   std::shared_ptr<tf2_ros::StaticTransformBroadcaster> static_tf_broadcaster_;
@@ -296,7 +271,6 @@ class OBCameraNode {
   double tf_publish_rate_ = 10.0;
   bool depth_align_ = false;
   boost::optional<OBCameraParams> camera_params_;
-  boost::optional<OBCameraParams> color_camera_params_;
   double depth_ir_x_offset_ = 0.0;
   double depth_ir_y_offset_ = 0.0;
   bool color_depth_synchronization_ = false;
@@ -308,34 +282,24 @@ class OBCameraNode {
   std::recursive_mutex device_lock_;
   int init_ir_gain_ = 0;
   uint32_t init_ir_exposure_ = 0;
-  bool ir_ae_ = true;
-  int ir_gain_ = 0;
-  uint32_t ir_exposure_ = 0;
   bool enable_d2c_viewer_ = false;
-  std::unique_ptr<D2CViewer> d2c_filter_ = nullptr;
-  std::unique_ptr<camera_info_manager::CameraInfoManager> color_info_manager_ = nullptr;
-  std::unique_ptr<camera_info_manager::CameraInfoManager> ir_info_manager_ = nullptr;
+  std::shared_ptr<D2CViewer> d2c_filter_ = nullptr;
+  std::shared_ptr<camera_info_manager::CameraInfoManager> color_camera_info_ = nullptr;
+  std::shared_ptr<camera_info_manager::CameraInfoManager> ir_camera_info_ = nullptr;
   std::string ir_info_uri_;
   std::string color_info_uri_;
   bool keep_alive_ = false;
   int keep_alive_interval_ = 15;
-  ros::Timer keep_alive_timer_;
   std::atomic_bool initialized_{false};
-  std::unique_ptr<PointCloudXyzNode> point_cloud_xyz_node_ = nullptr;
-  std::unique_ptr<PointCloudXyzrgbNode> point_cloud_xyzrgb_node_ = nullptr;
+  std::shared_ptr<PointCloudXyzNode> point_cloud_xyz_node_ = nullptr;
+  std::shared_ptr<PointCloudXyzrgbNode> point_cloud_xyzrgb_node_ = nullptr;
   bool enable_pointcloud_ = false;
   bool enable_pointcloud_xyzrgb_ = false;
-  std::unique_ptr<std::thread> poll_frame_thread_ = nullptr;
-  std::atomic_bool run_poll_frame_thread_{false};
-  std::mutex poll_frame_thread_lock_;
-  std::condition_variable poll_frame_thread_cv_;
-  bool enable_publish_extrinsic_ = false;
-  int soft_filter_ = 2;
-  // Default 16
-  int soft_filter_max_diff_ = 16;
-  // Default 480
-  int soft_filter_max_speckle_size_ = 480;
-  MultiDeviceSyncMode multi_device_sync_mode_;
-  bool enable_color_auto_exposure_ = true;
+  std::shared_ptr<std::thread> poll_stream_thread_ = nullptr;
+  std::shared_ptr<std::thread> keep_alive_thread_ = nullptr;
+  std::atomic_bool run_streaming_poller_{false};
+  std::atomic_bool has_stream_running_{false};
+  std::condition_variable stream_started_cv_;
+  std::mutex wait_stream_lock_;
 };
 }  // namespace astra_camera

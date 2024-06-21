@@ -16,6 +16,9 @@
 #include "sensor_msgs/PointCloud.h"
 #include "sensor_msgs/distortion_models.h"
 #include "sensor_msgs/point_cloud2_iterator.h"
+#include <semaphore.h>
+#include <fcntl.h>
+#include <sys/shm.h>
 
 namespace astra_camera {
 
@@ -193,18 +196,12 @@ void saveRGBPointToPly(sensor_msgs::PointCloud2::Ptr cloud, const std::string& f
   fflush(fp);
   fclose(fp);
 }
-
-MultiDeviceSyncMode getMultiDeviceSyncMode(const std::string& mode) {
-  if (mode == "none") {
-    return MultiDeviceSyncMode::None;
-  } else if (mode == "master" || mode == "main") {
-    return MultiDeviceSyncMode::Master;
-  } else if (mode == "slave" || mode == "sub") {
-    return MultiDeviceSyncMode::Slave;
-  } else {
-    return MultiDeviceSyncMode::None;
+void cleanupSharedMemory() {
+  sem_unlink(DEFAULT_SEM_NAME.c_str());
+  int shm_id = shmget(DEFAULT_SEM_KEY, 1, 0666 | IPC_CREAT);
+  if (shm_id != -1) {
+    shmctl(shm_id, IPC_RMID, nullptr);
   }
 }
-
 
 }  // namespace astra_camera

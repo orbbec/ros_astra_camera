@@ -31,9 +31,9 @@ int main() {
   auto disconnected_cb = [](const openni::DeviceInfo* device_info) {
     std::cout << "device " << device_info->getUri() << " disconnected" << std::endl;
   };
-  auto context = std::make_unique<astra_camera::Context>(disconnected_cb);
-  auto device_list = context->queryDeviceList();
-  for (auto& device_info : device_list) {
+  auto context = std::make_shared<astra_camera::OBContext>(disconnected_cb);
+  auto device_info_list = context->queryDeviceList();
+  for (auto& device_info : device_info_list) {
     DeviceConnectedCallback(&device_info);
   }
   openni::OpenNI::shutdown();

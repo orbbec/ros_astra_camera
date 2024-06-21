@@ -10,6 +10,7 @@
 /**************************************************************************/
 #pragma once
 
+#include <glog/logging.h>
 #include <openni2/OpenNI.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
@@ -26,7 +27,6 @@
 #include "astra_camera/GetBool.h"
 #include "astra_camera/GetCameraInfo.h"
 #include "astra_camera/GetDeviceInfo.h"
-#include "astra_camera/GetDouble.h"
 #include "astra_camera/GetInt32.h"
 #include "astra_camera/GetString.h"
 #include "astra_camera/Metadata.h"
@@ -60,11 +60,4 @@ struct ImageROI {
   int width = -1;
   int height = -1;
 };
-
-enum class MultiDeviceSyncMode {
-  None = 0,  // 不同步
-  Master = 1,
-  Slave = 2,
-};
-
 }  // namespace astra_camera

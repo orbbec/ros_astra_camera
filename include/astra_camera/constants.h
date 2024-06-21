@@ -12,12 +12,12 @@
 
 #pragma once
 
-#include <cstdlib>
 #include <string>
+#include <cstdlib>
 
 #define OB_ROS_MAJOR_VERSION 1
-#define OB_ROS_MINOR_VERSION 2
-#define OB_ROS_PATCH_VERSION 7
+#define OB_ROS_MINOR_VERSION 1
+#define OB_ROS_PATCH_VERSION 9
 
 #ifndef STRINGIFY
 #define STRINGIFY(arg) #arg
@@ -106,12 +106,6 @@ constexpr static uint32_t DEEYEA_UVC_PID = 0x050b;
 constexpr static uint32_t GEMIN_E_UVC_PID = 0x055c;
 constexpr static uint32_t GEMINI_E_DEPTH_PID = 0x065c;
 constexpr static uint32_t GEMINI_E_LITE_DEPTH_PID = 0x065d;
-constexpr static uint32_t DABAI_MAX_PID = 0x069a;
-constexpr static uint32_t DABAI_MAX_PRO_PID = 0x069e;
-constexpr static uint32_t GEMINI_UW_PID = 0x06aa;
-constexpr static uint32_t ASTRA_PRO_DEPTH_PID = 0x0403;
-constexpr static uint32_t DABAI_DCW2_DEPTH_PID = 0x06a0;
-constexpr static uint32_t DABAI_DW2_DEPTH_PID = 0x069f;
 const std::string OB_STEREO_S = "Orbbec Canglong";
 const std::string OB_EMBEDDED_S = "Astra SL1000S_U3";
 const std::string OB_STEREO_S_U3 = "Astra SV1301S_U3";
@@ -123,7 +117,7 @@ const std::string OB_ASTRA_PLUS_S = "Orbbec Astra+_S";
 const std::string OB_DABAI_PRO = "Orbbec Astra DaBai Pro";
 const std::string OB_DABAI_DCW = "Orbbec DaBai DCW";
 const std::string OB_DABAI_DW = "Orbbec DaBai DW";
-const std::string DEFAULT_LOCK_FILE = "astra_device.lock";
+const std::string DEFAULT_SEM_NAME = "astra_device_sem";
 const key_t DEFAULT_SEM_KEY = 0x0401;
 
 }  // namespace astra_camera
