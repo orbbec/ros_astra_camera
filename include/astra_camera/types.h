@@ -10,7 +10,6 @@
 /**************************************************************************/
 #pragma once
 
-#include <glog/logging.h>
 #include <openni2/OpenNI.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>

@@ -146,6 +146,5 @@ class UVCCameraDriver {
   ros::Publisher image_publisher_;
   ros::Publisher camera_info_publisher_;
   boost::optional<sensor_msgs::CameraInfo> camera_info_;
-  std::recursive_mutex device_lock_;
 };
 }  // namespace astra_camera

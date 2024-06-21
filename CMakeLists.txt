@@ -33,11 +33,6 @@ pkg_search_module(LIBUVC REQUIRED libuvc)
 if (NOT LIBUVC_FOUND)
   message(FATAL_ERROR "libuvc is not found")
 endif ()
-pkg_search_module(GLOG REQUIRED libglog)
-
-if (NOT GLOG_FOUND)
-  message(FATAL_ERROR "glog is not found")
-endif ()
 
 pkg_search_module(EIGEN3 REQUIRED eigen3)
 if (NOT EIGEN3_FOUND)
@@ -145,7 +140,6 @@ target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${OpenCV_LIBS}
-  ${GLOG_LIBRARIES}
   ${LIBUVC_LIBRARIES}
   )
 
@@ -177,7 +171,6 @@ target_link_libraries(${PROJECT_NAME}_node
   ${CMAKE_THREAD_LIBS_INIT}
   ${OpenCV_LIBS}
   ${LIBUVC_LIBRARIES}
-  ${GLOG_LIBRARIES}
   )
 
 add_executable(list_devices_node
@@ -200,7 +193,6 @@ target_link_libraries(list_devices_node
   ${catkin_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${OpenCV_LIBS}
-  ${GLOG_LIBRARIES}
   ${LIBUVC_LIBRARIES}
   )
 

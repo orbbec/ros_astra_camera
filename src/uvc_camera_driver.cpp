@@ -115,16 +115,17 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle& nh, ros::NodeHandle& nh_privat
   config_.optical_frame_id = camera_name_ + "_color_optical_frame";
   get_camera_info_client_ = nh_.serviceClient<astra_camera::GetCameraInfo>("get_camera_info");
   camera_info_publisher_ = nh_.advertise<sensor_msgs::CameraInfo>("color/camera_info", 10);
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
+  frame_buffer_ = uvc_allocate_frame(config_.width * config_.height * 3);
+  CHECK_NOTNULL(frame_buffer_);
+  setupCameraControlService();
+  openCamera();
   image_publisher_ = nh_.advertise<sensor_msgs::Image>(
       "color/image_raw", 10, boost::bind(&UVCCameraDriver::imageSubscribedCallback, this),
       boost::bind(&UVCCameraDriver::imageUnsubscribedCallback, this));
-  setupCameraControlService();
-  openCamera();
 }
 
 UVCCameraDriver::~UVCCameraDriver() {
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
+  stopStreaming();
   uvc_close(device_handle_);
   device_handle_ = nullptr;
   uvc_unref_device(device_);
@@ -142,7 +143,6 @@ void UVCCameraDriver::openCamera() {
   uvc_error_t err;
   auto serial_number = config_.serial_number.empty() ? nullptr : config_.serial_number.c_str();
   CHECK(device_ == nullptr);
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   err = uvc_find_device(ctx_, &device_, config_.vendor_id, config_.product_id, serial_number);
   if (err != UVC_SUCCESS) {
     uvc_perror(err, "ERROR: uvc_find_device");
@@ -184,7 +184,6 @@ void UVCCameraDriver::openCamera() {
 void UVCCameraDriver::updateConfig(const UVCCameraConfig& config) { config_ = config; }
 
 void UVCCameraDriver::setVideoMode() {
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   auto uvc_format = UVCFrameFormatString(config_.format);
   int width = config_.width;
   int height = config_.height;
@@ -212,13 +211,11 @@ void UVCCameraDriver::setVideoMode() {
 
 void UVCCameraDriver::imageSubscribedCallback() {
   ROS_INFO_STREAM("image subscribed");
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   startStreaming();
 }
 
 void UVCCameraDriver::imageUnsubscribedCallback() {
   ROS_INFO_STREAM("image unsubscribed");
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   auto subscriber_count = image_publisher_.getNumSubscribers();
   if (subscriber_count == 0) {
     stopStreaming();
@@ -237,7 +234,6 @@ void UVCCameraDriver::startStreaming() {
   CHECK_NOTNULL(device_);
   CHECK_NOTNULL(device_handle_);
   setVideoMode();
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   uvc_error_t stream_err =
       uvc_start_streaming(device_handle_, &ctrl_, &UVCCameraDriver::frameCallbackWrapper, this, 0);
   if (stream_err != UVC_SUCCESS) {
@@ -258,14 +254,6 @@ void UVCCameraDriver::startStreaming() {
     uvc_unref_device(device_);
     return;
   }
-
-  if (frame_buffer_) {
-    uvc_free_frame(frame_buffer_);
-    frame_buffer_ = nullptr;
-  }
-
-  frame_buffer_ = uvc_allocate_frame(config_.width * config_.height * 3);
-  CHECK_NOTNULL(frame_buffer_);
   is_streaming_started.store(true);
 }
 
@@ -276,10 +264,6 @@ void UVCCameraDriver::stopStreaming() noexcept {
   }
   ROS_WARN_STREAM("stop uvc streaming");
   uvc_stop_streaming(device_handle_);
-  if (frame_buffer_) {
-    uvc_free_frame(frame_buffer_);
-    frame_buffer_ = nullptr;
-  }
   is_streaming_started.store(false);
 }
 
@@ -397,7 +381,6 @@ void UVCCameraDriver::frameCallbackWrapper(uvc_frame_t* frame, void* ptr) {
 void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
   CHECK_NOTNULL(frame);
   CHECK_NOTNULL(frame_buffer_);
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   static constexpr int unit_step = 3;
   sensor_msgs::Image image;
   image.width = frame->width;
