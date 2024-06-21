@@ -171,7 +171,6 @@ class UVCCameraDriver {
   ros::Publisher image_publisher_;
   ros::Publisher camera_info_publisher_;
   sensor_msgs::CameraInfo camera_info_;
-  std::recursive_mutex device_lock_;
   std::shared_ptr<camera_info_manager::CameraInfoManager> color_info_manager_ = nullptr;
   int device_num_ = 1;
   bool enable_color_auto_exposure_ = true;
