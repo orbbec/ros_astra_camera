@@ -657,7 +657,6 @@ void UVCCameraDriver::frameCallbackWrapper(uvc_frame_t* frame, void* ptr) {
 void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
   CHECK_NOTNULL(frame);
   CHECK_NOTNULL(frame_buffer_);
-  std::lock_guard<decltype(device_lock_)> lock(device_lock_);
   static constexpr int unit_step = 3;
   sensor_msgs::Image image;
   image.width = frame->width;
@@ -677,6 +676,7 @@ void UVCCameraDriver::frameCallback(uvc_frame_t* frame) {
     memcpy(&(image.data[0]), frame->data, frame->data_bytes);
   } else if (frame->frame_format == UVC_FRAME_FORMAT_YUYV) {
     // FIXME: uvc_any2bgr does not work on "yuyv" format, so use uvc_yuyv2bgr directly.
+    std::lock_guard<decltype(device_lock_)> lock(device_lock_);
     uvc_error_t conv_ret = uvc_yuyv2bgr(frame, frame_buffer_);
     if (conv_ret != UVC_SUCCESS) {
       uvc_perror(conv_ret, "Couldn't convert frame to RGB");
