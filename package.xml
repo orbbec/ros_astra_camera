@@ -6,6 +6,8 @@
   <license>Apache License 2.0</license>
   <maintainer email="mocun@orbbec.com">Mo Cun</maintainer>
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>backward_ros</depend>
+  <depend>libdw-dev</depend>
   <depend>cv_bridge</depend>
   <depend>dynamic_reconfigure</depend>
   <depend>git</depend>

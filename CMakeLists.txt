@@ -14,6 +14,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif ()
 
 find_package(catkin REQUIRED
+  backward_ros
   cv_bridge
   dynamic_reconfigure
   image_geometry
@@ -113,6 +114,7 @@ catkin_package(
   std_srvs
   message_filters
   camera_info_manager
+  backward_ros
 )
 
 add_definitions(-Dlibuvc_VERSION_MAJOR=${libuvc_VERSION_MAJOR})
@@ -151,6 +153,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 target_link_libraries(${PROJECT_NAME}
   -lOpenNI2
+  -ldw # for stacktrace
   -L${ORBBEC_OPENNI2_REDIST}
   ${catkin_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}

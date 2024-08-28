@@ -27,7 +27,7 @@
 #include "ob_context.h"
 #include "std_msgs/Empty.h"
 #include "uvc_camera_driver.h"
-
+#include <backward_ros/backward.hpp>
 namespace astra_camera {
 class OBCameraNodeFactory {
  public:
@@ -79,5 +79,6 @@ class OBCameraNodeFactory {
   pthread_mutexattr_t astra_device_lock_attr_;
   uint8_t* astra_device_lock_shm_ptr_ = nullptr;
   int astra_device_lock_shm_id_ = -1;
+  static backward::SignalHandling sh;
 };
 }  // namespace astra_camera

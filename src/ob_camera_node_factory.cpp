@@ -21,6 +21,7 @@
 #include <unistd.h>
 
 #include <atomic>
+#include <backward_ros/backward.hpp>
 #include <boost/filesystem.hpp>
 #include <cassert>
 #include <cerrno>
@@ -34,6 +35,47 @@
 #include "astra_camera/ob_camera_node.h"
 
 namespace astra_camera {
+
+backward::SignalHandling OBCameraNodeFactory::sh;
+
+std::string g_camera_name = "camera";
+
+void signalHandler(int signum) {
+  std::cout << "Received signal: " << signum << std::endl;
+
+  std::string log_dir = "Log/";
+
+  // get current time
+  std::time_t now = std::time(nullptr);
+  std::tm* local_time = std::localtime(&now);
+
+  // format date and time to string, format as "2024_05_20_12_34_56"
+  std::ostringstream time_stream;
+  time_stream << std::put_time(local_time, "%Y_%m_%d_%H_%M_%S");
+
+  // generate log file name
+  std::string log_file_name = g_camera_name + "_crash_stack_trace_" + time_stream.str() + ".log";
+  std::string log_file_path = log_dir + log_file_name;
+
+  if (!boost::filesystem::exists(log_dir)) {
+    boost::filesystem::create_directories(log_dir);
+  }
+
+  std::cout << "Log crash stack trace to " << log_file_path << std::endl;
+  std::ofstream log_file(log_file_path, std::ios::app);
+
+  if (log_file.is_open()) {
+    log_file << "Received signal: " << signum << std::endl;
+
+    backward::StackTrace st;
+    st.load_here(32);  // Capture stack
+    backward::Printer p;
+    p.print(st, log_file);  // Print stack to log file
+  }
+
+  log_file.close();
+  exit(signum);  // Exit program
+}
 
 OBCameraNodeFactory::OBCameraNodeFactory(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
     : nh_(nh), nh_private_(nh_private) {
@@ -55,9 +97,14 @@ OBCameraNodeFactory::~OBCameraNodeFactory() {
   openni::OpenNI::shutdown();
 }
 
-
 void OBCameraNodeFactory::init() {
   ROS_INFO_STREAM("Initializing OBCameraNodeFactory...");
+  signal(SIGSEGV, signalHandler);  // segment fault
+  signal(SIGABRT, signalHandler);  // abort
+  signal(SIGFPE, signalHandler);   // float point exception
+  signal(SIGILL, signalHandler);   // illegal instruction
+  g_camera_name = nh_private_.param<std::string>("camera_name", "camera");
+
   astra_device_lock_shm_id_ = shm_open(DEFAULT_LOCK_FILE.c_str(), O_RDWR | O_CREAT, 0777);
   if (astra_device_lock_shm_id_ == -1) {
     ROS_ERROR_STREAM("Failed to create shared memory " << strerror(errno));

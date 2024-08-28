@@ -17,6 +17,7 @@ This package allows the usage of Orbbec 3D cameras with ROS Kinetic, Melodic, an
   # Assuming you have sourced the ros environment, same below
   sudo apt install libgflags-dev  ros-$ROS_DISTRO-image-geometry ros-$ROS_DISTRO-camera-info-manager\
   ros-$ROS_DISTRO-image-transport ros-$ROS_DISTRO-image-publisher  libusb-1.0-0-dev libeigen3-dev
+  ros-$ROS_DISTRO-backward-ros libdw-dev
   ```
 
 - Install libuvc.
