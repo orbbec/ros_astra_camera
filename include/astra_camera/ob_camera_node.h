@@ -43,7 +43,6 @@
 #include "uvc_camera_driver.h"
 
 namespace astra_camera {
-
 using ReconfigureServer = dynamic_reconfigure::Server<AstraConfig>;
 
 class OBCameraNode {
@@ -337,5 +336,6 @@ class OBCameraNode {
   int soft_filter_max_speckle_size_ = 480;
   MultiDeviceSyncMode multi_device_sync_mode_;
   bool enable_color_auto_exposure_ = true;
+  bool enable_ldp_ = true;
 };
 }  // namespace astra_camera

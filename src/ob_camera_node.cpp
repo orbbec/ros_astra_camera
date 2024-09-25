@@ -223,6 +223,8 @@ void OBCameraNode::setupDevices() {
       enable_[stream_index] = false;
     }
   }
+  // setup camera params
+  device_->setProperty(XN_MODULE_PROPERTY_LDP_ENABLE, enable_ldp_);
 }
 
 void OBCameraNode::setupCameraParameter() {
@@ -528,6 +530,7 @@ void OBCameraNode::getParameters() {
   enable_pointcloud_xyzrgb_ = nh_private_.param<bool>("enable_point_cloud_xyzrgb", false);
   enable_publish_extrinsic_ = nh_private_.param<bool>("enable_publish_extrinsic", false);
   std::string sync_mode = nh_private_.param<std::string>("multi_device_sync_mode", "none");
+  enable_ldp_ = nh_private_.param<bool>("enable_ldp", true);
   multi_device_sync_mode_ = getMultiDeviceSyncMode(sync_mode);
   if (depth_align_ && !device_->hasSensor(openni::SENSOR_COLOR) && !use_uvc_camera_) {
     ROS_WARN("No color sensor found, depth align will be disabled");
