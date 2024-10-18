@@ -131,6 +131,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle &nh, ros::NodeHandle &nh_privat
                                  const sensor_msgs::CameraInfo &camera_info,
                                  const std::string &serial_number)
     : nh_(nh), nh_private_(nh_private), camera_info_(camera_info) {
+  std::lock_guard<decltype(camera_mutex_)> lock(camera_mutex_);
   auto err = uvc_init(&ctx_, nullptr);
   if (err != UVC_SUCCESS) {
     uvc_perror(err, "ERROR: uvc_init");
@@ -175,6 +176,8 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle &nh, ros::NodeHandle &nh_privat
   image_publisher_ = nh_.advertise<sensor_msgs::Image>(
       "color/image_raw", 10, boost::bind(&UVCCameraDriver::imageSubscribedCallback, this),
       boost::bind(&UVCCameraDriver::imageUnsubscribedCallback, this));
+  camera_initialized_ = true;
+  camera_cv_.notify_all();
 }
 
 UVCCameraDriver::~UVCCameraDriver() {
@@ -294,6 +297,8 @@ void UVCCameraDriver::setVideoMode() {
 
 void UVCCameraDriver::imageSubscribedCallback() {
   ROS_INFO_STREAM("UVCCameraDriver image subscribed");
+  std::unique_lock<decltype(camera_mutex_)> lock;
+  camera_cv_.wait(lock, [this] { return camera_initialized_.load(); });
   startStreaming();
 }
 

@@ -19,6 +19,10 @@
 #include <sensor_msgs/CameraInfo.h>
 
 #include <boost/optional.hpp>
+#include <atomic>
+#include <memory>
+#include <condition_variable>
+#include <mutex>
 
 #include "constants.h"
 #include "types.h"
@@ -177,6 +181,9 @@ class UVCCameraDriver {
   int exposure_ = -1;
   int gain_ = -1;
   int white_balance_ = -1;
+  std::atomic_bool camera_initialized_{false};
+  std::mutex camera_mutex_;
+  std::condition_variable camera_cv_;
 #if defined(USE_RK_MPP)
   MppCtx mpp_ctx_ = nullptr;
   MppApi* mpp_api_ = nullptr;

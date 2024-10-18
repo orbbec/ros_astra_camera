@@ -192,7 +192,17 @@ void OBCameraNodeFactory::onDeviceConnected(const openni::DeviceInfo* device_inf
     ROS_ERROR_STREAM_THROTTLE(1, "Device connected: " << device_info->getName() << " uri is null");
     return;
   }
-  pthread_mutex_lock(astra_device_lock_);
+  // Use trylock to prevent blocking or potential deadlock
+  ROS_INFO_STREAM("try lock multi process lock");
+  int trylock_result = pthread_mutex_trylock(astra_device_lock_);
+  if (trylock_result != 0) {
+    if (trylock_result == EBUSY) {
+      ROS_ERROR_STREAM("Mutex is already locked by another thread, aborting device connection.");
+    } else {
+      ROS_ERROR_STREAM("Failed to lock mutex: " << strerror(trylock_result));
+    }
+    return;  // Exit early if mutex couldn't be locked
+  }
   std::shared_ptr<int> unlock_guard(nullptr,
                                     [this](int*) { pthread_mutex_unlock(astra_device_lock_); });
   std::lock_guard<decltype(device_lock_)> lock(device_lock_);
