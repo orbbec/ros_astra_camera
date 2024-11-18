@@ -316,8 +316,8 @@ class OBCameraNode {
   std::unique_ptr<camera_info_manager::CameraInfoManager> ir_info_manager_ = nullptr;
   std::string ir_info_uri_;
   std::string color_info_uri_;
-  bool keep_alive_ = false;
-  int keep_alive_interval_ = 15;
+  bool enable_keep_alive_ = false;
+  int keep_alive_interval_ = 5;
   ros::Timer keep_alive_timer_;
   std::atomic_bool initialized_{false};
   std::unique_ptr<PointCloudXyzNode> point_cloud_xyz_node_ = nullptr;
