@@ -347,7 +347,7 @@ projection_matrix:
 - `oni_log_to_console`, Whether to output OpenNI logs to the console.
 - `oni_log_to_file`:Whether to output OpenNI logs to a file. By default, it will be saved in the Log folder under the path of the currently running program.
 - For special customer requirements:
-  - `keep_alive`,  Whether to send heartbeat packets to the firmware. This is not enabled by default.
+  - `enable_keep_alive`,  Whether to send heartbeat packets to the firmware. This is not enabled by default.
   - `keep_alive_interval`, The time interval in seconds between sending heartbeat packets.
 
 ## Frequently Asked Questions

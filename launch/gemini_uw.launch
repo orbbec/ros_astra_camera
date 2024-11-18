@@ -59,6 +59,7 @@
     <arg name="soft_filter_max_diff" default="0"/>
     <!-- software filter param maxSpeckleSize -support when SoftFilter =2-->
     <arg name="soft_filter_max_speckle_size" default="0"/>
+    <arg name="enable_keep_alive" default="false"/>
     <group ns="$(arg camera_name)">
         <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
             <param name="camera_name" value="$(arg camera_name)"/>
@@ -114,6 +115,8 @@
             <param name="soft_filter" value="$(arg soft_filter)"/>
             <param name="soft_filter_max_diff" value="$(arg soft_filter_max_diff)"/>
             <param name="soft_filter_max_speckle_size" value="$(arg soft_filter_max_speckle_size)"/>
+            <param name="enable_publish_extrinsic" value="$(arg enable_publish_extrinsic)"/>
+            <param name="enable_keep_alive" value="$(arg enable_keep_alive)"/>
             <remap from="/$(arg camera_name)/depth/color/points" to="/$(arg camera_name)/depth_registered/points"/>
         </node>
     </group>

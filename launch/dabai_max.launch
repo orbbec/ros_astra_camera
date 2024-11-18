@@ -26,6 +26,7 @@
     <arg name="oni_log_to_console" default="false"/>
     <arg name="oni_log_to_file" default="false"/>
     <arg name="multi_device_sync_mode" default="none"/>
+    <arg name="enable_keep_alive" default="false"/>
     <group ns="$(arg camera_name)">
         <node name="camera" pkg="astra_camera" type="astra_camera_node" output="screen">
             <param name="camera_name" value="$(arg camera_name)"/>
@@ -54,6 +55,7 @@
             <param name="oni_log_to_console" value="$(arg oni_log_to_console)"/>
             <param name="oni_log_to_file" value="$(arg oni_log_to_file)"/>
             <param name="multi_device_sync_mode" value="$(arg multi_device_sync_mode)"/>
+            <param name="enable_keep_alive" value="$(arg enable_keep_alive)"/>
         </node>
     </group>
 </launch>

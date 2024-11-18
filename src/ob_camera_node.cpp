@@ -96,7 +96,8 @@ void OBCameraNode::init() {
       this->reconfigureCallback(config, level);
     });
   }
-  if (keep_alive_) {
+  if (enable_keep_alive_) {
+    device_->setProperty(XN_MODULE_PROPERTY_WATCH_DOG_MODE, 1);
     keep_alive_timer_ =
         nh_.createTimer(ros::Duration(keep_alive_interval_), &OBCameraNode::sendKeepAlive, this);
   }
@@ -524,7 +525,7 @@ void OBCameraNode::getParameters() {
   ir_info_uri_ = nh_private_.param<std::string>("ir_info_uri", "");
   color_info_uri_ = nh_private_.param<std::string>("color_info_uri", "");
   enable_d2c_viewer_ = nh_private_.param<bool>("enable_d2c_viewer", false);
-  keep_alive_ = nh_private_.param<bool>("keep_alive", false);
+  enable_keep_alive_ = nh_private_.param<bool>("enable_keep_alive", false);
   keep_alive_interval_ = nh_private_.param<int>("keep_alive_interval", 15);
   enable_pointcloud_ = nh_private_.param<bool>("enable_point_cloud", false);
   enable_pointcloud_xyzrgb_ = nh_private_.param<bool>("enable_point_cloud_xyzrgb", false);
