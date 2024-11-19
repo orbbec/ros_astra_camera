@@ -54,6 +54,7 @@ void OBCameraNode::clean() {
       streams_[stream_index].reset();
     }
   }
+   device_->setProperty(XN_MODULE_PROPERTY_WATCH_DOG_MODE, 0);
   ROS_INFO_STREAM("OBCameraNode::clean stop streams done.");
   if (uvc_camera_driver_ != nullptr) {
     ROS_INFO_STREAM("OBCameraNode::stop uvc camera.");
@@ -98,8 +99,6 @@ void OBCameraNode::init() {
   }
   if (enable_keep_alive_) {
     device_->setProperty(XN_MODULE_PROPERTY_WATCH_DOG_MODE, 1);
-    keep_alive_timer_ =
-        nh_.createTimer(ros::Duration(keep_alive_interval_), &OBCameraNode::sendKeepAlive, this);
   }
   if (enable_pointcloud_) {
     point_cloud_xyz_node_ = std::make_unique<PointCloudXyzNode>(nh_, nh_private_);
