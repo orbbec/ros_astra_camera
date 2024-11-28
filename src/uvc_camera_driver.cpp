@@ -125,10 +125,19 @@ void UVCCameraDriver::setupCameraParams() {
       uvc_set_gain(device_handle_, static_cast<uint16_t>(gain_));
     }
   }
-  ROS_INFO_STREAM("set color backlight compensation to " << backlight_compensation_);
-  auto ret = uvc_set_backlight_compensation(device_handle_, backlight_compensation_);
-  if (ret != UVC_SUCCESS) {
-    ROS_ERROR_STREAM("set color backlight compensation failed " << uvc_strerror(ret));
+
+  uint16_t min_backlight_compensation, max_backlight_compensation;
+  uvc_get_backlight_compensation(device_handle_, &min_backlight_compensation, UVC_GET_MIN);
+  uvc_get_backlight_compensation(device_handle_, &max_backlight_compensation, UVC_GET_MAX);
+  ROS_INFO_STREAM("backlight compensation range [" << min_backlight_compensation << ", "
+                                                   << max_backlight_compensation << "]");
+  if (backlight_compensation_ >= min_backlight_compensation &&
+      backlight_compensation_ <= max_backlight_compensation) {
+    ROS_INFO_STREAM("set color backlight compensation to " << backlight_compensation_);
+    auto ret = uvc_set_backlight_compensation(device_handle_, backlight_compensation_);
+    if (ret != UVC_SUCCESS) {
+      ROS_ERROR_STREAM("set color backlight compensation failed " << uvc_strerror(ret));
+    }
   }
 }
 
