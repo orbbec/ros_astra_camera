@@ -125,6 +125,11 @@ void UVCCameraDriver::setupCameraParams() {
       uvc_set_gain(device_handle_, static_cast<uint16_t>(gain_));
     }
   }
+  ROS_INFO_STREAM("set color backlight compensation to " << backlight_compensation_);
+  auto ret = uvc_set_backlight_compensation(device_handle_, backlight_compensation_);
+  if (ret != UVC_SUCCESS) {
+    ROS_ERROR_STREAM("set color backlight compensation failed " << uvc_strerror(ret));
+  }
 }
 
 UVCCameraDriver::UVCCameraDriver(ros::NodeHandle &nh, ros::NodeHandle &nh_private,
@@ -155,6 +160,7 @@ UVCCameraDriver::UVCCameraDriver(ros::NodeHandle &nh, ros::NodeHandle &nh_privat
   roi_.height = nh_private.param<int>("color_roi_height", -1);
   camera_name_ = nh_private.param<std::string>("camera_name", "camera");
   enable_color_auto_exposure_ = nh_private.param<bool>("enable_color_auto_exposure", true);
+  backlight_compensation_ = nh_private.param<int>("backlight_compensation", 0);
   gain_ = nh_private.param<int>("color_gain", -1);
   exposure_ = nh_private.param<int>("color_exposure", -1);
   config_.frame_id = camera_name_ + "_color_frame";

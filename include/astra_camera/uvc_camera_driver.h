@@ -181,6 +181,7 @@ class UVCCameraDriver {
   int exposure_ = -1;
   int gain_ = -1;
   int white_balance_ = -1;
+  uint16_t backlight_compensation_ = 0;
   std::atomic_bool camera_initialized_{false};
   std::mutex camera_mutex_;
   std::condition_variable camera_cv_;
