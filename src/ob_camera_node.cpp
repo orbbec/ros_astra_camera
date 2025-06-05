@@ -54,7 +54,7 @@ void OBCameraNode::clean() {
       streams_[stream_index].reset();
     }
   }
-   device_->setProperty(XN_MODULE_PROPERTY_WATCH_DOG_MODE, 0);
+  device_->setProperty(XN_MODULE_PROPERTY_WATCH_DOG_MODE, 0);
   ROS_INFO_STREAM("OBCameraNode::clean stop streams done.");
   if (uvc_camera_driver_ != nullptr) {
     ROS_INFO_STREAM("OBCameraNode::stop uvc camera.");
@@ -787,6 +787,11 @@ void OBCameraNode::onNewFrameCallback(const openni::VideoFrameRef &frame,
   } else if (stream_index == INFRA1 || stream_index == INFRA2) {
     double f = getFocalLength(stream_index, width);
     camera_info = getIRCameraInfo(width, height, f);
+  }
+  if (pid == DABAI_MAX_PID) {
+    sensor_msgs::CameraInfo color_info;
+    color_info = getColorCameraInfo();
+    point_cloud_xyz_node_->SetCameraInfo(color_info, pid);
   }
 
   camera_info.header.stamp = timestamp;
